@@ -23,16 +23,16 @@ namespace ship_convenient.Services.RouteService
         public async Task<ApiResponse<ResponseRouteModel>> Create(CreateRouteModel model)
         {
             ApiResponse<ResponseRouteModel> response = new ApiResponse<ResponseRouteModel>();
-            Route route = model.ConvertToEntity();
-            InfoUser? infoUser = await _infoUserRepo.GetByIdAsync(model.InfoUserId, disableTracking: false, include: (en) => en.Include(info => info.Account));
+            InfoUser? infoUser = await _infoUserRepo.FirstOrDefaultAsync(
+                predicate: (i) => i.AccountId == model.AccountId, disableTracking: false, include: (en) => en.Include(info => info.Account));
 
             #region verify params
             if (infoUser == null) {
-                response.ToFailedResponse("Id người dùng không tồn tại");
+                response.ToFailedResponse("Thông tin người dùng không tồn tại");
                 return response;
             }
             #endregion
-
+            Route route = model.ConvertToEntity(infoUser!.Id);
             if (infoUser?.Account?.Status == AccountStatus.NO_ROUTE)
             {
                 route.IsActive = true;
@@ -57,10 +57,12 @@ namespace ship_convenient.Services.RouteService
 
         }
 
-        public async Task<ApiResponse<List<ResponseRouteModel>>> GetRouteUserId(Guid infoUserId)
+        public async Task<ApiResponse<List<ResponseRouteModel>>> GetRouteUserId(Guid accountId)
         {
             ApiResponse<List<ResponseRouteModel>> response = new();
-            List<ResponseRouteModel> routes = _routeRepo.GetAll(predicate: (route) => route.InfoUserId == infoUserId, selector: route => route.ToResponseModel()).ToList();
+            List<ResponseRouteModel> routes = _routeRepo.GetAll(predicate: (route) => 
+                route.InfoUser != null ? route.InfoUser.AccountId == accountId : false, 
+                selector: route => route.ToResponseModel()).ToList();
             if (routes.Count > 0)
             {
                 response.ToSuccessResponse(routes, "Lấy thông tin thành công");

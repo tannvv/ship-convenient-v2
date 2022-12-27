@@ -12,7 +12,6 @@ namespace ship_convenient.Core.UnitOfWork
         IInfoUserRepository InfoUsers { get; }
         INotificationRepository Notifications { get; }
         IProductRepository Products { get; }
-        // IRoleRepository Roles { get; }
         ITransactionRepository Transactions { get; }
         IRouteRepository Routes { get; }
         ITransactionPackageRepository TransactionPackages { get; }

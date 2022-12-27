@@ -36,7 +36,7 @@ namespace ship_convenient.Services.AccountService
                 }
                 InfoUser? _checkPhone = await _infoUserRepo.FirstOrDefaultAsync(
                     predicate: (ac) => ac.Phone == model.Phone);
-                if (_checkEmail != null)
+                if (_checkPhone != null)
                 {
                     response.ToFailedResponse("Số điện thoại đã tồn tại, không thể đăng kí");
                     return response;

@@ -10,9 +10,9 @@ namespace ship_convenient.Model.RouteModel
         public string ToName { get; set; } = string.Empty;
         public double ToLongitude { get; set; }
         public double ToLatitude { get; set; }
-        public Guid InfoUserId { get; set; }
+        public Guid AccountId { get; set; }
 
-        public Route ConvertToEntity()
+        public Route ConvertToEntity(Guid infoUserId)
         {
             Route route = new Route();
             route.FromName = this.FromName;
@@ -21,7 +21,7 @@ namespace ship_convenient.Model.RouteModel
             route.ToName = this.ToName;
             route.ToLatitude = this.ToLatitude;
             route.ToLongitude = this.ToLongitude;
-            route.InfoUserId = this.InfoUserId;
+            route.InfoUserId = infoUserId;
             return route;
         }
     }

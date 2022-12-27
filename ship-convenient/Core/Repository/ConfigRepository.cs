@@ -9,5 +9,15 @@ namespace ship_convenient.Core.Repository
         public ConfigRepository(AppDbContext context, ILogger logger) : base(context, logger)
         {
         }
+
+        public string GetValueConfig(string configName)
+        {
+            ConfigApp? configApp = _dbSet.FirstOrDefault(con => con.Name.Equals(configName));
+            if (configApp != null)
+            {
+                return configApp.Note;
+            }
+            return "";
+        }
     }
 }

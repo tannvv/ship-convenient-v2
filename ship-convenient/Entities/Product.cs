@@ -1,4 +1,6 @@
-﻿namespace ship_convenient.Entities
+﻿using unitofwork_core.Model.ProductModel;
+
+namespace ship_convenient.Entities
 {
     public class Product : BaseEntity
     {
@@ -10,13 +12,13 @@
         public Package? Package { get; set; }
         #endregion
 
-        /*public ResponseProductModel ToResponseModel()
+        public ResponseProductModel ToResponseModel()
         {
             ResponseProductModel model = new ResponseProductModel();
             model.Name = this.Name;
             model.Price = this.Price;
             model.Description = this.Description;
             return model;
-        }*/
+        }
     }
 }

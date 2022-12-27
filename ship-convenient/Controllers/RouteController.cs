@@ -18,13 +18,15 @@ namespace ship_convenient.Controllers
             _logger = logger;
         }
 
-        [HttpGet("{id}")]
-        [SwaggerOperation(Summary = "Get shipper with id")]
-        public async Task<ActionResult<ApiResponse<List<ResponseRouteModel>>>> GetShipperRoute(Guid id)
+        [HttpGet("{accountId}")]
+        [SwaggerOperation(Summary = "Get route with accountId")]
+        public async Task<ActionResult<ApiResponse<List<ResponseRouteModel>>>> 
+            GetShipperRoute(Guid accountId)
         {
             try
             {
-                ApiResponse<List<ResponseRouteModel>>? response = await _routeService.GetRouteUserId(id);
+                ApiResponse<List<ResponseRouteModel>>? response = 
+                    await _routeService.GetRouteUserId(accountId);
                 if (response.Success == false)
                 {
                     return BadRequest(response);
