@@ -19,11 +19,11 @@ namespace ship_convenient.Controllers
 
         [HttpGet]
         [SwaggerOperation(Summary = "Get list package")]
-        public async Task<ActionResult<ApiResponsePaginated<ResponsePackageModel>>> GetList(Guid? deliverId, Guid? creatorId, string? status, int? pageIndex, int? pageSize)
+        public async Task<ActionResult<ApiResponsePaginated<ResponsePackageModel>>> GetList(Guid? deliverId, Guid? senderId, string? status, int? pageIndex, int? pageSize)
         {
             try
             {
-                ApiResponsePaginated<ResponsePackageModel> response = await _packageService.GetFilter(deliverId, creatorId, status, pageIndex, pageSize);
+                ApiResponsePaginated<ResponsePackageModel> response = await _packageService.GetFilter(deliverId, senderId, status, pageIndex, pageSize);
                 if (response.Success == false)
                 {
                     return BadRequest(response);
@@ -182,13 +182,13 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("creator-cancel")]
-        [SwaggerOperation(Summary = "Creator cancel package")]
+        [HttpPut("sender-cancel")]
+        [SwaggerOperation(Summary = "Sender cancel package")]
         public async Task<ActionResult<ApiResponse>> ShopCancelPackage(Guid packageId)
         {
             try
             {
-                ApiResponse response = await _packageService.CreatorCancelPackage(packageId);
+                ApiResponse response = await _packageService.SenderCancelPackage(packageId);
                 if (response.Success == false)
                 {
                     return BadRequest(response);
@@ -264,13 +264,13 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("creator-confirm-delivery-success")]
-        [SwaggerOperation(Summary = "Creator confirm delivery success")]
-        public async Task<ActionResult<ApiResponse>> CreatorConfirmDeliverySuccessPackage(Guid packageId)
+        [HttpPut("sender-confirm-delivery-success")]
+        [SwaggerOperation(Summary = "Sender confirm delivery success")]
+        public async Task<ActionResult<ApiResponse>> SenderConfirmDeliverySuccessPackage(Guid packageId)
         {
             try
             {
-                ApiResponse response = await _packageService.CreatorConfirmDeliverySuccess(packageId);
+                ApiResponse response = await _packageService.SenderConfirmDeliverySuccess(packageId);
                 if (response.Success == false)
                 {
                     return BadRequest(response);
@@ -285,7 +285,7 @@ namespace ship_convenient.Controllers
         }
 
         [HttpPut("refund-success")]
-        [SwaggerOperation(Summary = "Deliver refund package for creator success")]
+        [SwaggerOperation(Summary = "Deliver refund package for sender success")]
         public async Task<ActionResult<ApiResponse>> RefundSuccessPackage(Guid packageId)
         {
             try
@@ -299,13 +299,13 @@ namespace ship_convenient.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Deliver refund package for creator success has exception : " + ex.Message);
+                _logger.LogError("Deliver refund package for sender success has exception : " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
 
         [HttpPut("refund-failed")]
-        [SwaggerOperation(Summary = "Deliver refund package for creator failed")]
+        [SwaggerOperation(Summary = "Deliver refund package for sender failed")]
         public async Task<ActionResult<ApiResponse>> RefundFailedPackage(Guid packageId)
         {
             try
@@ -319,7 +319,7 @@ namespace ship_convenient.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError("Deliver refund package for creator failed : " + ex.Message);
+                _logger.LogError("Deliver refund package for sender failed : " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }

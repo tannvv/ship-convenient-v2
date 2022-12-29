@@ -50,7 +50,7 @@ namespace ship_convenient.Services.PackageService
         {
             ApiResponse<ResponsePackageModel> response = new();
             #region Verify params
-            Account? account = await _accountRepo.GetByIdAsync(model.CreatorId);
+            Account? account = await _accountRepo.GetByIdAsync(model.SenderId);
             if (account == null)
             {
                 response.ToFailedResponse("Tài khoản không tồn tại");
@@ -157,13 +157,13 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponse<List<ResponsePackageModel>>> GetAll(Guid deliverId, Guid creatorId, string? status)
+        public async Task<ApiResponse<List<ResponsePackageModel>>> GetAll(Guid deliverId, Guid senderId, string? status)
         {
             ApiResponse<List<ResponsePackageModel>> response = new ApiResponse<List<ResponsePackageModel>>();
             #region Includable
             Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.Products)
             .Include(p => p.Deliver).ThenInclude(d => d == null ? null : d.InfoUser)
-                .Include(p => p.Creator).ThenInclude(c => c == null ? null : c.InfoUser);
+                .Include(p => p.Sender).ThenInclude(c => c == null ? null : c.InfoUser);
             #endregion
             #region Order
             Func<IQueryable<Package>, IOrderedQueryable<Package>> orderBy = (source) => source.OrderByDescending(p => p.ModifiedAt);
@@ -175,9 +175,9 @@ namespace ship_convenient.Services.PackageService
                 Expression<Func<Package, bool>> filterShipper = (p) => p.DeliverId == deliverId;
                 predicates.Add(filterShipper);
             }
-            if (creatorId != Guid.Empty)
+            if (senderId != Guid.Empty)
             {
-                Expression<Func<Package, bool>> filterShop = (p) => p.CreatorId == creatorId;
+                Expression<Func<Package, bool>> filterShop = (p) => p.SenderId == senderId;
                 predicates.Add(filterShop);
             }
             if (status != null)
@@ -195,7 +195,7 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse<ResponsePackageModel>> GetById(Guid id)
         {
             #region Includable
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (p) => p.Include(p => p.Products).Include(p => p.Creator).Include(p => p.Deliver);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (p) => p.Include(p => p.Products).Include(p => p.Sender).Include(p => p.Deliver);
             #endregion
 
             Package? package = await _packageRepo.GetByIdAsync(id, include: include);
@@ -218,7 +218,7 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? creatorId, string? status, int? pageIndex, int? pageSize)
+        public async Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? senderId, string? status, int? pageIndex, int? pageSize)
         {
             ApiResponsePaginated<ResponsePackageModel> response = new ApiResponsePaginated<ResponsePackageModel>();
             #region Verify params
@@ -235,7 +235,7 @@ namespace ship_convenient.Services.PackageService
             #region Includable
             Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.Products)
                 .Include(p => p.Deliver).ThenInclude(p => p != null ? p.InfoUser : null)
-                .Include(p => p.Creator).ThenInclude(c => c != null ? c.InfoUser : null);
+                .Include(p => p.Sender).ThenInclude(c => c != null ? c.InfoUser : null);
             #endregion
 
             #region Predicates
@@ -245,9 +245,9 @@ namespace ship_convenient.Services.PackageService
                 Expression<Func<Package, bool>> filterShipper = (p) => p.DeliverId == deliverId;
                 predicates.Add(filterShipper);
             }
-            if (creatorId != Guid.Empty && creatorId != null)
+            if (senderId != Guid.Empty && senderId != null)
             {
-                Expression<Func<Package, bool>> filterShop = (p) => p.CreatorId == creatorId;
+                Expression<Func<Package, bool>> filterShop = (p) => p.SenderId == senderId;
                 predicates.Add(filterShop);
             }
             if (status != null)
@@ -333,11 +333,11 @@ namespace ship_convenient.Services.PackageService
             Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
             #endregion
             #region Includable pakage
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Creator).Include(p => p.Deliver);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver);
             #endregion
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
             Account? deliver = package?.Deliver;
-            Account? creator = package?.Creator;
+            Account? sender = package?.Sender;
             Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicate: predicateAdminBalance, disableTracking: false);
             #region Verify params
             if (package == null)
@@ -355,7 +355,7 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Hàng không giao thất bại thì hoàn trả cái gì!!");
                 return response;
             }
-            if (deliver == null || creator == null || adminBalance == null)
+            if (deliver == null || sender == null || adminBalance == null)
             {
                 response.ToFailedResponse("Không tìm thấy đủ các tài khoản để tạo giao dịch");
                 return response;
@@ -390,22 +390,22 @@ namespace ship_convenient.Services.PackageService
             deliverTrans.PackageId = package.Id;
             deliverTrans.AccountId = deliver.Id;
 
-            Transaction creatorTrans = new Transaction();
-            creatorTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
-            creatorTrans.Status = TransactionStatus.ACCOMPLISHED;
-            creatorTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
-            creatorTrans.CoinExchange = -package.PriceShip;
-            creatorTrans.BalanceWallet = creator.Balance - package.PriceShip;
-            creatorTrans.PackageId = package.Id;
-            creatorTrans.AccountId = creator.Id;
+            Transaction senderTrans = new Transaction();
+            senderTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
+            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
+            senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            senderTrans.CoinExchange = -package.PriceShip;
+            senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
+            senderTrans.PackageId = package.Id;
+            senderTrans.AccountId = sender.Id;
 
             adminBalance.Balance = Convert.ToInt32(Math.Round(adminBalance.Balance - (package.PriceShip * profitPercentRefund) - totalPrice));
             deliver.Balance = Convert.ToInt32(Math.Round(deliver.Balance + totalPrice +
                 package.PriceShip * (1 - profitPercent) * package.PriceShip * profitPercentRefund));
-            creator.Balance = creator.Balance - package.PriceShip;
+            sender.Balance = sender.Balance - package.PriceShip;
 
             List<Transaction> transactions = new List<Transaction> {
-                    systemTrans, deliverTrans, creatorTrans
+                    systemTrans, deliverTrans, senderTrans
                 };
             await _transactionRepo.InsertAsync(transactions);
             #endregion
@@ -740,7 +740,7 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponse> CreatorCancelPackage(Guid packageId)
+        public async Task<ApiResponse> SenderCancelPackage(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
@@ -760,7 +760,7 @@ namespace ship_convenient.Services.PackageService
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
-            history.ToStatus = PackageStatus.CREATOR_CANCEL;
+            history.ToStatus = PackageStatus.SENDER_CANCEL;
             history.Description = "Đơn hàng đã bị shop hủy vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
@@ -777,14 +777,14 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponse> CreatorConfirmDeliverySuccess(Guid packageId)
+        public async Task<ApiResponse> SenderConfirmDeliverySuccess(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
             decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE)) / 100;
 
 
             #region Includable pakage
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Creator).Include(p => p.Deliver).Include(p => p.Products);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
             #endregion
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
 
@@ -793,7 +793,7 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             Account? deliver = package?.Deliver;
-            Account? creator = package?.Creator;
+            Account? sender = package?.Sender;
             Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicateAdminBalance, disableTracking: false);
             #region Verify params
             if (package == null)
@@ -811,7 +811,7 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Gói hàng chưa được giao để có thể hoàn thành");
                 return response;
             }
-            if (deliver == null || creator == null || adminBalance == null)
+            if (deliver == null || sender == null || adminBalance == null)
             {
                 response.ToFailedResponse("Không tìm thấy đủ các ví để tạo giao dịch");
                 return response;
@@ -823,7 +823,7 @@ namespace ship_convenient.Services.PackageService
                 totalPrice += pr.Price;
             });
             _logger.LogInformation($"Profit percent: {profitPercent} ,Total price : {totalPrice}");
-            
+
             #region Create transactions
             Transaction systemTrans = new Transaction();
             systemTrans.Description = $"({deliver.Id}) giao thành công gói hàng với id: {package.Id}";
@@ -845,23 +845,23 @@ namespace ship_convenient.Services.PackageService
             deliverTrans.AccountId = deliver.Id;
             _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
 
-            Transaction creatorTrans = new Transaction();
-            creatorTrans.Description = "Giao thành công đơn hàng id : " + package.Id;
-            creatorTrans.Status = TransactionStatus.ACCOMPLISHED;
-            creatorTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
-            creatorTrans.CoinExchange = -totalPrice - package.PriceShip;
-            creatorTrans.BalanceWallet = creator.Balance - totalPrice - package.PriceShip;
-            creatorTrans.PackageId = package.Id;
-            creatorTrans.AccountId = creator.Id;
-            _logger.LogInformation($"Shop transaction: {creatorTrans.CoinExchange}, Balance: {creatorTrans.BalanceWallet}");
+            Transaction senderTrans = new Transaction();
+            senderTrans.Description = "Giao thành công đơn hàng id : " + package.Id;
+            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
+            senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            senderTrans.CoinExchange = -totalPrice - package.PriceShip;
+            senderTrans.BalanceWallet = sender.Balance - totalPrice - package.PriceShip;
+            senderTrans.PackageId = package.Id;
+            senderTrans.AccountId = sender.Id;
+            _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
 
             adminBalance.Balance = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
             deliver.Balance = ParseHelper.RoundedToInt(
                 deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
-            creator.Balance = creator.Balance - totalPrice - package.PriceShip;
+            sender.Balance = sender.Balance - totalPrice - package.PriceShip;
 
             List<Transaction> transactions = new List<Transaction> {
-                    systemTrans, deliverTrans, creatorTrans
+                    systemTrans, deliverTrans, senderTrans
                 };
             await _transactionRepo.InsertAsync(transactions);
             #endregion
@@ -869,7 +869,7 @@ namespace ship_convenient.Services.PackageService
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
-            history.ToStatus = PackageStatus.CREATOR_CONFIRM_DEIVERED;
+            history.ToStatus = PackageStatus.SENDER_CONFIRM_DELIVERED;
             history.Description = $"Người tạo xác nhận đã giao hàng thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
             history.PackageId = package.Id;
 
@@ -886,7 +886,7 @@ namespace ship_convenient.Services.PackageService
             ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();
             #region Verify params
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId
-                ,include: (source) => source.Include(acc => acc.InfoUser));
+                , include: (source) => source.Include(acc => acc.InfoUser));
             if (deliver == null)
             {
                 response.ToFailedResponse("Người dùng không tồn tại");
@@ -935,23 +935,23 @@ namespace ship_convenient.Services.PackageService
             }
             #endregion
 
-            #region Group with creator
-            List<Guid> creatorIds = new List<Guid>();
+            #region Group with sender
+            List<Guid> senderIds = new List<Guid>();
             foreach (ResponsePackageModel p in packagesValid)
             {
-                if (!creatorIds.Contains(p.CreatorId))
+                if (!senderIds.Contains(p.SenderId))
                 {
-                    creatorIds.Add(p.CreatorId);
-                    _logger.LogInformation($"Shop have combos suggest: {p.CreatorId}");
+                    senderIds.Add(p.SenderId);
+                    _logger.LogInformation($"Shop have combos suggest: {p.SenderId}");
                 }
             }
             List<ResponseComboPackageModel> combos = new List<ResponseComboPackageModel>();
-            foreach (Guid creatorId in creatorIds)
+            foreach (Guid senderId in senderIds)
             {
                 ResponseComboPackageModel combo = new ResponseComboPackageModel();
-                combo.Creator = (await _accountRepo.GetByIdAsync(creatorId,
+                combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
                     include: (source) => source.Include(acc => acc.InfoUser)))?.ToResponseModel();
-                combo.Packages = packagesValid.Where(p => p.CreatorId == creatorId).ToList();
+                combo.Packages = packagesValid.Where(p => p.SenderId == senderId).ToList();
                 int comboPrice = 0;
                 foreach (ResponsePackageModel pac in combo.Packages)
                 {
@@ -961,7 +961,7 @@ namespace ship_convenient.Services.PackageService
                     }
                 }
                 combo.ComboPrice = comboPrice;
-                _logger.LogInformation($"Combo[Shop: {combo.Creator?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
                 combos.Add(combo);
             }
             PaginatedList<ResponseComboPackageModel> responseList = await combos.ToPaginatedListAsync(pageIndex, pageSize);

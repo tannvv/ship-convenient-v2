@@ -12,8 +12,8 @@ namespace ship_convenient.Entities.Config
             builder.Property(ac => ac.CreatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
             builder.HasMany(ac => ac.Notifications)
                 .WithOne(noti => noti.Account).HasForeignKey(noti => noti.AccountId).OnDelete(DeleteBehavior.Cascade);
-            builder.HasMany(ac => ac.PackageCreators)
-                .WithOne(pa => pa.Creator).HasForeignKey(pa => pa.CreatorId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(ac => ac.PackageSenders)
+                .WithOne(pa => pa.Sender).HasForeignKey(pa => pa.SenderId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(ac => ac.PackageDelivers)
                 .WithOne(pa => pa.Deliver).HasForeignKey(pa => pa.DeliverId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(ac => ac.Transactions)

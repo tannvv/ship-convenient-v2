@@ -21,13 +21,14 @@ namespace unitofwork_core.Model.PackageModel
         public double Volume { get; set; }
         public double Weight { get; set; }
         public int PriceShip { get; set; }
-        public string PhotoUrl { get; set; } = string.Empty; 
+        public string PhotoUrl { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
-        public Guid CreatorId { get; set; }
+        public Guid SenderId { get; set; }
         public List<CreateProductModel> Products { get; set; } = new List<CreateProductModel>();
 
-        public PackageEntity ConverToEntity() { 
-             PackageEntity entity = new PackageEntity();
+        public PackageEntity ConverToEntity()
+        {
+            PackageEntity entity = new PackageEntity();
             entity.StartAddress = this.StartAddress;
             entity.StartLongitude = this.StartLongitude;
             entity.StartLatitude = this.StartLatitude;
@@ -43,7 +44,7 @@ namespace unitofwork_core.Model.PackageModel
             entity.PriceShip = this.PriceShip;
             entity.PhotoUrl = this.PhotoUrl;
             entity.Note = this.Note;
-            entity.CreatorId = this.CreatorId;
+            entity.SenderId = this.SenderId;
 
             int productCount = this.Products.Count;
             for (int i = 0; i < productCount; i++)

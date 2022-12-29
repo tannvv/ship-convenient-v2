@@ -203,7 +203,7 @@ namespace ship_convenient.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<Guid>("CreatorId")
+                    b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("DeliverId")
@@ -271,7 +271,7 @@ namespace ship_convenient.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatorId");
+                    b.HasIndex("SenderId");
 
                     b.HasIndex("DeliverId");
 
@@ -498,9 +498,9 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Package", b =>
                 {
-                    b.HasOne("ship_convenient.Entities.Account", "Creator")
-                        .WithMany("PackageCreators")
-                        .HasForeignKey("CreatorId")
+                    b.HasOne("ship_convenient.Entities.Account", "Sender")
+                        .WithMany("PackageSenders")
+                        .HasForeignKey("SenderId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -514,7 +514,7 @@ namespace ship_convenient.Migrations
                         .HasForeignKey("DiscountId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Creator");
+                    b.Navigation("Sender");
 
                     b.Navigation("Deliver");
 
@@ -589,7 +589,7 @@ namespace ship_convenient.Migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("PackageCreators");
+                    b.Navigation("PackageSenders");
 
                     b.Navigation("PackageDelivers");
 

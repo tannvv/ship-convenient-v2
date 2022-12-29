@@ -139,7 +139,7 @@ namespace ship_convenient.Services.DatabaseService
                 .RuleFor(o => o.Note, faker => faker.Lorem.Sentence(6))
                 .RuleFor(o => o.PriceShip, faker => faker.Random.Int(min: 10, max: 40) * 1000)
                 .RuleFor(o => o.Status, faker => PackageStatus.APPROVED)
-                .RuleFor(o => o.Creator, faker => faker.PickRandom(accounts));
+                .RuleFor(o => o.Sender, faker => faker.PickRandom(accounts));
             List<Package> packages = FakerPackage.Generate(300);
             for (int i = 0; i < packages.Count; i++)
             {

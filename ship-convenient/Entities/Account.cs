@@ -17,7 +17,7 @@ namespace ship_convenient.Entities
         // public Guid RoleId { get; set; }
         // public Role? Role { get; set; }
         public List<Notification> Notifications { get; set; }
-        public List<Package> PackageCreators { get; set; }
+        public List<Package> PackageSenders { get; set; }
         public List<Package> PackageDelivers { get; set; }
         public List<Transaction> Transactions { get; set; }
         #endregion
@@ -25,19 +25,21 @@ namespace ship_convenient.Entities
         public Account()
         {
             Notifications = new List<Notification>();
-            PackageCreators = new List<Package>();
+            PackageSenders = new List<Package>();
             PackageDelivers = new List<Package>();
             Transactions = new List<Transaction>();
         }
 
-        public ResponseAccountModel ToResponseModel() {
+        public ResponseAccountModel ToResponseModel()
+        {
             ResponseAccountModel model = new();
             model.Id = this.Id;
             model.UserName = this.UserName;
             model.Status = this.Status;
             model.Role = this.Role;
             model.Balance = this.Balance;
-            if (InfoUser != null) {
+            if (InfoUser != null)
+            {
                 model.InfoUser = this.InfoUser.ToResponseModel();
             }
             return model;

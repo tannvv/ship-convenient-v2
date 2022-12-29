@@ -25,8 +25,8 @@ namespace unitofwork_core.Model.PackageModel
         public string Note { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
-        public Guid CreatorId { get; set; }
-        public ResponseAccountModel? Creator { get; set; }
+        public Guid SenderId { get; set; }
+        public ResponseAccountModel? Sender { get; set; }
         public Guid? DeliverId { get; set; }
         public ResponseAccountModel? Deliver { get; set; }
         public IList<ResponseProductModel> Products { get; set; } = new List<ResponseProductModel>();

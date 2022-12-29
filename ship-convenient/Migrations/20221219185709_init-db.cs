@@ -143,7 +143,7 @@ namespace ship_convenient.Migrations
                     Note = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
                     ModifiedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    CreatorId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    SenderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     DeliverId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
                     DiscountId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
                 },
@@ -151,8 +151,8 @@ namespace ship_convenient.Migrations
                 {
                     table.PrimaryKey("PK_Package", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Package_Account_CreatorId",
-                        column: x => x.CreatorId,
+                        name: "FK_Package_Account_SenderId",
+                        column: x => x.SenderId,
                         principalTable: "Account",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -324,9 +324,9 @@ namespace ship_convenient.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Package_CreatorId",
+                name: "IX_Package_SenderId",
                 table: "Package",
-                column: "CreatorId");
+                column: "SenderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Package_DeliverId",

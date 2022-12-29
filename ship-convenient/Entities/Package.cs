@@ -20,10 +20,10 @@ namespace ship_convenient.Entities
         public string PhotoUrl { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
-        public DateTime ModifiedAt { get; set; } 
+        public DateTime ModifiedAt { get; set; }
         #region Relationship
-        public Guid CreatorId { get; set; }
-        public Account? Creator { get; set; }
+        public Guid SenderId { get; set; }
+        public Account? Sender { get; set; }
         public Guid? DeliverId { get; set; }
         public Account? Deliver { get; set; }
         public Guid? DiscountId { get; set; }
@@ -62,9 +62,9 @@ namespace ship_convenient.Entities
             model.Note = this.Note;
             model.CreatedAt = this.CreatedAt;
             model.ModifiedAt = this.ModifiedAt;
-            model.CreatorId= this.CreatorId;
+            model.SenderId = this.SenderId;
             model.DeliverId = this.DeliverId;
-            model.Creator = this.Creator != null ? this.Creator.ToResponseModel() : null;
+            model.Sender = this.Sender != null ? this.Sender.ToResponseModel() : null;
             model.Deliver = this.Deliver != null ? this.Deliver.ToResponseModel() : null;
 
             int countProduct = this.Products.Count;
