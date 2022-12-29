@@ -12,8 +12,8 @@ using ship_convenient.Core.Context;
 namespace ship_convenient.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20221226082747_initdb1")]
-    partial class initdb1
+    [Migration("20221229083615_initdb")]
+    partial class initdb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -210,9 +210,6 @@ namespace ship_convenient.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<Guid>("SenderId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<Guid?>("DeliverId")
                         .HasColumnType("uniqueidentifier");
 
@@ -256,6 +253,9 @@ namespace ship_convenient.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid>("SenderId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("StartAddress")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -278,11 +278,11 @@ namespace ship_convenient.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SenderId");
-
                     b.HasIndex("DeliverId");
 
                     b.HasIndex("DiscountId");
+
+                    b.HasIndex("SenderId");
 
                     b.ToTable("Package", (string)null);
                 });
@@ -479,12 +479,6 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Package", b =>
                 {
-                    b.HasOne("ship_convenient.Entities.Account", "Sender")
-                        .WithMany("PackageSenders")
-                        .HasForeignKey("SenderId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.HasOne("ship_convenient.Entities.Account", "Deliver")
                         .WithMany("PackageDelivers")
                         .HasForeignKey("DeliverId")
@@ -495,11 +489,17 @@ namespace ship_convenient.Migrations
                         .HasForeignKey("DiscountId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.Navigation("Sender");
+                    b.HasOne("ship_convenient.Entities.Account", "Sender")
+                        .WithMany("PackageSenders")
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Deliver");
 
                     b.Navigation("Discount");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("ship_convenient.Entities.Product", b =>
@@ -570,9 +570,9 @@ namespace ship_convenient.Migrations
 
                     b.Navigation("Notifications");
 
-                    b.Navigation("PackageSenders");
-
                     b.Navigation("PackageDelivers");
+
+                    b.Navigation("PackageSenders");
 
                     b.Navigation("Transactions");
                 });

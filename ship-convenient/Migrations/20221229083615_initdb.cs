@@ -10,6 +10,24 @@ namespace ship_convenient.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Account",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Balance = table.Column<int>(type: "int", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
+                    InfoUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Account", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Config",
                 columns: table => new
                 {
@@ -42,42 +60,6 @@ namespace ship_convenient.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Role", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Account",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Balance = table.Column<int>(type: "int", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETDATE()"),
-                    InfoUserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Account", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Account_Role_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Role",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "InfoUser",
                 columns: table => new
                 {
@@ -86,6 +68,8 @@ namespace ship_convenient.Migrations
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Phone = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AccountId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
@@ -151,13 +135,13 @@ namespace ship_convenient.Migrations
                 {
                     table.PrimaryKey("PK_Package", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Package_Account_SenderId",
-                        column: x => x.SenderId,
+                        name: "FK_Package_Account_DeliverId",
+                        column: x => x.DeliverId,
                         principalTable: "Account",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_Package_Account_DeliverId",
-                        column: x => x.DeliverId,
+                        name: "FK_Package_Account_SenderId",
+                        column: x => x.SenderId,
                         principalTable: "Account",
                         principalColumn: "Id");
                     table.ForeignKey(
@@ -290,11 +274,6 @@ namespace ship_convenient.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Account_RoleId",
-                table: "Account",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Account_UserName",
                 table: "Account",
                 column: "UserName",
@@ -324,11 +303,6 @@ namespace ship_convenient.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Package_SenderId",
-                table: "Package",
-                column: "SenderId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Package_DeliverId",
                 table: "Package",
                 column: "DeliverId");
@@ -337,6 +311,11 @@ namespace ship_convenient.Migrations
                 name: "IX_Package_DiscountId",
                 table: "Package",
                 column: "DiscountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Package_SenderId",
+                table: "Package",
+                column: "SenderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Product_PackageId",
@@ -403,9 +382,6 @@ namespace ship_convenient.Migrations
 
             migrationBuilder.DropTable(
                 name: "Account");
-
-            migrationBuilder.DropTable(
-                name: "Role");
         }
     }
 }
