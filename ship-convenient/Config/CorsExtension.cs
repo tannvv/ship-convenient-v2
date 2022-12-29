@@ -11,8 +11,7 @@
                     builder
                         .AllowAnyOrigin()
                         .AllowAnyHeader()
-                        .AllowAnyMethod()
-                        .AllowCredentials();
+                        .AllowAnyMethod();
                 });
                 options.AddPolicy("AllowAllHeaders",
                     builder =>
