@@ -2,8 +2,8 @@
 {
     public class RoleName
     {
-        public const string ADMIN = "AMDIN";
+        public const string ADMIN = "ADMIN";
         public const string ADMIN_BALANCE = "ADMIN_BALANCE";
-        public const string User = "USER";
+        public const string USER = "USER";
     }
 }

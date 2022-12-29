@@ -57,7 +57,7 @@ namespace ship_convenient.Services.DatabaseService
             Faker<Account> FakerAccount = new Faker<Account>()
                 .RuleFor(u => u.UserName, faker => faker.Person.UserName)
                 .RuleFor(u => u.Password, faker => faker.Person.FirstName.ToLower())
-                .RuleFor(u => u.Role, faker => RoleName.User)
+                .RuleFor(u => u.Role, faker => RoleName.USER)
                 .RuleFor(u => u.Status, faker => "ACTIVE");
             Faker<InfoUser> FakerInfoUser = new Faker<InfoUser>()
                  .RuleFor(u => u.Email, faker => faker.Person.Email)
