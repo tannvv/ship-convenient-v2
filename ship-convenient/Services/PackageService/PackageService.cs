@@ -950,7 +950,8 @@ namespace ship_convenient.Services.PackageService
             {
                 ResponseComboPackageModel combo = new ResponseComboPackageModel();
                 combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
-                    include: (source) => source.Include(acc => acc.InfoUser)))?.ToResponseModel();
+                    include: (source) => source.Include(acc => acc.InfoUser)
+                        .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
                 combo.Packages = packagesValid.Where(p => p.SenderId == senderId).ToList();
                 int comboPrice = 0;
                 foreach (ResponsePackageModel pac in combo.Packages)
