@@ -9,8 +9,7 @@
                 options.AddDefaultPolicy(builder =>
                 {
                     builder
-                         .WithOrigins("http://localhost:3000", "https://old-stuff-exchange-3d9f0.web.app",
-                         "https://old-stuff-exchange-3d9f0.firebaseapp.com")
+                        .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
