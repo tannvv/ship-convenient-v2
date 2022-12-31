@@ -32,16 +32,16 @@ namespace ship_convenient.Core.Context
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            string connectionString = _configuration.GetConnectionString("DevConnection");
+            string connectionString = _configuration.GetConnectionString("DevConnectionPartner");
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
             {
-                connectionString = _configuration.GetConnectionString("DevConnection");
+                connectionString = _configuration.GetConnectionString("DevConnectionPartner");
             }
             else
             {
                 connectionString = _configuration.GetConnectionString("AzureConnection");
             }
-            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("AzureConnection"));
+            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
