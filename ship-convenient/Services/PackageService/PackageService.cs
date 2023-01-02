@@ -195,7 +195,8 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse<ResponsePackageModel>> GetById(Guid id)
         {
             #region Includable
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (p) => p.Include(p => p.Products).Include(p => p.Sender).Include(p => p.Deliver);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (p) => p.Include(p => p.Products).Include(p => p.Sender).ThenInclude(s => s != null ? s.InfoUser : null)
+                .Include(p => p.Deliver).ThenInclude(p => p != null ? p.InfoUser : null);
             #endregion
 
             Package? package = await _packageRepo.GetByIdAsync(id, include: include);

@@ -20,12 +20,12 @@ namespace unitofwork_core.Model.PackageModel
         public double Volume { get; set; }
         public double Weight { get; set; }
         public string Status { get; set; } = string.Empty;
-        public decimal? PriceShip { get; set; } = null;
+        public int? PriceShip { get; set; } = null;
         public string PhotoUrl { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
-        public Guid SenderId { get; set; }
+        public Guid SenderId { get; set; }   
         public ResponseAccountModel? Sender { get; set; }
         public Guid? DeliverId { get; set; }
         public ResponseAccountModel? Deliver { get; set; }
