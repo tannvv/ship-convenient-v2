@@ -19,7 +19,7 @@ namespace ship_convenient.Controllers
 
         [HttpGet]
         [SwaggerOperation(Summary = "Get list package")]
-        public async Task<ActionResult<ApiResponsePaginated<ResponsePackageModel>>> GetList(Guid? deliverId, Guid? senderId, string? status, int? pageIndex, int? pageSize)
+        public async Task<ActionResult<ApiResponsePaginated<ResponsePackageModel>>> GetList(Guid? deliverId, Guid? senderId, string? status, int pageIndex = 0, int pageSize = 20)
         {
             try
             {

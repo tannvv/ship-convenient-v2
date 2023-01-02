@@ -7,7 +7,7 @@ namespace ship_convenient.Services.PackageService
     {
         Task<ApiResponse<ResponsePackageModel>> Create(CreatePackageModel model);
         Task<ApiResponse<ResponsePackageModel>> GetById(Guid id);
-        Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? senderId, string? status, int? pageIndex, int? pageSize);
+        Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? senderId, string? status, int pageIndex, int pageSize);
         Task<ApiResponse<List<ResponsePackageModel>>> GetAll(Guid deliverId, Guid senderId, string? status);
         Task<ApiResponse> ApprovedPackage(Guid id);
         Task<ApiResponse> RejectPackage(Guid id);

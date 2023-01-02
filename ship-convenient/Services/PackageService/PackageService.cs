@@ -219,17 +219,14 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? senderId, string? status, int? pageIndex, int? pageSize)
+        public async Task<ApiResponsePaginated<ResponsePackageModel>> GetFilter(Guid? deliverId, Guid? senderId, string? status, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponsePackageModel> response = new ApiResponsePaginated<ResponsePackageModel>();
             #region Verify params
-            if (pageIndex != null && pageSize != null)
+            if (pageIndex < 0 || pageSize < 1)
             {
-                if (pageIndex < 0 || pageSize < 1)
-                {
-                    response.ToFailedResponse("Thông tin phân trang không hợp lệ");
-                    return response;
-                }
+                response.ToFailedResponse("Thông tin phân trang không hợp lệ");
+                return response;
             }
             #endregion
 
@@ -264,19 +261,9 @@ namespace ship_convenient.Services.PackageService
 
             Expression<Func<Package, ResponsePackageModel>> selector = (package) => package.ToResponseModel();
             PaginatedList<ResponsePackageModel> items;
-            if (pageIndex != null && pageSize != null)
-            {
-                items = await _packageRepo.GetPagedListAsync(
-                selector: selector, include: include, predicates: predicates,
-                orderBy: orderBy, pageIndex: pageIndex ?? 0, pageSize: pageSize ?? 0);
-            }
-            else
-            {
-                int countAll = _packageRepo.Count();
-                items = await _packageRepo.GetPagedListAsync(
-                selector: selector, include: include, predicates: predicates,
-                orderBy: orderBy, pageIndex: 0, pageSize: countAll);
-            }
+            items = await _packageRepo.GetPagedListAsync(
+                 selector: selector, include: include, predicates: predicates,
+                 orderBy: orderBy, pageIndex: pageIndex, pageSize: pageSize);
             _logger.LogInformation("Total count: " + items.TotalCount);
             #region Response result
             response.SetData(items);
