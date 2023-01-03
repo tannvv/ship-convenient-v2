@@ -7,7 +7,7 @@ namespace unitofwork_core.Model.PackageModel
         public ResponseAccountModel? Sender { get; set; }
         public double Time { get; set; }
         public double Distance { get; set; }
-        public decimal ComboPrice { get; set; }
+        public int ComboPrice { get; set; }
         public List<ResponsePackageModel> Packages = new List<ResponsePackageModel>();
     }
 }
