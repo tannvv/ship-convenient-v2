@@ -7,6 +7,8 @@ using ship_convenient.Services.GoongService;
 using ship_convenient.Services.MapboxService;
 using ship_convenient.Services.PackageService;
 using ship_convenient.Services.RouteService;
+using ship_convenient.Services.TransactionPackageService;
+using ship_convenient.Services.TransactionService;
 
 namespace ship_convenient.Config
 {
@@ -22,6 +24,8 @@ namespace ship_convenient.Config
             services.AddTransient<IAuthorizeService, AuthorizeService>();
             services.AddTransient<IRouteService, RouteService>();
             services.AddTransient<IPackageService, PackageService>();
+            services.AddTransient<ITransactionPackageService, TransactionPackageService>();
+            services.AddTransient<ITransactionService, TransactionService>();
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace ship_convenient.Entities
+﻿using unitofwork_core.Model.TransactionModel;
+
+namespace ship_convenient.Entities
 {
     public class Transaction : BaseEntity
     {
@@ -17,7 +19,7 @@
         public Package? Package { get; set; }
         #endregion
 
-        /*public ResponseTransactionModel ToResponseModel()
+        public ResponseTransactionModel ToResponseModel()
         {
             ResponseTransactionModel model = new ResponseTransactionModel();
             model.Status = this.Status;
@@ -28,6 +30,6 @@
             model.PackageId = this.PackageId;
             model.CreatedAt = this.CreatedAt;
             return model;
-        }*/
+        }
     }
 }
