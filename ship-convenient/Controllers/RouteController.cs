@@ -20,18 +20,15 @@ namespace ship_convenient.Controllers
 
         [HttpGet("{accountId}")]
         [SwaggerOperation(Summary = "Get route with accountId")]
-        public async Task<ActionResult<ApiResponse<List<ResponseRouteModel>>>> 
-            GetShipperRoute(Guid accountId)
+        [ProducesResponseType(typeof(ApiResponse<ResponseRouteModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> 
+            GetAccountRoute(Guid accountId)
         {
             try
             {
-                ApiResponse<List<ResponseRouteModel>>? response = 
+                ApiResponse<List<ResponseRouteModel>> response = 
                     await _routeService.GetRouteUserId(accountId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -42,16 +39,13 @@ namespace ship_convenient.Controllers
 
         [HttpPost()]
         [SwaggerOperation(Summary = "Create route")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseRouteModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateRoute(CreateRouteModel model)
         {
             try
             {
                 ApiResponse<ResponseRouteModel> response = await _routeService.Create(model);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -62,16 +56,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("active-route")]
         [SwaggerOperation(Summary = "Set active route")]
-        public async Task<ActionResult<ApiResponse<List<ResponseRouteModel>>>> ActiveRoute(Guid id)
+        [ProducesResponseType(typeof(ActionResult<ApiResponse<List<ResponseRouteModel>>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SetActiveRoute(Guid id)
         {
             try
             {
                 ApiResponse response = await _routeService.SetActiveRoute(id);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {

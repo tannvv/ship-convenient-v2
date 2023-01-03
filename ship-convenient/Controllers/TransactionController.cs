@@ -19,11 +19,7 @@ namespace ship_convenient.Controllers
         public async Task<IActionResult> GetTransactions(Guid accountId, DateTime? from, DateTime? to, int pageIndex = 0, int pageSize = 20)
         {
             ApiResponsePaginated<ResponseTransactionModel> response = await _transactionService.GetTransactions(accountId, from, to, pageIndex, pageSize);
-            if (response.Success == false)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            return SendResponse(response);
         }
     }
 }

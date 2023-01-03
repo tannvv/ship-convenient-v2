@@ -19,16 +19,13 @@ namespace ship_convenient.Controllers
 
         [HttpGet]
         [SwaggerOperation(Summary = "Get list package")]
-        public async Task<ActionResult<ApiResponsePaginated<ResponsePackageModel>>> GetList(Guid? deliverId, Guid? senderId, string? status, int pageIndex = 0, int pageSize = 20)
+        [ProducesResponseType(typeof(ApiResponsePaginated<ResponsePackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetList(Guid? deliverId, Guid? senderId, string? status, int pageIndex = 0, int pageSize = 20)
         {
             try
             {
                 ApiResponsePaginated<ResponsePackageModel> response = await _packageService.GetFilter(deliverId, senderId, status, pageIndex, pageSize);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -36,38 +33,15 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
-        /*[HttpGet("all")]
-        [SwaggerOperation(Summary = "Get all package")]
-        public async Task<ActionResult<ApiResponse<List<ResponsePackageModel>>>> GetAll(Guid shipperId, Guid shopId, string? status)
-        {
-            try
-            {
-                ApiResponse<List<ResponsePackageModel>> response = await _packageService.GetAll(shipperId, shopId, status);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Get list package exception : " + ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
-*/
         [HttpGet("{id}")]
-        public async Task<ActionResult<ActionResult<ApiResponse<ResponsePackageModel>>>> GetId(Guid id)
+        [SwaggerOperation(Summary = "Get package by id")]
+        [ProducesResponseType(typeof(ApiResponse<ResponsePackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetId(Guid id)
         {
             try
             {
                 ApiResponse<ResponsePackageModel> response = await _packageService.GetById(id);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -78,16 +52,13 @@ namespace ship_convenient.Controllers
 
         [HttpPost]
         [SwaggerOperation(Summary = "Create pakage")]
-        public async Task<ActionResult<ApiResponse<ResponsePackageModel>>> Create(CreatePackageModel model)
+        [ProducesResponseType(typeof(ApiResponse<ResponsePackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Create(CreatePackageModel model)
         {
             try
             {
                 ApiResponse<ResponsePackageModel> response = await _packageService.Create(model);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -98,16 +69,13 @@ namespace ship_convenient.Controllers
 
         [HttpGet("combos")]
         [SwaggerOperation(Summary = "Get suggest combos")]
-        public async Task<ActionResult<ApiResponsePaginated<ResponseComboPackageModel>>> SuggestCombo(Guid deliverId, int pageIndex = 0, int pageSize = 20)
+        [ProducesResponseType(typeof(ApiResponsePaginated<ResponseComboPackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SuggestCombo(Guid deliverId, int pageIndex = 0, int pageSize = 20)
         {
             try
             {
                 ApiResponsePaginated<ResponseComboPackageModel> response = await _packageService.SuggestCombo(deliverId, pageIndex, pageSize);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (HttpRequestException ex)
             {
@@ -123,16 +91,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("approve")]
         [SwaggerOperation(Summary = "Approved pakage from status waiting")]
-        public async Task<ActionResult<ApiResponse>> ApprovedPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ApprovedPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.ApprovedPackage(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -143,16 +108,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("reject")]
         [SwaggerOperation(Summary = "Reject pakage from status waiting")]
-        public async Task<ActionResult<ApiResponse>> RejectPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RejectPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.RejectPackage(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -163,17 +125,14 @@ namespace ship_convenient.Controllers
 
         [HttpPut("deliver-pickup")]
         [SwaggerOperation(Summary = "Shipper pickup a package")]
-        public async Task<ActionResult<ApiResponse>> PickupPackage(ShipperPickUpModel model)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PickupPackage(ShipperPickUpModel model)
         {
             try
             {
                 ApiResponse response = await _packageService.DeliverPickupPackages(model.deliverId,
                     model.packageIds);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -184,16 +143,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("sender-cancel")]
         [SwaggerOperation(Summary = "Sender cancel package")]
-        public async Task<ActionResult<ApiResponse>> ShopCancelPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ShopCancelPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.SenderCancelPackage(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -205,17 +161,14 @@ namespace ship_convenient.Controllers
 
         [HttpPut("deliver-confirm-packages")]
         [SwaggerOperation(Summary = "Deliver confirms packages and then delivery them")]
-        public async Task<ActionResult<ApiResponseListError>> DeliverConfirmPackage(DeliverConfirmPackagesModel model)
+        [ProducesResponseType(typeof(ActionResult<ApiResponseListError>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeliverConfirmPackage(DeliverConfirmPackagesModel model)
         {
             try
             {
                 ApiResponseListError response = await _packageService.DeliverConfirmPackages(
                     model.packageIds, model.deliverId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -226,16 +179,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("delivery-failed")]
         [SwaggerOperation(Summary = "Shipper delivery failed package")]
-        public async Task<ActionResult<ApiResponse>> DeliverDeliveryFailedPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeliverDeliveryFailedPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.DeliveryFailed(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -246,16 +196,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("delivery-success")]
         [SwaggerOperation(Summary = "Shipper delivery success pakage")]
-        public async Task<ActionResult<ApiResponse>> DeliverDeliverySuccessPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeliverDeliverySuccessPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.DeliverDeliverySuccess(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -266,16 +213,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("sender-confirm-delivery-success")]
         [SwaggerOperation(Summary = "Sender confirm delivery success")]
-        public async Task<ActionResult<ApiResponse>> SenderConfirmDeliverySuccessPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SenderConfirmDeliverySuccessPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.SenderConfirmDeliverySuccess(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -286,16 +230,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("refund-success")]
         [SwaggerOperation(Summary = "Deliver refund package for sender success")]
-        public async Task<ActionResult<ApiResponse>> RefundSuccessPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RefundSuccessPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.RefundSuccess(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {
@@ -306,16 +247,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("refund-failed")]
         [SwaggerOperation(Summary = "Deliver refund package for sender failed")]
-        public async Task<ActionResult<ApiResponse>> RefundFailedPackage(Guid packageId)
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> RefundFailedPackage(Guid packageId)
         {
             try
             {
                 ApiResponse response = await _packageService.RefundFailed(packageId);
-                if (response.Success == false)
-                {
-                    return BadRequest(response);
-                }
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {

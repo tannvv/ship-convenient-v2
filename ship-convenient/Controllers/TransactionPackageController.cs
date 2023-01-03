@@ -6,6 +6,7 @@ using ship_convenient.Services.TransactionPackageService;
 
 namespace ship_convenient.Controllers
 {
+    [Route("api/v1.0/transactions-package")]
     public class TransactionPackageController : BaseApiController
     {
         private readonly ITransactionPackageService _transactionPackageService;
@@ -19,11 +20,7 @@ namespace ship_convenient.Controllers
         public async Task<IActionResult> GetHistoryPackage(Guid packageId, int pageIndex = 0, int pageSize = 20)
         {
             ApiResponsePaginated<ResponseTransactionPackageModel> response = await _transactionPackageService.GetHistoryPackage(packageId, pageIndex, pageSize);
-            if (response.Success == false)
-            {
-                return BadRequest(response);
-            }
-            return Ok(response);
+            return SendResponse(response);
         }
     }
 

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ship_convenient.Core.Context;
 
@@ -11,9 +12,10 @@ using ship_convenient.Core.Context;
 namespace ship_convenient.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230103133521_initdb2")]
+    partial class initdb2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,9 +58,6 @@ namespace ship_convenient.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("InfoUserId")
-                        .IsUnique();
 
                     b.HasIndex("UserName")
                         .IsUnique();
@@ -157,6 +156,9 @@ namespace ship_convenient.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId")
+                        .IsUnique();
 
                     b.HasIndex("Email")
                         .IsUnique();
@@ -455,15 +457,15 @@ namespace ship_convenient.Migrations
                     b.ToTable("Vehicle", (string)null);
                 });
 
-            modelBuilder.Entity("ship_convenient.Entities.Account", b =>
+            modelBuilder.Entity("ship_convenient.Entities.InfoUser", b =>
                 {
-                    b.HasOne("ship_convenient.Entities.InfoUser", "InfoUser")
-                        .WithOne("Account")
-                        .HasForeignKey("ship_convenient.Entities.Account", "InfoUserId")
+                    b.HasOne("ship_convenient.Entities.Account", "Account")
+                        .WithOne("InfoUser")
+                        .HasForeignKey("ship_convenient.Entities.InfoUser", "AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("InfoUser");
+                    b.Navigation("Account");
                 });
 
             modelBuilder.Entity("ship_convenient.Entities.Notification", b =>
@@ -566,6 +568,8 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Account", b =>
                 {
+                    b.Navigation("InfoUser");
+
                     b.Navigation("Notifications");
 
                     b.Navigation("PackageDelivers");
@@ -582,8 +586,6 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.InfoUser", b =>
                 {
-                    b.Navigation("Account");
-
                     b.Navigation("Routes");
 
                     b.Navigation("Vehicles");

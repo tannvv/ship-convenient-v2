@@ -87,5 +87,57 @@ namespace ship_convenient.Services.AccountService
         {
             throw new NotImplementedException();
         }
+
+        public async Task<ApiResponse<ResponseAccountModel>> Update(UpdateAccountModel model)
+        {
+            ApiResponse<ResponseAccountModel> response = new();
+            Account? account = await _accountRepo.FirstOrDefaultAsync(
+                predicate: (ac) => ac.Id == model.Id, disableTracking: false);
+            #region verify params
+            if (account == null) {
+                response.ToFailedResponse("Không tìm thấy tài khoản");
+                return response;
+            }
+            #endregion
+            account.Password = model.Password;
+            account.Status = model.Status;
+            account.Balance = model.Balance;
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0) {
+                response.ToSuccessResponse(account.ToResponseModel(), "Cập nhật thông tin thành công");
+            }
+            else
+            {
+                response.ToFailedResponse("Có lỗi xảy ra");
+            }
+            return response;
+        }
+
+        public async Task<ApiResponse<ResponseAccountModel>> UpdateInfo(UpdateInfoModel model)
+        {
+            ApiResponse<ResponseAccountModel> response = new();
+            Account? account = await _accountRepo.FirstOrDefaultAsync(
+                predicate: (ac) => ac.Id == model.AccountId,
+                include: (source) => source.Include(ac => ac.InfoUser)
+                , disableTracking: false);
+            #region verify params
+            if (account == null)
+            {
+                response.ToFailedResponse("Không tìm thấy tài khoản");
+                return response;
+            }
+            #endregion
+            model.UpdateEntity(account);
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                response.ToSuccessResponse(account.ToResponseModel(), "Cập nhật thông tin thành công");
+            }
+            else
+            {
+                response.ToFailedResponse("Có lỗi xảy ra");
+            }
+            return response;
+        }
     }
 }

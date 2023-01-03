@@ -8,7 +8,7 @@ namespace ship_convenient.Controllers
     [ApiController]
     public class BaseApiController : ControllerBase
     {
-        protected IActionResult SendResponse(ApiResponse response)
+        protected IActionResult SendResponse<T>(T response) where T : ApiResponse
         {
             if (response.Success == false)
             {
@@ -16,5 +16,33 @@ namespace ship_convenient.Controllers
             }
             return Ok(response);
         }
+        
+        protected IActionResult SendResponse<T>(ApiResponse<T> response) where T : class
+        {
+            if (response.Success == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        protected IActionResult SendResponse<T>(ApiResponsePaginated<T> response) where T : class
+        {
+            if (response.Success == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
+        protected IActionResult SendResponse(ApiResponseListError response)
+        {
+            if (response.Success == false)
+            {
+                return BadRequest(response);
+            }
+            return Ok(response);
+        }
+
     }
 }

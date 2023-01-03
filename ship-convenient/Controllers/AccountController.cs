@@ -17,6 +17,7 @@ namespace ship_convenient.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetId(Guid id)
         {
             try
@@ -36,6 +37,7 @@ namespace ship_convenient.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Create(CreateAccountModel model)
         {
             try
@@ -52,5 +54,36 @@ namespace ship_convenient.Controllers
             }
         }
 
+        [HttpPut]
+        [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Update(UpdateAccountModel model)
+        {
+            try
+            {
+                ApiResponse<ResponseAccountModel> response = await _accountService.Update(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Update account exception : " + ex.Message.Substring(0, 300));
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPut("info")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateInfo(UpdateInfoModel model)
+        {
+            try
+            {
+                ApiResponse<ResponseAccountModel> response = await _accountService.UpdateInfo(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Update account info exception : " + ex.Message.Substring(0, 300));
+                return BadRequest(ex);
+            }
+        }
     }
 }

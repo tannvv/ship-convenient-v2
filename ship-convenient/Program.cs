@@ -19,6 +19,7 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.AddDIService();
 builder.Services.AddCorsApp();
 builder.Services.AddSwaggerApp();
+builder.Services.AddHTTPLogingExtension();
 // builder.Services.AddFirebaseApp();
 #endregion
 
@@ -27,8 +28,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
     app.UseSwagger();
     app.UseSwaggerUI();
-app.UseHttpsRedirection();
-
+app.UseHttpLogging();
+// app.UseHttpsRedirection(); 
 app.UseCors();
 
 app.UseAuthorization();

@@ -11,6 +11,7 @@ namespace ship_convenient.Config
                 c.EnableAnnotations();
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Convenient way", Version = "v1" });
             });
+         
         }
     }
 }
