@@ -16,6 +16,7 @@ namespace ship_convenient.Services.DatabaseService
         private readonly IUnitOfWork _unitOfWork;
         private readonly IProductRepository _productRepo;
         private readonly IAccountRepository _accountRepo;
+        private readonly IInfoUserRepository _infoUserRepo;
         private readonly IPackageRepository _packageRepo;
         private readonly IConfigRepository _configRepo;
         public DatabaseService(ILogger<DatabaseService> logger, IUnitOfWork unitOfWork)
@@ -26,12 +27,14 @@ namespace ship_convenient.Services.DatabaseService
             _packageRepo = unitOfWork.Packages;
             _accountRepo = unitOfWork.Accounts;
             _configRepo = unitOfWork.Configs;
+            _infoUserRepo = unitOfWork.InfoUsers;
         }
         public void RemoveData()
         {
             _unitOfWork.Configs.DeleteRange(_configRepo.GetAll());
             _unitOfWork.Products.DeleteRange(_productRepo.GetAll());
             _unitOfWork.Packages.DeleteRange(_packageRepo.GetAll());
+            _unitOfWork.InfoUsers.DeleteRange(_infoUserRepo.GetAll());
             _unitOfWork.Accounts.DeleteRange(_accountRepo.GetAll());
             _unitOfWork.Complete();
         }
