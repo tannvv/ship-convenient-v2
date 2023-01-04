@@ -9,6 +9,7 @@ namespace ship_convenient.Services.AccountService
         Task<ApiResponse<ResponseAccountModel>> Update(UpdateAccountModel model);
         Task<ApiResponse<ResponseAccountModel>> UpdateInfo(UpdateInfoModel model);
         Task<ApiResponse<ResponseAccountModel>> GetId(Guid id);
-        Task<PaginatedList<ResponseAccountModel>> GetList(int pageIndex, int pageSize);
+        Task<ApiResponsePaginated<ResponseAccountModel>> GetList(string? userName, string? status, int pageIndex, int pageSize);
+        
     }
 }

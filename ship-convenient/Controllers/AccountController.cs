@@ -15,6 +15,22 @@ namespace ship_convenient.Controllers
             _accountService = accountService;
             _logger = logger;
         }
+        
+        [HttpGet]
+        public async Task<IActionResult> GetList(string? userName, string? status, int pageIndex =0, int pageSize = 20)
+        {
+            try
+            {
+                ApiResponsePaginated<ResponseAccountModel> response = await _accountService.GetList(userName, status, pageIndex, pageSize);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return BadRequest(ex);
+            }
+        }
+
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]

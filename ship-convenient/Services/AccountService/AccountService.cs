@@ -8,6 +8,7 @@ using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Model.UserModel;
 using ship_convenient.Services.GenericService;
+using System.Linq.Expressions;
 
 namespace ship_convenient.Services.AccountService
 {
@@ -83,9 +84,45 @@ namespace ship_convenient.Services.AccountService
             return response;
         }
 
-        public Task<PaginatedList<ResponseAccountModel>> GetList(int pageIndex, int pageSize)
+        public async Task<ApiResponsePaginated<ResponseAccountModel>> 
+            GetList(string? userName, string? status, int pageIndex, int pageSize)
         {
-            throw new NotImplementedException();
+            ApiResponsePaginated<ResponseAccountModel> response = new();
+            #region Verify params
+            if (pageIndex < 0 || pageSize < 1)
+            {
+                response.ToFailedResponse("Thông tin phân trang không hợp lệ");
+                return await Task.FromResult(response);
+            }
+            #endregion
+            #region Includable
+            Func<IQueryable<Account>, IIncludableQueryable<Account, object?>> include =
+                (source) => source.Include(ac => ac.InfoUser);
+            #endregion
+            #region Predicates
+            List<Expression<Func<Account, bool>>> predicates = new();
+            if (!string.IsNullOrEmpty(userName))
+            {
+                Expression<Func<Account, bool>> predicateUserName = (ac) => ac.UserName.Contains(userName);
+                predicates.Add(predicateUserName);
+            }
+            if (!string.IsNullOrEmpty(status))
+            {
+                Expression<Func<Account, bool>> predicateStatus = (ac) => ac.UserName == userName;
+                predicates.Add(predicateStatus);
+            }
+            #endregion
+            #region Order
+            Func<IQueryable<Transaction>, IOrderedQueryable<Transaction>> orderBy = (source) => source.OrderByDescending(tr => tr.CreatedAt);
+            #endregion
+            #region Selector
+            Expression<Func<Account, ResponseAccountModel>> selector = (tran) => tran.ToResponseModel();
+            #endregion
+            PaginatedList<ResponseAccountModel> result = await _accountRepo.GetPagedListAsync<ResponseAccountModel>(
+                include: include,
+                predicates: predicates, selector: selector);
+            response.ToSuccessResponse(result,"Lấy thông tin thành công");
+            return response;
         }
 
         public async Task<ApiResponse<ResponseAccountModel>> Update(UpdateAccountModel model)
