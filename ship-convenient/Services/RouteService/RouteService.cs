@@ -14,30 +14,32 @@ namespace ship_convenient.Services.RouteService
     {
         private readonly IRouteRepository _routeRepo;
         private readonly IInfoUserRepository _infoUserRepo;
+        private readonly IAccountRepository _accountRepo;
         public RouteService(ILogger<RouteService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
             _routeRepo = unitOfWork.Routes;
             _infoUserRepo = unitOfWork.InfoUsers;
+            _accountRepo = unitOfWork.Accounts;
         }
 
         public async Task<ApiResponse<ResponseRouteModel>> Create(CreateRouteModel model)
         {
             ApiResponse<ResponseRouteModel> response = new ApiResponse<ResponseRouteModel>();
-            InfoUser? infoUser = await _infoUserRepo.FirstOrDefaultAsync(
-                predicate: (i) => i.AccountId == model.AccountId, disableTracking: false, include: (en) => en.Include(info => info.Account));
+            Account? account = await _accountRepo.FirstOrDefaultAsync(
+                predicate: (i) => i.Id == model.AccountId, disableTracking: false, include: (en) => en.Include(info => info.InfoUser));
 
             #region verify params
-            if (infoUser == null) {
+            if (account == null) {
                 response.ToFailedResponse("Thông tin người dùng không tồn tại");
                 return response;
             }
             #endregion
-            Route route = model.ConvertToEntity(infoUser!.Id);
-            if (infoUser?.Account?.Status == AccountStatus.NO_ROUTE)
+            Route route = model.ConvertToEntity(account.InfoUser!.Id);
+            if (account.Status == AccountStatus.NO_ROUTE)
             {
                 route.IsActive = true;
                 await _routeRepo.InsertAsync(route);
-                infoUser.Account.Status = AccountStatus.ACTIVE;
+                account.Status = AccountStatus.ACTIVE;
             }
             else
             {
