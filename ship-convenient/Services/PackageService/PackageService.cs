@@ -936,22 +936,34 @@ namespace ship_convenient.Services.PackageService
             List<ResponseComboPackageModel> combos = new List<ResponseComboPackageModel>();
             foreach (Guid senderId in senderIds)
             {
-                ResponseComboPackageModel combo = new ResponseComboPackageModel();
-                combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
-                    include: (source) => source.Include(acc => acc.InfoUser)
-                        .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
-                combo.Packages = packagesValid.Where(p => p.SenderId == senderId).ToList();
-                int comboPrice = 0;
-                foreach (ResponsePackageModel pac in combo.Packages)
-                {
-                    foreach (ResponseProductModel pr in pac.Products)
-                    {
-                        comboPrice += pr.Price;
+                List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
+                List<CoordinateApp> coordStartSame = new();
+                foreach (ResponsePackageModel package in packagesWithSender) {
+                    if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
+                    co.Longitude == package.StartLongitude) == null) {
+                        coordStartSame.Add(new CoordinateApp(package.StartLongitude, package.StartLatitude));
                     }
                 }
-                combo.ComboPrice = comboPrice;
-                _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
-                combos.Add(combo);
+                for (int i = 0; i < coordStartSame.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = packagesWithSender.Where(p => p.StartLongitude == coordStartSame[i].Longitude && p.StartLatitude == coordStartSame[i].Latitude).ToList();
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                    combos.Add(combo);
+                }
+              
             }
             PaginatedList<ResponseComboPackageModel> responseList = await combos.ToPaginatedListAsync(pageIndex, pageSize);
             response.SetData(responseList);
