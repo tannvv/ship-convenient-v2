@@ -126,7 +126,7 @@ namespace ship_convenient.Services.DatabaseService
             };
             await _configRepo.InsertAsync(configApps);
 
-            /*Faker<Package> FakerPackage = new Faker<Package>()
+            Faker<Package> FakerPackage = new Faker<Package>()
                 .RuleFor(o => o.StartAddress, faker => faker.Address.FullAddress())
                 .RuleFor(o => o.StartLongitude, faker => faker.Random.Double(min: minLongitude, max: maxLongitude))
                 .RuleFor(o => o.StartLatitude, faker => faker.Random.Double(min: minLatitude, max: maxLatitude))
@@ -156,7 +156,7 @@ namespace ship_convenient.Services.DatabaseService
             }
 
             _logger.LogInformation("Insert orders");
-            await _packageRepo.InsertAsync(packages);*/
+            await _packageRepo.InsertAsync(packages);
 
             _unitOfWork.Complete();
         }

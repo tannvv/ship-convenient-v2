@@ -144,7 +144,7 @@ namespace ship_convenient.Controllers
         [HttpPut("sender-cancel")]
         [SwaggerOperation(Summary = "Sender cancel package")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> ShopCancelPackage(Guid packageId)
+        public async Task<IActionResult> SenderCancelPackage(Guid packageId)
         {
             try
             {
@@ -154,6 +154,22 @@ namespace ship_convenient.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("Shop cancel package exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+        [HttpPut("deliver-cancel")]
+        [SwaggerOperation(Summary = "Sender cancel package")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeliverCancelPackage(Guid packageId)
+        {
+            try
+            {
+                ApiResponse response = await _packageService.DeliverCancelPackage(packageId);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Deliver cancel package exception : " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }
