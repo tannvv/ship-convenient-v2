@@ -451,7 +451,7 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponse> DeliverCancelPackage(Guid packageId)
+        public async Task<ApiResponse> DeliverCancelPackage(Guid packageId, string? reason)
         {
             ApiResponse response = new ApiResponse();
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
@@ -473,6 +473,7 @@ namespace ship_convenient.Services.PackageService
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.DELIVER_CANCEL;
             history.Description = "Đơn hàng đã bị người tạo hủy vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Reason = reason;
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
@@ -728,7 +729,7 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponse> SenderCancelPackage(Guid packageId)
+        public async Task<ApiResponse> SenderCancelPackage(Guid packageId, string? reason)
         {
             ApiResponse response = new ApiResponse();
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
@@ -750,6 +751,7 @@ namespace ship_convenient.Services.PackageService
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.SENDER_CANCEL;
             history.Description = "Đơn hàng đã bị shop hủy vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Reason = reason;
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             #endregion

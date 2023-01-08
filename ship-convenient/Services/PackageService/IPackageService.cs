@@ -12,8 +12,8 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponse> ApprovedPackage(Guid id);
         Task<ApiResponse> RejectPackage(Guid id);
         Task<ApiResponse> DeliverPickupPackages(Guid deliverId, List<Guid> packageIds);
-        Task<ApiResponse> SenderCancelPackage(Guid packageId);
-        Task<ApiResponse> DeliverCancelPackage(Guid packageId);
+        Task<ApiResponse> SenderCancelPackage(Guid packageId, string? reason);
+        Task<ApiResponse> DeliverCancelPackage(Guid packageId, string? reason);
         Task<ApiResponseListError> DeliverConfirmPackages(List<Guid> packageIds, Guid deliverId);
         Task<ApiResponse> DeliverDeliverySuccess(Guid packageId);
         Task<ApiResponse> DeliveryFailed(Guid packageId);

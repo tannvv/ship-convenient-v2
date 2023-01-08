@@ -7,6 +7,7 @@ namespace ship_convenient.Entities
         public string FromStatus { get; set; } = string.Empty;
         public string ToStatus { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string? Reason { get; set; }
         public DateTime CreatedAt { get; set; }
 
         #region Relationship
@@ -20,6 +21,7 @@ namespace ship_convenient.Entities
             model.FromStatus = this.FromStatus;
             model.ToStatus = this.ToStatus;
             model.Description = this.Description;
+            model.Reason = this.Reason;
             model.PackageId = this.PackageId;
             model.CreatedAt = this.CreatedAt;
             return model;

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ship_convenient.Core.CoreModel;
+using ship_convenient.Model.PackageModel;
 using ship_convenient.Services.PackageService;
 using Swashbuckle.AspNetCore.Annotations;
 using unitofwork_core.Model.PackageModel;
@@ -144,11 +145,11 @@ namespace ship_convenient.Controllers
         [HttpPut("sender-cancel")]
         [SwaggerOperation(Summary = "Sender cancel package")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> SenderCancelPackage(Guid packageId)
+        public async Task<IActionResult> SenderCancelPackage(CancelPackageModel model)
         {
             try
             {
-                ApiResponse response = await _packageService.SenderCancelPackage(packageId);
+                ApiResponse response = await _packageService.SenderCancelPackage(model.PackageId, model.Reason);
                 return SendResponse(response);
             }
             catch (Exception ex)
@@ -160,11 +161,11 @@ namespace ship_convenient.Controllers
         [HttpPut("deliver-cancel")]
         [SwaggerOperation(Summary = "Sender cancel package")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeliverCancelPackage(Guid packageId)
+        public async Task<IActionResult> DeliverCancelPackage(CancelPackageModel model)
         {
             try
             {
-                ApiResponse response = await _packageService.DeliverCancelPackage(packageId);
+                ApiResponse response = await _packageService.DeliverCancelPackage(model.PackageId, model.Reason);
                 return SendResponse(response);
             }
             catch (Exception ex)
