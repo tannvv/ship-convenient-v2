@@ -30,6 +30,7 @@ namespace ship_convenient.Entities
             model.LastName = this.LastName;
             model.Email = this.Email;
             model.Phone = this.Phone;
+            model.PhotoUrl = this.PhotoUrl;
             if (Routes.Count > 0) {
                 Routes.ForEach(route => model.Routes.Add(route.ToResponseModel()));
             }
