@@ -85,7 +85,7 @@ namespace ship_convenient.Services.AccountService
         }
 
         public async Task<ApiResponsePaginated<ResponseAccountModel>> 
-            GetList(string? userName, string? status, int pageIndex, int pageSize)
+            GetList(string? userName, string? status,string? role, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseAccountModel> response = new();
             #region Verify params
@@ -109,6 +109,11 @@ namespace ship_convenient.Services.AccountService
             if (!string.IsNullOrEmpty(status))
             {
                 Expression<Func<Account, bool>> predicateStatus = (ac) => ac.Status == status.ToUpper();
+                predicates.Add(predicateStatus);
+            }
+            if (!string.IsNullOrEmpty(role))
+            {
+                Expression<Func<Account, bool>> predicateStatus = (ac) => ac.Role == role.ToUpper();
                 predicates.Add(predicateStatus);
             }
             #endregion

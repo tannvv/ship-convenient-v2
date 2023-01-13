@@ -18,11 +18,11 @@ namespace ship_convenient.Controllers
         
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponsePaginated<ResponseAccountModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetList(string? userName, string? status, int pageIndex =0, int pageSize = 20)
+        public async Task<IActionResult> GetList(string? userName, string? status,string? role, int pageIndex =0, int pageSize = 20)
         {
             try
             {
-                ApiResponsePaginated<ResponseAccountModel> response = await _accountService.GetList(userName, status, pageIndex, pageSize);
+                ApiResponsePaginated<ResponseAccountModel> response = await _accountService.GetList(userName, status,role, pageIndex, pageSize);
                 return SendResponse(response);
             }
             catch (Exception ex)
