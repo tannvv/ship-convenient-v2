@@ -143,20 +143,43 @@ namespace ship_convenient.Services.DatabaseService
                 .RuleFor(o => o.PriceShip, faker => faker.Random.Int(min: 10, max: 40) * 1000)
                 .RuleFor(o => o.Status, faker => PackageStatus.APPROVED)
                 .RuleFor(o => o.Sender, faker => faker.PickRandom(accounts));
+            List<Package> packages2 = new();
             List<Package> packages = FakerPackage.Generate(300);
             for (int i = 0; i < packages.Count; i++)
             {
+                Faker faker = new Faker();
+                Package packageNew = new Package();
+                packageNew.StartAddress = packages[i].StartAddress;
+                packageNew.StartLongitude = packages[i].StartLongitude;
+                packageNew.StartLatitude = packages[i].StartLatitude;
+                packageNew.DestinationAddress = faker.Person.Address.Street;
+                packageNew.DestinationLatitude = faker.Random.Double(min: minLatitude, max: maxLatitude);
+                packageNew.DestinationLongitude = faker.Random.Double(min: minLongitude, max: maxLongitude);
+                packageNew.Distance = faker.Random.Double(min: 2.5, max: 20);
+                packageNew.ReceiverName = faker.Person.FullName;
+                packageNew.ReceiverPhone = faker.Person.Phone;
+                packageNew.Volume = faker.Random.Double(min: 5, max: 50);
+                packageNew.Weight = faker.Random.Int(5, 20);
+                packageNew.PhotoUrl = packages[i].PhotoUrl;
+                packageNew.Note = faker.Lorem.Sentence(6);
+                packageNew.PriceShip = faker.Random.Int(min: 10, max: 40) * 1000;
+                packageNew.Status = PackageStatus.APPROVED;
+                packageNew.Sender = packages[i].Sender;
 
                 Faker<Product> FakerProduct = new Faker<Product>()
                        .RuleFor(p => p.Name, faker => faker.Lorem.Letter(2))
                        .RuleFor(p => p.Price, faker => faker.Random.Int(100, 200) * 1000)
                        .RuleFor(p => p.Description, faker => faker.Lorem.Sentence(1));
                 List<Product> products = FakerProduct.Generate(2);
+                List<Product> products2 = FakerProduct.Generate(2);
+                packageNew.Products = products2;
+                packages2.Add(packageNew);
                 packages[i].Products = products;
             }
 
             _logger.LogInformation("Insert orders");
             await _packageRepo.InsertAsync(packages);
+            await _packageRepo.InsertAsync(packages2);
 
             _unitOfWork.Complete();
         }

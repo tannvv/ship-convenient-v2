@@ -108,7 +108,7 @@ namespace ship_convenient.Services.AccountService
             }
             if (!string.IsNullOrEmpty(status))
             {
-                Expression<Func<Account, bool>> predicateStatus = (ac) => ac.UserName == userName;
+                Expression<Func<Account, bool>> predicateStatus = (ac) => ac.Status == status.ToUpper();
                 predicates.Add(predicateStatus);
             }
             #endregion
@@ -118,10 +118,10 @@ namespace ship_convenient.Services.AccountService
             #region Selector
             Expression<Func<Account, ResponseAccountModel>> selector = (tran) => tran.ToResponseModel();
             #endregion
-            PaginatedList<ResponseAccountModel> result = await _accountRepo.GetPagedListAsync<ResponseAccountModel>(
+            PaginatedList<ResponseAccountModel> result = await _accountRepo.GetPagedListAsync(
                 include: include,
-                predicates: predicates, selector: selector);
-            response.ToSuccessResponse(result,"Lấy thông tin thành công");
+                predicates: predicates, selector: selector, pageIndex: pageIndex, pageSize: pageSize);
+            response.SetData(result, "Lấy thông tin thành công");
             return response;
         }
 

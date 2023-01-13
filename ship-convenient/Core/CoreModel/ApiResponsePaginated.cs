@@ -35,6 +35,8 @@
             Paginated.TotalPage = items.TotalPage;
             Data = items;
         }
+        
+       
     }
 
     public class Paginated
