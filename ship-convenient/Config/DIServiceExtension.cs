@@ -9,6 +9,7 @@ using ship_convenient.Services.PackageService;
 using ship_convenient.Services.RouteService;
 using ship_convenient.Services.TransactionPackageService;
 using ship_convenient.Services.TransactionService;
+using ship_convenient.Services.VnPayService;
 
 namespace ship_convenient.Config
 {
@@ -26,6 +27,7 @@ namespace ship_convenient.Config
             services.AddTransient<IPackageService, PackageService>();
             services.AddTransient<ITransactionPackageService, TransactionPackageService>();
             services.AddTransient<ITransactionService, TransactionService>();
+            services.AddScoped<IVnPayService, VnPayService>();
         }
     }
 }
