@@ -10,6 +10,7 @@ using ship_convenient.Services.VnPayService;
 
 namespace ship_convenient.Controllers
 {
+    [Route("api/v1.0/[controller]")]
     public class VnPayController : BaseApiController
     {
         private readonly IConfiguration _configuration;
