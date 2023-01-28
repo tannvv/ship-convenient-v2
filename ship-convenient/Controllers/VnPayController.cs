@@ -110,6 +110,17 @@ namespace ship_convenient.Controllers
                         await _transRepo.InsertAsync(transaction);
                         await _unitOfWork.CompleteAsync();
                     }
+                    else {
+                        Transaction transaction = new Transaction
+                        {
+                            CoinExchange = (int)Math.Round(vnp_Amount / 1000),
+                            TransactionType = "RECHARGE",
+                            Status = "FAILED",
+                            Description = "Nạp tiền thất bại từ ví điện tử VNPAY",
+                            AccountId = accountId,
+                            BalanceWallet = account != null ? account.Balance : 0,
+                        };
+                    }
 
                     return Redirect(returnUrl + "?amount=" + amount + "&status=" + status);
                 }

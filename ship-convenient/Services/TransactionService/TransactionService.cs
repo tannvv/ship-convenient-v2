@@ -19,6 +19,21 @@ namespace ship_convenient.Services.TransactionService
             _accountRepo = unitOfWork.Accounts;
         }
 
+        public async Task<ApiResponse<ResponseTransactionModel>> GetId(Guid id)
+        {
+            ApiResponse<ResponseTransactionModel> response = new();
+            Transaction? tran = await _transactionRepo.GetByIdAsync(id);
+            if (tran == null)
+            {
+                response.ToFailedResponse("Không tìm thấy giao dịch");
+            }
+            else
+            {
+                response.ToSuccessResponse(tran.ToResponseModel(), "Lấy thông tin thành công");
+            }
+            return response;
+        }
+
         public async Task<ApiResponsePaginated<ResponseTransactionModel>> GetTransactions(Guid accountId, DateTime? from, DateTime? to, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseTransactionModel> response = new ApiResponsePaginated<ResponseTransactionModel>();

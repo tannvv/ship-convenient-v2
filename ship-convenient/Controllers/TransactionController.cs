@@ -21,5 +21,13 @@ namespace ship_convenient.Controllers
             ApiResponsePaginated<ResponseTransactionModel> response = await _transactionService.GetTransactions(accountId, from, to, pageIndex, pageSize);
             return SendResponse(response);
         }
+
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseTransactionModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetId(Guid id)
+        {
+            ApiResponse<ResponseTransactionModel> response = await _transactionService.GetId(id);
+            return SendResponse(response);
+        }
     }
 }
