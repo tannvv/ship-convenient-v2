@@ -20,6 +20,7 @@ namespace ship_convenient.Entities
         public List<Package> PackageSenders { get; set; }
         public List<Package> PackageDelivers { get; set; }
         public List<Transaction> Transactions { get; set; }
+        public List<Deposit> Deposits { get; set; }
         #endregion
 
         public Account()
@@ -28,6 +29,7 @@ namespace ship_convenient.Entities
             PackageSenders = new List<Package>();
             PackageDelivers = new List<Package>();
             Transactions = new List<Transaction>();
+            Deposits = new List<Deposit>();
         }
 
         public ResponseAccountModel ToResponseModel()

@@ -16,6 +16,7 @@ namespace ship_convenient.Core.UnitOfWork
         IRouteRepository Routes { get; }
         ITransactionPackageRepository TransactionPackages { get; }
         IVehicleRepository Vehicles { get; }
+        IDepositRepository Deposits { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

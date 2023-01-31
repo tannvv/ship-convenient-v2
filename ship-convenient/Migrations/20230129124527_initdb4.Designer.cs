@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ship_convenient.Core.Context;
 
@@ -11,9 +12,10 @@ using ship_convenient.Core.Context;
 namespace ship_convenient.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230129124527_initdb4")]
+    partial class initdb4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,20 +107,11 @@ namespace ship_convenient.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<DateTime>("ModifiedAt")
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
-
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TransactionIdPartner")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -412,9 +405,6 @@ namespace ship_convenient.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<Guid?>("DepositId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -433,8 +423,6 @@ namespace ship_convenient.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
-
-                    b.HasIndex("DepositId");
 
                     b.HasIndex("PackageId");
 
@@ -592,18 +580,12 @@ namespace ship_convenient.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ship_convenient.Entities.Deposit", "Deposit")
-                        .WithMany("Transactions")
-                        .HasForeignKey("DepositId");
-
                     b.HasOne("ship_convenient.Entities.Package", "Package")
                         .WithMany("Transactions")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Account");
-
-                    b.Navigation("Deposit");
 
                     b.Navigation("Package");
                 });
@@ -642,11 +624,6 @@ namespace ship_convenient.Migrations
 
                     b.Navigation("PackageSenders");
 
-                    b.Navigation("Transactions");
-                });
-
-            modelBuilder.Entity("ship_convenient.Entities.Deposit", b =>
-                {
                     b.Navigation("Transactions");
                 });
 

@@ -14,7 +14,8 @@ namespace ship_convenient.Entities
         #region Relationship
         public Guid AccountId { get; set; }
         public Account? Account { get; set; }
-
+        public Guid? DepositId { get; set; }
+        public Deposit? Deposit { get; set; }
         public Guid? PackageId { get; set; }
         public Package? Package { get; set; }
         #endregion

@@ -3,6 +3,7 @@ using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Services.AccountService;
 using ship_convenient.Services.AuthorizeService;
 using ship_convenient.Services.DatabaseService;
+using ship_convenient.Services.DepositService;
 using ship_convenient.Services.GoongService;
 using ship_convenient.Services.MapboxService;
 using ship_convenient.Services.PackageService;
@@ -28,6 +29,7 @@ namespace ship_convenient.Config
             services.AddTransient<ITransactionPackageService, TransactionPackageService>();
             services.AddTransient<ITransactionService, TransactionService>();
             services.AddScoped<IVnPayService, VnPayService>();
+            services.AddTransient<IDepositService, DepositService>();
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ship_convenient.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IAccountRepository _accountRepo;
         private readonly ITransactionRepository _transRepo;
-
+        private readonly IDepositRepository _depositRepo;
         public VnPayController(IConfiguration configuration, IVnPayService vnPayService, IAccountService accountService, IUnitOfWork unitOfWork)
         {
             _configuration = configuration;
@@ -28,6 +28,7 @@ namespace ship_convenient.Controllers
             _unitOfWork = unitOfWork;
             _accountRepo = unitOfWork.Accounts;
             _transRepo = unitOfWork.Transactions;
+            _depositRepo = unitOfWork.Deposits;
         }
 
         [HttpGet]
@@ -48,7 +49,7 @@ namespace ship_convenient.Controllers
             _vnPayService.AddRequest("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
             _vnPayService.AddRequest("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
             _vnPayService.AddRequest("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
-            _vnPayService.AddRequest("vnp_ExpireDate", DateTime.Now.AddHours(12).ToString("yyyyMMddHHmmss")); //Thời gian kết thúc thanh toán
+            _vnPayService.AddRequest("vnp_ExpireDate", DateTime.Now.AddHours(1).ToString("yyyyMMddHHmmss")); //Thời gian kết thúc thanh toán
             ApiResponse<string> paymentUrl = await _vnPayService.CreateRequestUrl(model);
 
             return SendResponse(paymentUrl);
@@ -83,7 +84,7 @@ namespace ship_convenient.Controllers
                     long orderId = Convert.ToInt64(_vnPayService.GetResponseDataKey("vnp_TxnRef"));
                     float vnp_Amount = Convert.ToInt64(_vnPayService.GetResponseDataKey("vnp_Amount")) / 100;
                     amount = vnp_Amount;
-                    long vnpayTranId = Convert.ToInt64(_vnPayService.GetResponseDataKey("vnp_TransactionNo"));
+                    string vnpayTranId = _vnPayService.GetResponseDataKey("vnp_TransactionNo");
                     string vnp_ResponseCode = _vnPayService.GetResponseDataKey("vnp_ResponseCode");
                     string vnp_TransactionStatus = _vnPayService.GetResponseDataKey("vnp_TransactionStatus");
                     string vnp_SecureHash = Request.Query["vnp_SecureHash"];
@@ -95,33 +96,35 @@ namespace ship_convenient.Controllers
                     if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00" && account != null)
                     {
                         //Thanh toán thành công
-                        account.Balance += (int)Math.Round(vnp_Amount / 100);
-                        // returnContent = returnSuccessUrl;
-                        status = "success";
+                        account.Balance += (int)Math.Round(vnp_Amount);
+                        Deposit deposit = new Deposit();
+                        deposit.AccountId = accountId;
+                        deposit.TransactionIdPartner = vnpayTranId;
+                        deposit.Status = "SUCCESS";
+                        deposit.PaymentMethod = "VNPAY";
+                        deposit.Amount = (int)Math.Round(vnp_Amount);
                         Transaction transaction = new Transaction
                         {
-                            CoinExchange = (int)Math.Round(vnp_Amount / 1000),
+                            CoinExchange = (int)Math.Round(vnp_Amount),
                             TransactionType = "RECHARGE",
                             Status = "SUCCESS",
                             Description = "Nạp tiền thành công từ ví điện tử VNPAY",
                             AccountId = accountId,
                             BalanceWallet = account.Balance,
                         };
-                        await _transRepo.InsertAsync(transaction);
-                        await _unitOfWork.CompleteAsync();
+                        deposit.Transactions.Add(transaction);
+                        await _depositRepo.InsertAsync(deposit);
                     }
                     else {
-                        Transaction transaction = new Transaction
-                        {
-                            CoinExchange = (int)Math.Round(vnp_Amount / 1000),
-                            TransactionType = "RECHARGE",
-                            Status = "FAILED",
-                            Description = "Nạp tiền thất bại từ ví điện tử VNPAY",
-                            AccountId = accountId,
-                            BalanceWallet = account != null ? account.Balance : 0,
-                        };
+                        Deposit deposit = new Deposit();
+                        deposit.AccountId = accountId;
+                        deposit.TransactionIdPartner = vnpayTranId;
+                        deposit.Status = "FAILED";
+                        deposit.PaymentMethod = "VNPAY";
+                        deposit.Amount = (int)Math.Round(vnp_Amount);
+                        await _depositRepo.InsertAsync(deposit);
                     }
-
+                    await _unitOfWork.CompleteAsync();
                     return Redirect(returnUrl + "?amount=" + amount + "&status=" + status);
                 }
 

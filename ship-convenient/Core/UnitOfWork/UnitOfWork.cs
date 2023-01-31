@@ -22,6 +22,7 @@ namespace ship_convenient.Core.UnitOfWork
         public INotificationRepository Notifications { get; private set; }
 
         public IProductRepository Products { get; private set; }
+        public IDepositRepository Deposits { get; private set; }
 
         // public IRoleRepository Roles { get; private set; }
 
@@ -48,6 +49,7 @@ namespace ship_convenient.Core.UnitOfWork
             Routes = new RouteRepository(context, logger);
             TransactionPackages = new TransactionPackageRepository(context, logger);
             Vehicles = new VehicleRepository(context, logger);
+            Deposits = new DepositRepository(context, logger);
         }
 
         public async Task<int> CompleteAsync()
