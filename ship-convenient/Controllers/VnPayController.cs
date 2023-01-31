@@ -63,7 +63,7 @@ namespace ship_convenient.Controllers
                 string returnUrl = _configuration["VnPay:ReturnPath"];
                 float amount = 0;
                 string status = "failed";
-                Guid transationId = Guid.Empty;
+                Guid transationId = Guid.NewGuid();
                 if (Request.Query.Count > 0)
                 {
                     string vnp_HashSecret = _configuration["VnPay:HashSecret"]; //Secret key
@@ -106,6 +106,7 @@ namespace ship_convenient.Controllers
                         deposit.Amount = (int)Math.Round(vnp_Amount);
                         Transaction transaction = new Transaction
                         {
+                            Id = transationId,
                             CoinExchange = (int)Math.Round(vnp_Amount),
                             TransactionType = "RECHARGE",
                             Status = "SUCCESS",
