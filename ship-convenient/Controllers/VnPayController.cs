@@ -63,6 +63,7 @@ namespace ship_convenient.Controllers
                 string returnUrl = _configuration["VnPay:ReturnPath"];
                 float amount = 0;
                 string status = "failed";
+                Guid transationId = Guid.Empty;
                 if (Request.Query.Count > 0)
                 {
                     string vnp_HashSecret = _configuration["VnPay:HashSecret"]; //Secret key
@@ -112,8 +113,10 @@ namespace ship_convenient.Controllers
                             AccountId = accountId,
                             BalanceWallet = account.Balance,
                         };
+                        transationId = transaction.Id;
                         deposit.Transactions.Add(transaction);
                         await _depositRepo.InsertAsync(deposit);
+                        status = "success";
                     }
                     else {
                         Deposit deposit = new Deposit();
@@ -125,7 +128,8 @@ namespace ship_convenient.Controllers
                         await _depositRepo.InsertAsync(deposit);
                     }
                     await _unitOfWork.CompleteAsync();
-                    return Redirect(returnUrl + "?amount=" + amount + "&status=" + status);
+                    return Redirect(returnUrl + "?status=" + status + "&amount=" + amount 
+                            + "&transactionId="+ transationId);
                 }
 
                 return BadRequest("Có lỗi xảy ra!!");
