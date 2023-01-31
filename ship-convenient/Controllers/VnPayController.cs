@@ -129,8 +129,8 @@ namespace ship_convenient.Controllers
                         await _depositRepo.InsertAsync(deposit);
                     }
                     await _unitOfWork.CompleteAsync();
-                    return Redirect(returnUrl + "?status=" + status + "&amount=" + amount 
-                            + "&transactionId="+ transationId);
+                    return Redirect(returnUrl + "?status=" + status + "&amount=" + amount
+                            + "&transactionId=" + transationId + "&createDate=" + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
                 }
 
                 return BadRequest("Có lỗi xảy ra!!");
