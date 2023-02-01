@@ -64,12 +64,12 @@ namespace ship_convenient.Services.AccountService
             }
             return response;
         }
-
+        
         public async Task<ApiResponse<ResponseAccountModel>> GetId(Guid id)
         {
             ApiResponse<ResponseAccountModel> response = new();
             #region Includable
-            Func<IQueryable<Account>, IIncludableQueryable<Account, object?>> include = (acc) => acc.Include(a => a.InfoUser);
+            Func<IQueryable<Account>, IIncludableQueryable<Account, object?>> include = (acc) => acc.Include(a => a.InfoUser).ThenInclude(info => info != null ? info.Routes : null);
             #endregion
             Account? account = await _accountRepo.GetByIdAsync(id: id,
                 include: include);
