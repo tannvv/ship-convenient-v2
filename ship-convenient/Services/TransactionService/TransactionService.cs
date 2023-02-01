@@ -82,7 +82,8 @@ namespace ship_convenient.Services.TransactionService
             Expression<Func<Transaction, ResponseTransactionModel>> selector = (tran) => tran.ToResponseModel();
             #endregion
             PaginatedList<ResponseTransactionModel> result = await _transactionRepo.GetPagedListAsync<ResponseTransactionModel>(
-                predicates: predicates, orderBy: orderBy, selector: selector);
+                predicates: predicates, orderBy: orderBy, selector: selector, 
+                pageIndex: pageIndex, pageSize: pageSize);
             response.SetData(result, "Lấy thông tin thành công");
             return response;
         }
