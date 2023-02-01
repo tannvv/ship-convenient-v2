@@ -34,7 +34,7 @@ namespace ship_convenient.Controllers
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] PaymentVnPayModel model)
         {
-            string returnUrl = _configuration["VnPay:ReturnPathResult"];
+            string returnUrl = _configuration["VnPay:ReturnPath"];
             string tmnCode = _configuration["VnPay:TmnCode"];
 
             _vnPayService.AddRequest("vnp_Version", "2.1.0"); //Phiên bản api mà merchant kết nối. Phiên bản hiện tại là 2.0.0
@@ -60,7 +60,7 @@ namespace ship_convenient.Controllers
         {
             try
             {
-                string returnUrl = _configuration["VnPay:ReturnPath"];
+                string returnUrl = _configuration["VnPay:ReturnPathResult"];
                 float amount = 0;
                 string status = "failed";
                 Guid transationId = Guid.NewGuid();
