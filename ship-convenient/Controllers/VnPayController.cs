@@ -46,7 +46,11 @@ namespace ship_convenient.Controllers
             _vnPayService.AddRequest("vnp_CurrCode", "VND"); //Đơn vị tiền tệ sử dụng thanh toán. Hiện tại chỉ hỗ trợ VND
             _vnPayService.AddRequest("vnp_IpAddr", model.Ip); //Địa chỉ IP của khách hàng thực hiện giao dịch
             _vnPayService.AddRequest("vnp_Locale", "vn"); //Ngôn ngữ giao diện hiển thị - Tiếng Việt (vn), Tiếng Anh (en)
-            _vnPayService.AddRequest("vnp_OrderInfo", model.AccountId.ToString()); //Thông tin mô tả nội dung thanh toán
+            string orderInfo = model.AccountId.ToString();
+            if (model.ReturnUrl != string.Empty) {
+                orderInfo += $"--{model.ReturnUrl}";
+            }
+            _vnPayService.AddRequest("vnp_OrderInfo", orderInfo); //Thông tin mô tả nội dung thanh toán
             _vnPayService.AddRequest("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
             _vnPayService.AddRequest("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
             _vnPayService.AddRequest("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
@@ -91,8 +95,12 @@ namespace ship_convenient.Controllers
                     string vnp_TransactionStatus = _vnPayService.GetResponseDataKey("vnp_TransactionStatus");
                     string vnp_SecureHash = Request.Query["vnp_SecureHash"];
                     bool checkSignature = _vnPayService.ValidateSignature(vnp_SecureHash, vnp_HashSecret);
-                    var vnp_OrderInfo = _vnPayService.GetResponseDataKey("vnp_OrderInfo");
-                    Guid accountId = Guid.Parse(vnp_OrderInfo);
+                    string[] vnp_OrderInfo = _vnPayService.GetResponseDataKey("vnp_OrderInfo").Split("--");
+                    Guid accountId = Guid.Parse(vnp_OrderInfo[0]);
+                    if (vnp_OrderInfo.Length == 2)
+                    {
+                        returnUrl = vnp_OrderInfo[1];
+                    }
                     Account? account = await _accountRepo.GetByIdAsync(accountId, disableTracking: false);
                     //Cap nhat ket qua GD
                     if (vnp_ResponseCode == "00" && vnp_TransactionStatus == "00" && account != null)
