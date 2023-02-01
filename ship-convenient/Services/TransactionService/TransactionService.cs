@@ -6,6 +6,7 @@ using ship_convenient.Entities;
 using ship_convenient.Services.GenericService;
 using System.Linq.Expressions;
 using unitofwork_core.Model.TransactionModel;
+using System;
 
 namespace ship_convenient.Services.TransactionService
 {
@@ -45,15 +46,33 @@ namespace ship_convenient.Services.TransactionService
             }
             #endregion
             #region Predicates
-            List<Expression<Func<Transaction, bool>>> predicates = new ();
-            Expression<Func<Transaction, bool>> predicateAccount = 
-                (trans) => trans.AccountId == accountId;
-            predicates.Add(predicateAccount);
+            List<Expression<Func<Transaction, bool>>> predicates = new();
+            if (accountId != Guid.Empty)
+            {
+                Expression<Func<Transaction, bool>> predicateAccount =
+                    (trans) => trans.AccountId == accountId;
+                predicates.Add(predicateAccount);
+            }
             if (from != null && to != null)
             {
-                Expression<Func<Transaction, bool>> predicateDateTime = (transaction) => transaction.CreatedAt.CompareTo(from) >= 0
-                            && transaction.CreatedAt.CompareTo(to) <= 0;
+                bool isValidDate = from <= to;
+                if (!isValidDate)
+                {
+                    response.ToFailedResponse("Ngày bắt đầu không thể lớn hơn ngày kết thúc");
+                    return response;
+                }
+            }
+            if (from != null)
+            {
+                Expression<Func<Transaction, bool>> predicateDateTime = (transaction) =>
+                    transaction.CreatedAt >= from;
                 predicates.Add(predicateDateTime);
+            }
+            if (to != null)
+            {
+                Expression<Func<Transaction, bool>> predicateDateTime2 = (transaction) =>
+                  transaction.CreatedAt <= to.Value.AddHours(23).AddMinutes(59);
+                predicates.Add(predicateDateTime2);
             }
             #endregion
             #region Order
@@ -64,8 +83,7 @@ namespace ship_convenient.Services.TransactionService
             #endregion
             PaginatedList<ResponseTransactionModel> result = await _transactionRepo.GetPagedListAsync<ResponseTransactionModel>(
                 predicates: predicates, orderBy: orderBy, selector: selector);
-            response.SetData(result);
-            response.ToSuccessResponse("Lấy thông tin thành công");
+            response.SetData(result, "Lấy thông tin thành công");
             return response;
         }
     }

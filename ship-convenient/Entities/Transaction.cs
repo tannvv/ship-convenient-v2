@@ -5,6 +5,7 @@ namespace ship_convenient.Entities
     public class Transaction : BaseEntity
     {
         public string Status { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string TransactionType { get; set; } = string.Empty;
         public int CoinExchange { get; set; }
@@ -23,6 +24,7 @@ namespace ship_convenient.Entities
         public ResponseTransactionModel ToResponseModel()
         {
             ResponseTransactionModel model = new ResponseTransactionModel();
+            model.Title = this.Title;
             model.Status = this.Status;
             model.Description = this.Description;
             model.TransactionType = this.TransactionType;

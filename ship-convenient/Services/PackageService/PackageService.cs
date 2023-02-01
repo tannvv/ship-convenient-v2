@@ -357,6 +357,7 @@ namespace ship_convenient.Services.PackageService
 
             #region Create transactions
             Transaction systemTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.RETURN;
             systemTrans.Description = deliver.Id + " hoàn trả thành công gói hàng với id: " + package.Id;
             systemTrans.Status = TransactionStatus.ACCOMPLISHED;
             systemTrans.TransactionType = TransactionType.REFUND;
@@ -367,6 +368,7 @@ namespace ship_convenient.Services.PackageService
             systemTrans.AccountId = adminBalance.Id;
 
             Transaction deliverTrans = new Transaction();
+            deliverTrans.Title = TransactionTitle.RETURN;
             deliverTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
             deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
             deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
@@ -379,6 +381,7 @@ namespace ship_convenient.Services.PackageService
             deliverTrans.AccountId = deliver.Id;
 
             Transaction senderTrans = new Transaction();
+            senderTrans.Title = TransactionTitle.RETURN;
             senderTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
             senderTrans.Status = TransactionStatus.ACCOMPLISHED;
             senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
@@ -572,7 +575,8 @@ namespace ship_convenient.Services.PackageService
                 _logger.LogInformation("Total price package: " + packagePrice);
                 #region Create transactions
                 Transaction systemTrans = new Transaction();
-                systemTrans.Description = $"Người giao ({deliver!.Id})" + "đã nghận gói hàng với id: " + package.Id;
+                systemTrans.Title = TransactionTitle.RECEIVE;
+                systemTrans.Description = $"Người giao ({deliver!.Id})" + "đã nhận gói hàng với id: " + package.Id;
                 systemTrans.Status = TransactionStatus.ACCOMPLISHED;
                 systemTrans.TransactionType = TransactionType.PICKUP;
                 systemTrans.CoinExchange = totalPriceCombo;
@@ -581,6 +585,7 @@ namespace ship_convenient.Services.PackageService
                 systemTrans.AccountId = adminBalance.Id;
 
                 Transaction deliverTrans = new Transaction();
+                deliverTrans.Title = TransactionTitle.RECEIVE;
                 deliverTrans.Description = "Đã nhận đơn hàng id : " + package.Id;
                 deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
                 deliverTrans.TransactionType = TransactionType.PICKUP;
@@ -816,6 +821,7 @@ namespace ship_convenient.Services.PackageService
 
             #region Create transactions
             Transaction systemTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
             systemTrans.Description = $"({deliver.Id}) giao thành công gói hàng với id: {package.Id}";
             systemTrans.Status = TransactionStatus.ACCOMPLISHED;
             systemTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
@@ -826,6 +832,7 @@ namespace ship_convenient.Services.PackageService
             _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
 
             Transaction deliverTrans = new Transaction();
+            deliverTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
             deliverTrans.Description = "Giao thành công đơn hàng id : " + package.Id;
             deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
             deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
@@ -836,7 +843,8 @@ namespace ship_convenient.Services.PackageService
             _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
 
             Transaction senderTrans = new Transaction();
-            senderTrans.Description = "Giao thành công đơn hàng id : " + package.Id;
+            senderTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
+            senderTrans.Description = "Deliver đẫ giao thành công đơn hàng id : " + package.Id;
             senderTrans.Status = TransactionStatus.ACCOMPLISHED;
             senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
             senderTrans.CoinExchange = -totalPrice - package.PriceShip;
@@ -940,9 +948,11 @@ namespace ship_convenient.Services.PackageService
             {
                 List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
                 List<CoordinateApp> coordStartSame = new();
-                foreach (ResponsePackageModel package in packagesWithSender) {
+                foreach (ResponsePackageModel package in packagesWithSender)
+                {
                     if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
-                    co.Longitude == package.StartLongitude) == null) {
+                    co.Longitude == package.StartLongitude) == null)
+                    {
                         coordStartSame.Add(new CoordinateApp(package.StartLongitude, package.StartLatitude));
                     }
                 }
@@ -965,7 +975,7 @@ namespace ship_convenient.Services.PackageService
                     _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
                     combos.Add(combo);
                 }
-              
+
             }
             PaginatedList<ResponseComboPackageModel> responseList = await combos.ToPaginatedListAsync(pageIndex, pageSize);
             response.SetData(responseList);

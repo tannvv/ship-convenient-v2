@@ -7,6 +7,7 @@ using ship_convenient.Entities;
 using ship_convenient.Model.VnPayModel;
 using ship_convenient.Services.AccountService;
 using ship_convenient.Services.VnPayService;
+using unitofwork_core.Constant.Transaction;
 
 namespace ship_convenient.Controllers
 {
@@ -49,7 +50,7 @@ namespace ship_convenient.Controllers
             _vnPayService.AddRequest("vnp_OrderType", "other"); //topup: Nạp tiền điện thoại - billpayment: Thanh toán hóa đơn - fashion: Thời trang - other: Thanh toán trực tuyến
             _vnPayService.AddRequest("vnp_ReturnUrl", returnUrl); //URL thông báo kết quả giao dịch khi Khách hàng kết thúc thanh toán
             _vnPayService.AddRequest("vnp_TxnRef", DateTime.Now.Ticks.ToString()); //mã hóa đơn
-            _vnPayService.AddRequest("vnp_ExpireDate", DateTime.Now.AddHours(12).ToString("yyyyMMddHHmmss")); //Thời gian kết thúc thanh toán
+            _vnPayService.AddRequest("vnp_ExpireDate", DateTime.Now.AddHours(7).AddMinutes(10).ToString("yyyyMMddHHmmss")); //Thời gian kết thúc thanh toán
             ApiResponse<string> paymentUrl = await _vnPayService.CreateRequestUrl(model);
 
             return SendResponse(paymentUrl);
@@ -63,7 +64,7 @@ namespace ship_convenient.Controllers
                 string returnUrl = _configuration["VnPay:ReturnPathResult"];
                 float amount = 0;
                 string status = "failed";
-                Guid transationId = Guid.NewGuid();
+                Guid transactionId = Guid.NewGuid();
                 if (Request.Query.Count > 0)
                 {
                     string vnp_HashSecret = _configuration["VnPay:HashSecret"]; //Secret key
@@ -106,7 +107,8 @@ namespace ship_convenient.Controllers
                         deposit.Amount = (int)Math.Round(vnp_Amount);
                         Transaction transaction = new Transaction
                         {
-                            Id = transationId,
+                            Id = transactionId,
+                            Title = TransactionTitle.VNPAY,
                             CoinExchange = (int)Math.Round(vnp_Amount),
                             TransactionType = "RECHARGE",
                             Status = "SUCCESS",
@@ -114,12 +116,13 @@ namespace ship_convenient.Controllers
                             AccountId = accountId,
                             BalanceWallet = account.Balance,
                         };
-                        transationId = transaction.Id;
+                        transactionId = transaction.Id;
                         deposit.Transactions.Add(transaction);
                         await _depositRepo.InsertAsync(deposit);
                         status = "success";
                     }
-                    else {
+                    else
+                    {
                         Deposit deposit = new Deposit();
                         deposit.AccountId = accountId;
                         deposit.TransactionIdPartner = vnpayTranId;
@@ -129,13 +132,18 @@ namespace ship_convenient.Controllers
                         await _depositRepo.InsertAsync(deposit);
                     }
                     await _unitOfWork.CompleteAsync();
+                    if (status == "failed")
+                    {
+                        return Redirect(returnUrl + "?status=" + status + "&amount=" + amount);
+                    }
                     return Redirect(returnUrl + "?status=" + status + "&amount=" + amount
-                            + "&transactionId=" + transationId + "&createDate=" + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
+                            + "&transactionId=" + transactionId + "&createDate=" + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"));
                 }
 
                 return BadRequest("Có lỗi xảy ra!!");
             }
-            catch (Exception e) {
+            catch (Exception e)
+            {
                 return BadRequest($"Có lỗi xảy ra!! {e.Message}");
             }
         }
