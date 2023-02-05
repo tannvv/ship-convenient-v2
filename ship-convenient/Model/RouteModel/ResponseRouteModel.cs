@@ -2,7 +2,7 @@
 {
     public class ResponseRouteModel
     {
-        public Guid Id { get; set }
+        public Guid Id { get; set; }
         public string FromName { get; set; } = string.Empty;
         public double FromLongitude { get; set; }
         public double FromLatitude { get; set; }
