@@ -29,7 +29,8 @@ namespace ship_convenient.Services.RouteService
                 predicate: (i) => i.Id == model.AccountId, disableTracking: false, include: (en) => en.Include(info => info.InfoUser));
 
             #region verify params
-            if (account == null) {
+            if (account == null)
+            {
                 response.ToFailedResponse("Thông tin người dùng không tồn tại");
                 return response;
             }
@@ -80,8 +81,8 @@ namespace ship_convenient.Services.RouteService
         public async Task<ApiResponse<List<ResponseRouteModel>>> GetRouteUserId(Guid accountId)
         {
             ApiResponse<List<ResponseRouteModel>> response = new();
-            List<ResponseRouteModel> routes = _routeRepo.GetAll(predicate: (route) => 
-                route.InfoUser != null ? route.InfoUser.AccountId == accountId : false, 
+            List<ResponseRouteModel> routes = _routeRepo.GetAll(predicate: (route) =>
+                route.InfoUser != null ? route.InfoUser.AccountId == accountId : false,
                 selector: route => route.ToResponseModel()).ToList();
             if (routes.Count > 0)
             {
@@ -101,8 +102,8 @@ namespace ship_convenient.Services.RouteService
             Route? route = await _routeRepo.GetByIdAsync(routeId);
             if (route != null)
             {
-                List<Route> routes = (await _routeRepo.GetAllAsync(predicate:
-                    routeFilter => route.InfoUserId == routeFilter.InfoUserId, disableTracking: false)).ToList();
+                List<Route> routes = await _routeRepo.GetAllAsync(predicate:
+                    routeFilter => route.InfoUserId == routeFilter.InfoUserId, disableTracking: false);
                 for (int i = 0; i < routes.Count; i++)
                 {
                     if (routes[i].Id == route.Id)
@@ -111,11 +112,16 @@ namespace ship_convenient.Services.RouteService
                     }
                     else
                     {
-                        routes[i].IsActive = true;
+                        routes[i].IsActive = false;
                     }
                 }
-                response.ToSuccessResponse("Yêu cầu thành công");
-                return response;
+                int result = await _unitOfWork.CompleteAsync();
+                if (result > 0)
+                {
+                    response.ToSuccessResponse("Yêu cầu thành công");
+                    return response;
+
+                }
             }
             response.ToSuccessResponse("Yêu cầu không thành công");
             return response;
