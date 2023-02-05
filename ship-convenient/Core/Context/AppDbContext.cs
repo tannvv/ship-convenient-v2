@@ -24,7 +24,7 @@ namespace ship_convenient.Core.Context
         public virtual DbSet<Package> Packages => Set<Package>();
         public virtual DbSet<Product> Products => Set<Product>();
         public virtual DbSet<Deposit> Deposits => Set<Deposit>();
-        // public virtual DbSet<Role> Roles => Set<Role>();
+        public virtual DbSet<Feedback> Feedbacks => Set<Feedback>();
         public virtual DbSet<Transaction> Transactions => Set<Transaction>();
         public virtual DbSet<TransactionPackage> TransactionPackages => Set<TransactionPackage>();
 

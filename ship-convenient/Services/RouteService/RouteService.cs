@@ -59,6 +59,24 @@ namespace ship_convenient.Services.RouteService
 
         }
 
+        public async Task<ApiResponse> Delete(Guid id)
+        {
+            ApiResponse reponse = new();
+            Route? route = await _routeRepo.GetByIdAsync(id);
+            if (route != null)
+            {
+                await _routeRepo.DeleteAsync(id);
+                int result = await _unitOfWork.CompleteAsync();
+                if (result > 0)
+                {
+                    reponse.ToSuccessResponse("Xóa tuyến đường thành công");
+                    return reponse;
+                }
+            }
+            reponse.ToFailedResponse("Xóa tuyến đường thất bại");
+            return reponse;
+        }
+
         public async Task<ApiResponse<List<ResponseRouteModel>>> GetRouteUserId(Guid accountId)
         {
             ApiResponse<List<ResponseRouteModel>> response = new();

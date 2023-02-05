@@ -1,6 +1,7 @@
 ﻿using ship_convenient.Core.Context;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.Repository;
+using ship_convenient.Entities;
 
 namespace ship_convenient.Core.UnitOfWork
 {
@@ -23,12 +24,10 @@ namespace ship_convenient.Core.UnitOfWork
 
         public IProductRepository Products { get; private set; }
         public IDepositRepository Deposits { get; private set; }
-
-        // public IRoleRepository Roles { get; private set; }
-
         public ITransactionRepository Transactions { get; private set; }
 
         public IRouteRepository Routes { get; private set; }
+        public IFeedbackRepository Feedbacks { get; private set; }
 
         public ITransactionPackageRepository TransactionPackages { get; private set; }
 
@@ -44,12 +43,12 @@ namespace ship_convenient.Core.UnitOfWork
             InfoUsers = new InfoUserRepository(context, logger);
             Notifications = new NotificationRepository(context, logger);
             Products = new ProductRepository(context, logger);
-            // Roles = new RoleRepository(context, logger);
             Transactions = new TransactionRepository(context, logger);
             Routes = new RouteRepository(context, logger);
             TransactionPackages = new TransactionPackageRepository(context, logger);
             Vehicles = new VehicleRepository(context, logger);
             Deposits = new DepositRepository(context, logger);
+            Feedbacks = new FeedbackRepository(context, logger);
         }
 
         public async Task<int> CompleteAsync()
@@ -66,5 +65,7 @@ namespace ship_convenient.Core.UnitOfWork
         {
             _context.Dispose();
         }
+
+      
     }
 }

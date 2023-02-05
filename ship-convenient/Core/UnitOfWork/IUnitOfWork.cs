@@ -1,5 +1,6 @@
 ﻿using ship_convenient.Core.Context;
 using ship_convenient.Core.IRepository;
+using ship_convenient.Entities;
 
 namespace ship_convenient.Core.UnitOfWork
 {
@@ -17,6 +18,7 @@ namespace ship_convenient.Core.UnitOfWork
         ITransactionPackageRepository TransactionPackages { get; }
         IVehicleRepository Vehicles { get; }
         IDepositRepository Deposits { get; }
+        IFeedbackRepository Feedbacks { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

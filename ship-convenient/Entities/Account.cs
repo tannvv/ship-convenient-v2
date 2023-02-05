@@ -21,10 +21,12 @@ namespace ship_convenient.Entities
         public List<Package> PackageDelivers { get; set; }
         public List<Transaction> Transactions { get; set; }
         public List<Deposit> Deposits { get; set; }
+        public List<Feedback> Feedbacks { get; set; }
         #endregion
 
         public Account()
         {
+            Feedbacks = new List<Feedback>();
             Notifications = new List<Notification>();
             PackageSenders = new List<Package>();
             PackageDelivers = new List<Package>();

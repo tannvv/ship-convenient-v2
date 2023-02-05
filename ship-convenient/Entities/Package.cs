@@ -32,6 +32,7 @@ namespace ship_convenient.Entities
         public List<Transaction> Transactions { get; set; }
         public List<TransactionPackage> TransactionPackages { get; set; }
         public List<Product> Products { get; set; }
+        public List<Feedback> Feedbacks { get; set; }
         #endregion
 
         public Package()
@@ -39,6 +40,7 @@ namespace ship_convenient.Entities
             Transactions = new List<Transaction>();
             TransactionPackages = new List<TransactionPackage>();
             Products = new List<Product>();
+            Feedbacks = new List<Feedback>();
         }
 
         public ResponsePackageModel ToResponseModel()

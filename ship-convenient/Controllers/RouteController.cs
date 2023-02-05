@@ -70,5 +70,23 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteRoute(Guid id)
+        {
+            try
+            {
+                ApiResponse response = await _routeService.Delete(id);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Delete route : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
+
+    
 }
