@@ -8,6 +8,7 @@ using ship_convenient.Services.FeedbackService;
 using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GoongService;
 using ship_convenient.Services.MapboxService;
+using ship_convenient.Services.Notificationservice;
 using ship_convenient.Services.PackageService;
 using ship_convenient.Services.RouteService;
 using ship_convenient.Services.TransactionPackageService;
@@ -34,6 +35,7 @@ namespace ship_convenient.Config
             services.AddTransient<IDepositService, DepositService>();
             services.AddTransient <IFeedbackService,FeedbackService>();
             services.AddTransient<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
+            services.AddTransient<INotificationService, NotificationService>();
         }
     }
 }

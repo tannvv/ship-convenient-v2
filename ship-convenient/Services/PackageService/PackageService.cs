@@ -10,6 +10,7 @@ using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Helper;
 using ship_convenient.Model.MapboxModel;
+using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GenericService;
 using ship_convenient.Services.MapboxService;
 using System.Linq.Expressions;
@@ -24,26 +25,24 @@ namespace ship_convenient.Services.PackageService
 {
     public class PackageService : GenericService<PackageService>, IPackageService
     {
-        private readonly IPackageRepository _packageRepo;
-        private readonly IAccountRepository _accountRepo;
         private readonly ITransactionPackageRepository _transactionPackageRepo;
         private readonly ITransactionRepository _transactionRepo;
         private readonly IConfigRepository _configRepo;
         private readonly IRouteRepository routeRepo;
         private readonly IMapboxService _mapboxService;
-
+        private readonly IFirebaseCloudMsgService _fcmService;
 
         public PackageService(ILogger<PackageService> logger, IUnitOfWork unitOfWork,
-            IMapboxService mapboxService) : base(logger, unitOfWork)
+            IMapboxService mapboxService, IFirebaseCloudMsgService fcmService) : base(logger, unitOfWork)
         {
-            _packageRepo = unitOfWork.Packages;
-            _accountRepo = unitOfWork.Accounts;
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
             _configRepo = unitOfWork.Configs;
             routeRepo = unitOfWork.Routes;
 
             _mapboxService = mapboxService;
+            _fcmService = fcmService;
+           
         }
 
         public async Task<ApiResponse<ResponsePackageModel>> Create(CreatePackageModel model)
@@ -875,7 +874,21 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0) response.ToSuccessResponse("Yêu cầu thành công");
+            if (result > 0)
+            {
+                Notification notification = new Notification();
+                notification.Title = "Xác nhận đã giao hàng!";
+                notification.Content = "Người gửi đã xác nhận bạn giao hàng thành công\nMã đơn hàng: " + package.Id;
+                notification.AccountId = deliver.Id;
+                string? errorMsg = await SenNotificationToAccount(_fcmService,notification);
+                if (errorMsg != null) {
+                    response.ToSuccessResponse("Yêu cầu thành công - " + errorMsg);
+                }
+                response.ToSuccessResponse("Yêu cầu thành công");
+            }
+            else {
+                response.ToFailedResponse("Yêu cầu không thành công");
+            }
             return response;
         }
 

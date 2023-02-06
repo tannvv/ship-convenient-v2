@@ -10,14 +10,11 @@ using ship_convenient.Services.GenericService;
 
 namespace ship_convenient.Services.FirebaseCloudMsgService
 {
-    public class FirebaseCloudMsgService : GenericService<FirebaseCloudMsgService>, IFirebaseCloudMsgService
+    public class FirebaseCloudMsgService : GenericService<FirebaseCloudMsgService>,IFirebaseCloudMsgService
     {
-        private readonly IAccountRepository _accountRepo;
-        private readonly INotificationRepository _notificationRepo;
+        
         public FirebaseCloudMsgService(ILogger<FirebaseCloudMsgService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
-            _accountRepo = unitOfWork.Accounts;
-            _notificationRepo = unitOfWork.Notifications;
         }
 
         public async Task<ApiResponse> SendNotification(SendNotificationModel model) 

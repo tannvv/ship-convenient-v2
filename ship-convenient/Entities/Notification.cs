@@ -1,4 +1,5 @@
-﻿using ship_convenient.Model.NotificationModel;
+﻿using ship_convenient.Model.FirebaseNotificationModel;
+using ship_convenient.Model.NotificationModel;
 
 namespace ship_convenient.Entities
 {
@@ -13,7 +14,7 @@ namespace ship_convenient.Entities
         public Account? Account { get; set; }
         #endregion
 
-        ResponseNotificationModel ToResponseModel()
+        public ResponseNotificationModel ToResponseModel()
         {
             ResponseNotificationModel model = new();
             model.Id = this.Id;
@@ -21,6 +22,14 @@ namespace ship_convenient.Entities
             model.Content = this.Content;
             model.IsSend = this.IsSend;
             model.CreatedAt = this.CreatedAt;
+            return model;
+        }
+
+        public SendNotificationModel ToSendFirebaseModel() {
+            SendNotificationModel model = new();
+            model.AccountId = this.AccountId;
+            model.Title = this.Title;
+            model.Body = this.Content;
             return model;
         }
     }

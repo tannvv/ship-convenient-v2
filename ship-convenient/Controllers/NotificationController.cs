@@ -2,17 +2,22 @@
 using Microsoft.AspNetCore.Mvc;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Model.FirebaseNotificationModel;
+using ship_convenient.Model.NotificationModel;
 using ship_convenient.Services.FirebaseCloudMsgService;
+using ship_convenient.Services.Notificationservice;
 
 namespace ship_convenient.Controllers
 {
     public class NotificationController : BaseApiController
     {
         private readonly IFirebaseCloudMsgService _firebaseCloudMsgService;
-
-        public NotificationController(IFirebaseCloudMsgService firebaseCloudMsgService)
+        private readonly INotificationService _notificationService;
+        private readonly ILogger<NotificationController> _logger;
+        public NotificationController(IFirebaseCloudMsgService firebaseCloudMsgService, INotificationService notificationService, ILogger<NotificationController> logger)
         {
             _firebaseCloudMsgService = firebaseCloudMsgService;
+            _notificationService = notificationService;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -23,6 +28,23 @@ namespace ship_convenient.Controllers
         {
             await _firebaseCloudMsgService.SendNotification(model);
             return Ok();
+        }
+
+        [HttpGet]
+        [ProducesResponseType(typeof(ApiResponsePaginated<ResponseNotificationModel>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponsePaginated<ResponseNotificationModel>), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> GetList(Guid accountId, int pageIndex = 0, int pageSize = 20)
+        {
+            try
+            {
+                ApiResponsePaginated<ResponseNotificationModel> response = await _notificationService.GetList(accountId, pageIndex, pageSize);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Có lỗi xảy ra: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

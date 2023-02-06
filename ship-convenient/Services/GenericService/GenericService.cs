@@ -1,6 +1,12 @@
-﻿using ship_convenient.Core.IRepository;
+﻿using ship_convenient.Core.CoreModel;
+using ship_convenient.Core.IRepository;
 using ship_convenient.Core.Repository;
 using ship_convenient.Core.UnitOfWork;
+using ship_convenient.Entities;
+using ship_convenient.Model.FirebaseNotificationModel;
+using ship_convenient.Services.FirebaseCloudMsgService;
+using FcmService = ship_convenient.Services.FirebaseCloudMsgService.FirebaseCloudMsgService;
+using FirebaseMsgException = FirebaseAdmin.Messaging.FirebaseMessagingException;
 
 namespace ship_convenient.Services.GenericService
 {
@@ -8,11 +14,16 @@ namespace ship_convenient.Services.GenericService
     {
         protected readonly ILogger<T> _logger;
         protected readonly IUnitOfWork _unitOfWork;
-
+        protected readonly IAccountRepository _accountRepo;
+        protected readonly IPackageRepository _packageRepo;
+        protected readonly INotificationRepository _notificationRepo;
         public GenericService(ILogger<T> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _accountRepo = unitOfWork.Accounts;
+            _packageRepo = unitOfWork.Packages;
+            _notificationRepo = unitOfWork.Notifications;
         }
 
         public string? VerifyPaging(int pageIndex, int pageSize) {
@@ -35,5 +46,37 @@ namespace ship_convenient.Services.GenericService
             return _unitOfWork.Packages.GetById(id: id) != null;
         }
 
+        public async Task<string?> SenNotificationToAccount(IFirebaseCloudMsgService _fcmService ,Notification notification)
+        {
+            try
+            {
+                await _notificationRepo.InsertAsync(notification);
+                int result = await _unitOfWork.CompleteAsync();
+                if (result == 0)
+                {
+                    return "Không tạo được thông báo";
+                }
+                string? registrationToken = (await _unitOfWork.Accounts.GetByIdAsync(id: notification.AccountId))?.RegistrationToken;
+                if (string.IsNullOrEmpty(registrationToken))
+                {
+                    return "Người dùng không có token đăng kí trên firebase";
+                }
+                SendNotificationModel sentModel = notification.ToSendFirebaseModel();
+                ApiResponse response = await _fcmService.SendNotification(model: sentModel);
+                if (!response.Success) {
+                    return "Không gửi được thông báo";
+                }
+                return null;
+            }
+            catch (FirebaseMsgException ex)
+            {
+                _logger.LogError($"Firebase exception: {ex.Message}");
+                return "Token không đúng";
+            }
+            catch (Exception ex) {
+                _logger.LogError($"Exception when notify: {ex.Message}");
+                return "Lỗi không rõ";
+            }
+        }
     }
 }

@@ -8,6 +8,8 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<Notification> builder)
         {
             builder.ToTable("Notification");
+            builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETDATE()")
+                .ValueGeneratedOnAdd();
         }
     }
 }
