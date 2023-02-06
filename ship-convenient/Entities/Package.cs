@@ -1,4 +1,6 @@
-﻿using unitofwork_core.Model.PackageModel;
+﻿using ship_convenient.Model.PackageModel;
+using unitofwork_core.Constant.Package;
+using unitofwork_core.Model.PackageModel;
 
 namespace ship_convenient.Entities
 {
@@ -76,5 +78,46 @@ namespace ship_convenient.Entities
             }
             return model;
         }
+        public ResponseCancelPackageModel ToCancelPackage()
+        {
+            ResponseCancelPackageModel model = new ResponseCancelPackageModel();
+            model.Id = this.Id;
+            model.StartAddress = this.StartAddress;
+            model.StartLongitude = this.StartLongitude;
+            model.StartLatitude = this.StartLatitude;
+            model.DestinationAddress = this.DestinationAddress;
+            model.DestinationLongitude = this.DestinationLongitude;
+            model.DestinationLatitude = this.DestinationLatitude;
+            model.ReceiverName = this.ReceiverName;
+            model.ReceiverPhone = this.ReceiverPhone;
+            model.Distance = this.Distance;
+            model.Volume = this.Volume;
+            model.Weight = this.Weight;
+            model.Status = this.Status;
+            model.PriceShip = this.PriceShip;
+            model.PhotoUrl = this.PhotoUrl;
+            model.Note = this.Note;
+            model.CreatedAt = this.CreatedAt;
+            model.ModifiedAt = this.ModifiedAt;
+            model.SenderId = this.SenderId;
+            model.DeliverId = this.DeliverId;
+            model.Sender = this.Sender != null ? this.Sender.ToResponseModel() : null;
+            model.Deliver = this.Deliver != null ? this.Deliver.ToResponseModel() : null;
+
+            int countProduct = this.Products.Count;
+            for (int i = 0; i < countProduct; i++)
+            {
+                model.Products.Add(this.Products[i].ToResponseModel());
+            }
+            TransactionPackage? cancelTrans = this.TransactionPackages.SingleOrDefault(trans =>trans.ToStatus == PackageStatus.DELIVER_CANCEL);
+            if (cancelTrans != null) {
+                model.Reason = cancelTrans.Reason;
+                model.CancelTime = cancelTrans.CreatedAt;
+            }
+            return model;
+        }
+        }
     }
-}
+
+
+

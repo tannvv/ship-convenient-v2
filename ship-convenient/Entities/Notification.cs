@@ -1,4 +1,6 @@
-﻿namespace ship_convenient.Entities
+﻿using ship_convenient.Model.NotificationModel;
+
+namespace ship_convenient.Entities
 {
     public class Notification : BaseEntity
     {
@@ -10,5 +12,16 @@
         public Guid AccountId { get; set; }
         public Account? Account { get; set; }
         #endregion
+
+        ResponseNotificationModel ToResponseModel()
+        {
+            ResponseNotificationModel model = new();
+            model.Id = this.Id;
+            model.Title = this.Title;
+            model.Content = this.Content;
+            model.IsSend = this.IsSend;
+            model.CreatedAt = this.CreatedAt;
+            return model;
+        }
     }
 }

@@ -1,10 +1,13 @@
-﻿using ship_convenient.Core.CoreModel;
+﻿using Microsoft.EntityFrameworkCore;
+using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
+using ship_convenient.Model.PackageModel;
 using ship_convenient.Model.TransactionPackageModel;
 using ship_convenient.Services.GenericService;
 using System.Linq.Expressions;
+using unitofwork_core.Constant.Package;
 
 namespace ship_convenient.Services.TransactionPackageService
 {
@@ -12,10 +15,36 @@ namespace ship_convenient.Services.TransactionPackageService
     {
         private readonly ITransactionPackageRepository _transactionsPackageRepo;
         private readonly IPackageRepository _packageRepo;
+        private readonly IAccountRepository _accountRepo;
         public TransactionPackageService(ILogger<TransactionPackageService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
             _transactionsPackageRepo = unitOfWork.TransactionPackages;
             _packageRepo = unitOfWork.Packages;
+            _accountRepo = unitOfWork.Accounts;
+        }
+
+        public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetDeliverCancelPackage(Guid deliverId, int pageIndex, int pageSize)
+        {
+            ApiResponsePaginated<ResponseCancelPackageModel> response = new();
+            Account? account = await _accountRepo.GetByIdAsync(deliverId);
+            #region Verify params
+            if (account == null) {
+                response.ToFailedResponse("Không tìm thấy tài khoản");
+            }
+            string? errorPaging = VerifyPaging(pageIndex, pageSize);
+            if (errorPaging != null) {
+                response.ToFailedResponse(errorPaging);
+                return response; 
+            }
+            #endregion
+            PaginatedList<ResponseCancelPackageModel> packages = await _packageRepo.GetPagedListAsync(
+                    predicate: (source) => source.DeliverId == deliverId && source.Status == PackageStatus.DELIVER_CANCEL,
+                    include: (source) => source.Include(p => p.TransactionPackages),
+                    selector: (source) => source.ToCancelPackage(),
+                    orderBy: (source) => source.OrderByDescending(p => p.ModifiedAt),
+                    pageIndex: pageIndex, pageSize: pageSize);
+            response.SetData(packages, "Lấy thông tin thành công");
+            return response;
         }
 
         public async Task<ApiResponsePaginated<ResponseTransactionPackageModel>> GetHistoryPackage(Guid packageId, int pageIndex, int pageSize)
