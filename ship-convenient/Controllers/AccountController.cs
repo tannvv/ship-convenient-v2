@@ -105,7 +105,7 @@ namespace ship_convenient.Controllers
         }
 
         [HttpPut("token")]
-        [SwaggerOperation(Summary = "Update registration firebase token")
+        [SwaggerOperation(Summary = "Update registration firebase token")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateRegistrationToken(UpdateTokenModel model)
         {
