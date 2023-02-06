@@ -185,11 +185,6 @@ namespace ship_convenient.Services.AccountService
         public async Task<ApiResponse> UpdateRegistrationToken(UpdateTokenModel model)
         {
             ApiResponse repsonse = new ApiResponse();
-
-            if (string.IsNullOrEmpty(model.RegistrationToken)) {
-                repsonse.ToFailedResponse("Token không hợp lệ");
-                return repsonse;
-            }
             Account? account = await _accountRepo.FirstOrDefaultAsync(
                 predicate: (ac) => ac.Id == model.AccountId, disableTracking: false);
 
