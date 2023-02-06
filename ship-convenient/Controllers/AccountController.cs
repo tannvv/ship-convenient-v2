@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Model.UserModel;
 using ship_convenient.Services.AccountService;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ship_convenient.Controllers
 {
@@ -99,6 +100,23 @@ namespace ship_convenient.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("Update account info exception : " + ex.Message.Substring(0, 300));
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPut("token")]
+        [SwaggerOperation(Summary = "Update registration firebase token")
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> UpdateRegistrationToken(UpdateTokenModel model)
+        {
+            try
+            {
+                ApiResponse response = await _accountService.UpdateRegistrationToken(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Update account token exception : " + ex.Message.Substring(0, 300));
                 return BadRequest(ex);
             }
         }

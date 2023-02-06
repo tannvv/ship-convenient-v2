@@ -181,5 +181,33 @@ namespace ship_convenient.Services.AccountService
             }
             return response;
         }
+
+        public async Task<ApiResponse> UpdateRegistrationToken(UpdateTokenModel model)
+        {
+            ApiResponse repsonse = new ApiResponse();
+
+            if (string.IsNullOrEmpty(model.RegistrationToken)) {
+                repsonse.ToFailedResponse("Token không hợp lệ");
+                return repsonse;
+            }
+            Account? account = await _accountRepo.FirstOrDefaultAsync(
+                predicate: (ac) => ac.Id == model.AccountId, disableTracking: false);
+
+            if (account == null) {
+                repsonse.ToFailedResponse("Không tìm thấy tài khoản");
+                return repsonse;
+            }
+            account.RegistrationToken = model.RegistrationToken;
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                repsonse.ToSuccessResponse("Cập nhật thông tin thành công");
+            }
+            else
+            {
+                repsonse.ToFailedResponse("Có lỗi xảy ra");
+            }
+            return repsonse;
+        }
     }
 }

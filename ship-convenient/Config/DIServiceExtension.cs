@@ -5,6 +5,7 @@ using ship_convenient.Services.AuthorizeService;
 using ship_convenient.Services.DatabaseService;
 using ship_convenient.Services.DepositService;
 using ship_convenient.Services.FeedbackService;
+using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GoongService;
 using ship_convenient.Services.MapboxService;
 using ship_convenient.Services.PackageService;
@@ -32,6 +33,7 @@ namespace ship_convenient.Config
             services.AddScoped<IVnPayService, VnPayService>();
             services.AddTransient<IDepositService, DepositService>();
             services.AddTransient <IFeedbackService,FeedbackService>();
+            services.AddTransient<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
         }
     }
 }

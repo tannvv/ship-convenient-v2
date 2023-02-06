@@ -16,6 +16,7 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 });
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 #region Extension
+builder.Services.AddFirebaseApp();
 builder.Services.AddDIService();
 builder.Services.AddCorsApp();
 builder.Services.AddSwaggerApp();

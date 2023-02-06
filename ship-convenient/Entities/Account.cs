@@ -9,6 +9,7 @@ namespace ship_convenient.Entities
         public string Status { get; set; } = string.Empty;
         public int Balance { get; set; }
         public string Role { get; set; } = string.Empty;
+        public string RegistrationToken { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
 
         #region Relationship
@@ -42,6 +43,7 @@ namespace ship_convenient.Entities
             model.Status = this.Status;
             model.Role = this.Role;
             model.Balance = this.Balance;
+            model.RegistrationToken = this.RegistrationToken;
             if (InfoUser != null)
             {
                 model.InfoUser = this.InfoUser.ToResponseModel();
