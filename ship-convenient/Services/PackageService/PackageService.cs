@@ -279,7 +279,14 @@ namespace ship_convenient.Services.PackageService
             }
             if (status != null)
             {
-                Expression<Func<Package, bool>> filterStatus = (p) => p.Status == status.ToUpper();
+                string[] statuses = status.Split(",");
+                /* int length = statuses.Count();
+                 for (int i = 0; i < length; i++)
+                 {
+                     Expression<Func<Package, bool>> filterStatus = (p) => p.Status.Equals(statuses[i].ToString());
+                     predicates.Add(filterStatus);
+                 }*/
+                Expression<Func<Package, bool>> filterStatus = (p) => statuses.Contains(p.Status);
                 predicates.Add(filterStatus);
             }
             #endregion
