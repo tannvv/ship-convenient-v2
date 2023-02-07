@@ -66,7 +66,7 @@ namespace ship_convenient.Services.Notificationservice
                 include: (source) => source.Include(p => p.Sender));
             if (packages.Count == 0)
             {
-                response.ToFailedResponse("Không có gói hàng cần gửi thông báo");
+                response.ToSuccessResponse("Không có gói hàng cần gửi thông báo");
                 return response;
             }
             int count = packages.Count;
@@ -77,8 +77,6 @@ namespace ship_convenient.Services.Notificationservice
                 try
                 {
                     if (!string.IsNullOrEmpty(packages[i].Sender?.RegistrationToken)) {
-                        model.Data.Append(new KeyValuePair<string, string>("packageId", packages[i].Id.ToString()));
-                        model.Data.Append(new KeyValuePair<string, string>("deliverId", packages[i].DeliverId.ToString() ?? ""));
                         Message message = new Message();
                         message.Notification = new FcmNotification()
                         {
@@ -95,6 +93,7 @@ namespace ship_convenient.Services.Notificationservice
                 }
                 catch (Exception e)
                 {
+                    response.ToFailedResponse("Error when send notification to sender");
                     _logger.LogError(e, "Error when send notification to sender");
                 }
             }
