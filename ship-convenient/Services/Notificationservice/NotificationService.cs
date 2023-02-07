@@ -71,6 +71,7 @@ namespace ship_convenient.Services.Notificationservice
             }
             int count = packages.Count;
             #region send notification to senders
+            int numberNotify = 0;
             for (int i = 0; i < count; i++)
             {
                 try
@@ -86,7 +87,11 @@ namespace ship_convenient.Services.Notificationservice
                         message.Token = packages[i].SenderId.ToString();
                         message.Data = model.Data;
                         string responseFirebase = await _firebaseCloudMsgService.SendNotification(message);
+                        if (!string.IsNullOrEmpty(responseFirebase)) {
+                            numberNotify = numberNotify + 1;
+                        }
                     }
+                    response.ToSuccessResponse("Số lượng tin nhắn đã gửi: " + numberNotify);
                 }
                 catch (Exception e)
                 {
