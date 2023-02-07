@@ -6,6 +6,7 @@
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public bool IsSend { get; set; } = false;
+        public string TypeOfNotification { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         #region Relationship
         public Guid AccountId { get; set; }

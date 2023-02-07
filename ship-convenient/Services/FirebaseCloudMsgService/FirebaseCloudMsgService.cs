@@ -26,10 +26,13 @@ namespace ship_convenient.Services.FirebaseCloudMsgService
             }
             FcmMessage message = new FcmMessage();
             message.Token = account?.RegistrationToken;
+            if (model.Data != null) { 
+                 message.Data = model.Data;
+            }
             message.Notification = new FcmNotification()
             {
                 Title = model.Title,
-                Body = model.Body
+                Body = model.Body,
             };
             string responseFirebase = await FcmFirebaseMsg.DefaultInstance.SendAsync(message);
             Console.WriteLine($"Response firebase notification: {response}");

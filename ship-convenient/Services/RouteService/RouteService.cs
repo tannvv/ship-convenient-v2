@@ -83,14 +83,15 @@ namespace ship_convenient.Services.RouteService
             ApiResponse<List<ResponseRouteModel>> response = new();
             List<ResponseRouteModel> routes = _routeRepo.GetAll(predicate: (route) =>
                 route.InfoUser != null ? route.InfoUser.AccountId == accountId : false,
-                selector: route => route.ToResponseModel()).ToList();
+                selector: route => route.ToResponseModel(),
+                orderBy: source => source.OrderByDescending(route => route.IsActive)).ToList();
             if (routes.Count > 0)
             {
                 response.ToSuccessResponse(routes, "Lấy thông tin thành công");
             }
             else
             {
-                response.ToFailedResponse("Shipper không tồn tại");
+                response.ToFailedResponse("Người giao không tồn tại");
             }
             return await Task.FromResult(response);
 

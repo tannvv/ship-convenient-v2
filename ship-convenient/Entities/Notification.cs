@@ -8,6 +8,7 @@ namespace ship_convenient.Entities
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public bool IsSend { get; set; } = false;
+        public string TypeOfNotification { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         #region Relationship
         public Guid AccountId { get; set; }
@@ -22,6 +23,7 @@ namespace ship_convenient.Entities
             model.Content = this.Content;
             model.IsSend = this.IsSend;
             model.CreatedAt = this.CreatedAt;
+            model.TypeOfNotification = this.TypeOfNotification;
             return model;
         }
 
@@ -30,6 +32,7 @@ namespace ship_convenient.Entities
             model.AccountId = this.AccountId;
             model.Title = this.Title;
             model.Body = this.Content;
+            model.TypeOfNotification = this.TypeOfNotification;
             return model;
         }
     }

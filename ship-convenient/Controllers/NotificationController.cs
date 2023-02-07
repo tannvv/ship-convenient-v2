@@ -26,8 +26,8 @@ namespace ship_convenient.Controllers
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> SendNotification([FromBody] SendNotificationModel model)
         {
-            await _firebaseCloudMsgService.SendNotification(model);
-            return Ok();
+            ApiResponse respone =  await _firebaseCloudMsgService.SendNotification(model);
+            return SendResponse(respone);
         }
 
         [HttpGet]
@@ -38,7 +38,7 @@ namespace ship_convenient.Controllers
             try
             {
                 ApiResponsePaginated<ResponseNotificationModel> response = await _notificationService.GetList(accountId, pageIndex, pageSize);
-                return Ok(response);
+                return SendResponse(response);
             }
             catch (Exception ex)
             {

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using ship_convenient.Constants.AccountConstant;
 using ship_convenient.Constants.DatimeConstant;
+using ship_convenient.Constants.PackageConstant;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.Repository;
@@ -107,12 +108,26 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
             package.Status = PackageStatus.APPROVED;
-
+            #region Create notification for sender
+            Notification notification = new Notification();
+            notification.Title = "Đơn hàng đã được duyệt";
+            notification.Content = "Đơn hàng của bạn đã được duyệt\nMã đơn hàng: " + package.Id;
+            notification.AccountId = package.SenderId;
+            notification.TypeOfNotification = TypeOfNotification.APPROVED;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
-
+            string? errorSendNotification;
+            if (result > 0) {
+                #region Send notification to sender
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken)) 
+                    errorSendNotification = await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
             #region Response result
             response.Success = result > 0 ? true : false;
-            response.Message = result > 0 ? "Duyệt đơn thành công" : "Duyệt đơn thất bại";
+            response.Message = result > 0 ? $"Duyệt đơn thành công" : "Duyệt đơn thất bại";
             #endregion
 
             return response;
@@ -145,8 +160,23 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.DELIVERY_FAILED;
             #endregion
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Giao hàng thất bại";
+            notification.Content = "Gói hàng của bạn đã giao thất bại\nMã đơn hàng: " + package.Id;
+            notification.AccountId = package.SenderId;
+            notification.TypeOfNotification = TypeOfNotification.DELIVERY_FAILED;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
 
             int result = await _unitOfWork.CompleteAsync();
+            if (result > 0) {
+                #region Send notification to sender
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken)) 
+                    await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
 
             #region Response result
             response.Success = result > 0 ? true : false;
@@ -410,8 +440,23 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.REFUND_SUCCESS;
             #endregion
-            await _unitOfWork.CompleteAsync();
-
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Hoàn trả thành công";
+            notification.Content = "Đơn hàng của bạn đã được hoàn trả thành công";
+            notification.AccountId = sender.Id;
+            notification.TypeOfNotification = TypeOfNotification.REFUND_SUCCESS;
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            #region Send notification
+            if (result > 0)
+            {
+                #region Send notification to sender
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
+            #endregion
             return response;
         }
 
@@ -442,9 +487,22 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
             package.Status = PackageStatus.REJECT;
-
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Đơn hàng bị từ chối";
+            notification.Content = "Đơn hàng của bạn đã bị từ chối";
+            notification.AccountId = package.SenderId;
+            notification.TypeOfNotification = TypeOfNotification.REJECT;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
-
+            if (result > 0) {
+                #region Send notification to sender
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Từ chối gói hàng thành công" : "Từ chối gói hàng thất bại thất bại";
@@ -480,9 +538,22 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
             package.Status = history.ToStatus;
-
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Đơn hàng bị hủy";
+            notification.Content = "Đơn hàng của bạn đã bị hủy";
+            notification.AccountId = package.SenderId;
+            notification.TypeOfNotification = TypeOfNotification.DELIVER_CANCEL;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
-
+            if (result > 0) {
+                #region Send notification to sender
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Hủy đơn thành công" : "Hủy đơn thất bại";
@@ -502,8 +573,8 @@ namespace ship_convenient.Services.PackageService
             Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
             #endregion
 
-            Account? deliver = await _accountRepo.GetByIdAsync(deliverId, disableTracking: false);
-            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(
+            Account? deliver = await _accountRepo.GetByIdAsync(deliverId, disableTracking: false, include: (source) => source.Include(acc => acc.InfoUser));
+            Account ? adminBalance = await _accountRepo.FirstOrDefaultAsync(
                 predicate: predicateAdminBalance, disableTracking: false);
 
             #region Verify params
@@ -615,7 +686,21 @@ namespace ship_convenient.Services.PackageService
                 #endregion
             };
             #endregion
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Đơn hàng đã được nhận";
+            notification.Content = $"Đơn hàng của bạn đang được giao bởi: {deliver!.GetFullName()}" ;
+            notification.TypeOfNotification = TypeOfNotification.DELIVERY;
+            notification.AccountId = packages[0].SenderId;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                Account? sender = await _accountRepo.GetByIdAsync(packages[0].SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+            }
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Note = result > 0 ? "Nhận hàng để giao thành công" : "Nhận hàng để giao thất bại";
@@ -651,9 +736,20 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.DELIVERED;
             #endregion
-
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Đơn hàng đã được giao thành công";
+            notification.Content = $"Đơn hàng của bạn đã được giao thành công bởi: {package.DeliverId}";
+            notification.TypeOfNotification = TypeOfNotification.DELIVERY;
+            notification.AccountId = package.SenderId;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
-
+            if (result > 0) {
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+                }
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Yêu cầu thành công" : "Yêu cầu thất bại";
@@ -723,8 +819,32 @@ namespace ship_convenient.Services.PackageService
                 package.Status = history.ToStatus;
             }
             #endregion
+            #region Create notification to sender
+            List<Notification> notifications = new List<Notification>();
+            for (int i = 0; i < packages.Count; i++)
+            {
+                Package package = packages[i];
+                Notification notification = new Notification();
+                notification.Title = "Đơn hàng đã được nhận";
+                notification.Content = $"Đơn hàng của bạn đã được nhận bởi: {deliverId}\nMã đơn hàng: {package.Id}";
+                notification.TypeOfNotification = TypeOfNotification.DELIVERY;
+                notification.AccountId = package.SenderId;
+                notifications.Add(notification);
+                await _notificationRepo.InsertAsync(notification);
+            }
+            #endregion
             int result = await _unitOfWork.CompleteAsync();
-
+            #region Send notification to senders
+            if (result > 0) {
+                for (int i = 0; i < notifications.Count; i++)
+                {
+                    Notification notification = notifications[i];
+                    Account? sender = await _accountRepo.GetByIdAsync(notification.AccountId);
+                    if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                        await SenNotificationToAccount(_fcmService, notification);
+                }
+            }
+            #endregion
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Chọn đơn thành công" : "Chọn đơn thất bại";
@@ -762,10 +882,20 @@ namespace ship_convenient.Services.PackageService
             package.Status = history.ToStatus;
 
             int result = await _unitOfWork.CompleteAsync();
-
+            if (result > 0 && package.DeliverId != null) { 
+                Notification notification = new Notification();
+                notification.Title = "Đơn hàng đã bị hủy";
+                notification.Content = $"Đơn hàng bị hủy bởi người gửi\nMã đơn hàng: {package.Id}";
+                notification.TypeOfNotification = TypeOfNotification.SENDER_CANCEL;
+                notification.AccountId = package.DeliverId.Value;
+                await _notificationRepo.InsertAsync(notification);
+                Account? deliver = await _accountRepo.GetByIdAsync(notification.AccountId);
+                if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+            }
             #region Response result
             response.Success = result > 0 ? true : false;
-            response.Message = result > 0 ? "Hủy đơn thành công" : "Hủy đơn = thất bại";
+            response.Message = result > 0 ? "Hủy đơn thành công" : "Hủy đơn thất bại";
             #endregion
 
             return response;
