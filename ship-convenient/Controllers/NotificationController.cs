@@ -46,5 +46,22 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("send-tracking")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> TrackingPackages([FromBody] NotificationTrackingModel model)
+        {
+            try
+            {
+                ApiResponse response = await _notificationService.NotificationTracking(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Có lỗi xảy ra: {ex.Message}");
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

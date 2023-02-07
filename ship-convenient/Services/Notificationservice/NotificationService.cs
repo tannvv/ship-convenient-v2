@@ -1,15 +1,24 @@
-﻿using ship_convenient.Core.CoreModel;
+﻿using FirebaseAdmin.Messaging;
+using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Model.NotificationModel;
+using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GenericService;
+using System.Linq.Expressions;
+using FcmNotification = FirebaseAdmin.Messaging.Notification;
+using unitofwork_core.Constant.Package;
+using ship_convenient.Constants.PackageConstant;
+using Microsoft.EntityFrameworkCore;
 
 namespace ship_convenient.Services.Notificationservice
 {
     public class NotificationService :GenericService<NotificationService>, INotificationService
     {
-        public NotificationService(ILogger<NotificationService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
+        private readonly IFirebaseCloudMsgService _firebaseCloudMsgService;
+        public NotificationService(ILogger<NotificationService> logger, IUnitOfWork unitOfWork, IFirebaseCloudMsgService firebaseCloudMsgService) : base(logger, unitOfWork)
         {
+            this._firebaseCloudMsgService = firebaseCloudMsgService;
         }
 
         public async Task<ApiResponsePaginated<ResponseNotificationModel>> GetList(Guid accountId, int pageIndex, int pageSize)
@@ -31,5 +40,63 @@ namespace ship_convenient.Services.Notificationservice
             response.SetData(result, "Lấy thông tin thành công");
             return response;
         }
+
+        public async Task<ApiResponse> NotificationTracking(NotificationTrackingModel model)
+        {
+            ApiResponse response = new();
+            bool isExistAccount = IsExistedAccount(model.DeliverId);
+            if (!isExistAccount) {
+                response.ToFailedResponse("Không tìm thấy tài khoản");
+                return response;
+            }
+
+            #region Predicates
+            List<Expression<Func<Package,bool>>> predicates = new();
+            Expression<Func<Package, bool>> predicate = (source) => source.DeliverId == model.DeliverId;
+            predicates.Add(predicate);
+            List<string> validStatus = new List<string> {
+                PackageStatus.DELIVER_PICKUP,
+                PackageStatus.DELIVERY,
+                PackageStatus.DELIVERY_FAILED,
+            };
+            Expression<Func<Package, bool>> predicateStatus = (source) => validStatus.Contains(source.Status);
+            predicates.Add(predicateStatus);
+            #endregion
+            List<Package> packages = await _packageRepo.GetAllAsync(predicates: predicates,
+                include: (source) => source.Include(p => p.Sender));
+            if (packages.Count == 0)
+            {
+                response.ToFailedResponse("Không có gói hàng cần gửi thông báo");
+                return response;
+            }
+            int count = packages.Count;
+            #region send notification to senders
+            for (int i = 0; i < count; i++)
+            {
+                try
+                {
+                    if (!string.IsNullOrEmpty(packages[i].Sender?.RegistrationToken)) {
+                        model.Data.Append(new KeyValuePair<string, string>("packageId", packages[i].Id.ToString()));
+                        model.Data.Append(new KeyValuePair<string, string>("deliverId", packages[i].DeliverId.ToString() ?? ""));
+                        Message message = new Message();
+                        message.Notification = new FcmNotification()
+                        {
+                            Title = TypeOfNotification.TRACKING
+                        };
+                        message.Token = packages[i].SenderId.ToString();
+                        message.Data = model.Data;
+                        string responseFirebase = await _firebaseCloudMsgService.SendNotification(message);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Error when send notification to sender");
+                }
+            }
+            #endregion
+            return response;
+        }
+
+       
     }
 }

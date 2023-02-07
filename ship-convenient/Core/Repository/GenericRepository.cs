@@ -471,5 +471,39 @@ namespace ship_convenient.Core.Repository
         {
             return _dbSet.Count();
         }
+
+        public async Task<List<TEntity>> GetAllAsync(List<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            bool disableTracking = true,
+            bool ignoreQueqyFilter = false)
+        {
+            IQueryable<TEntity> query = _dbSet;
+            if (disableTracking)
+            {
+                query.AsNoTracking();
+            }
+            if (include != null)
+            {
+                query = include(query);
+            }
+            if (predicates != null && predicates.Count > 0)
+            {
+                int count = predicates.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    query = query.Where(predicates[i]);
+                }
+            }
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            if (ignoreQueqyFilter)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            return await query.ToListAsync();
+        }
     }
 }

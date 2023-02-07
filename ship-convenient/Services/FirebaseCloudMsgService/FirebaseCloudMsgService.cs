@@ -53,5 +53,10 @@ namespace ship_convenient.Services.FirebaseCloudMsgService
             return response;
         }
 
+        public async Task<string> SendNotification(FcmMessage message)
+        {
+            string response = await FcmFirebaseMsg.DefaultInstance.SendAsync(message);
+            return response;
+        }
     }
 }

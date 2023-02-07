@@ -87,6 +87,11 @@ namespace ship_convenient.Core.IRepository
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
             bool disableTracking = true,
             bool ignoreQueqyFilter = false);
+        Task<List<TEntity>> GetAllAsync(List<Expression<Func<TEntity, bool>>> predicates,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            bool disableTracking = true,
+            bool ignoreQueqyFilter = false);
 
         Task<List<TEntity>> GetAllAsync(
             Expression<Func<TEntity, bool>>? predicate = null,
