@@ -85,5 +85,31 @@ namespace ship_convenient.Services.TransactionPackageService
             }
             return response;
         }
+
+        public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetSenderCancelPackage(Guid senderId, int pageIndex, int pageSize)
+        {
+            ApiResponsePaginated<ResponseCancelPackageModel> response = new();
+            Account? account = await _accountRepo.GetByIdAsync(senderId);
+            #region Verify params
+            if (account == null)
+            {
+                response.ToFailedResponse("Không tìm thấy tài khoản");
+            }
+            string? errorPaging = VerifyPaging(pageIndex, pageSize);
+            if (errorPaging != null)
+            {
+                response.ToFailedResponse(errorPaging);
+                return response;
+            }
+            #endregion
+            PaginatedList<ResponseCancelPackageModel> packages = await _packageRepo.GetPagedListAsync(
+                    predicate: (source) => source.SenderId == senderId && source.Status == PackageStatus.SENDER_CANCEL,
+                    include: (source) => source.Include(p => p.TransactionPackages),
+                    selector: (source) => source.ToSenderCancelPackage(),
+                    orderBy: (source) => source.OrderByDescending(p => p.ModifiedAt),
+                    pageIndex: pageIndex, pageSize: pageSize);
+            response.SetData(packages, "Lấy thông tin thành công");
+            return response;
+        }
     }
 }

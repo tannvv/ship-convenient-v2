@@ -49,6 +49,23 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("sender-cancel")]
+        [ProducesResponseType(typeof(ApiResponsePaginated<ResponseCancelPackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetSenderCancelPackage(Guid senderId, int pageIndex = 0, int pageSize = 20)
+        {
+
+            try
+            {
+                ApiResponsePaginated<ResponseCancelPackageModel> response = await _transactionPackageService.GetSenderCancelPackage(senderId, pageIndex, pageSize);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get deliver cancel : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 
 }
