@@ -40,7 +40,7 @@ namespace ship_convenient.Services.TransactionPackageService
             PaginatedList<ResponseCancelPackageModel> packages = await _packageRepo.GetPagedListAsync(
                     predicate: (source) => source.DeliverId == deliverId && source.Status == PackageStatus.DELIVER_CANCEL,
                     include: (source) => source.Include(p => p.TransactionPackages),
-                    selector: (source) => source.ToCancelPackage(),
+                    selector: (source) => source.ToDeliverCancelPackage(),
                     orderBy: (source) => source.OrderByDescending(p => p.ModifiedAt),
                     pageIndex: pageIndex, pageSize: pageSize);
             response.SetData(packages, "Lấy thông tin thành công");
