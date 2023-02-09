@@ -121,8 +121,26 @@ namespace ship_convenient.Services.DatabaseService
                 Note = "50",
                 ModifiedBy = admin.Id
             };
+            ConfigApp configMinimumDistance = new ConfigApp
+            {
+                Name = ConfigConstant.MINIMUM_DISTANCE,
+                Note = "1000",
+                ModifiedBy = admin.Id
+            };
+            ConfigApp configMaxPickupSameTime = new ConfigApp
+            {
+                Name = ConfigConstant.MAX_PICKUP_SAME_TIME,
+                Note = "50",
+                ModifiedBy = admin.Id
+            };
+            ConfigApp configMaxCreateRoute = new ConfigApp
+            {
+                Name = ConfigConstant.MAX_ROUTE_CREATE,
+                Note = "3",
+                ModifiedBy = admin.Id
+            };
             List<ConfigApp> configApps = new List<ConfigApp> {
-                configProfit, configProfitRefund
+                configProfit, configProfitRefund, configMinimumDistance, configMaxPickupSameTime, configMaxCreateRoute
             };
             await _configRepo.InsertAsync(configApps);
 

@@ -14,6 +14,7 @@ namespace ship_convenient.Services.GenericService
     {
         protected readonly ILogger<T> _logger;
         protected readonly IUnitOfWork _unitOfWork;
+        protected readonly IConfigRepository _configRepo;
         protected readonly IAccountRepository _accountRepo;
         protected readonly IPackageRepository _packageRepo;
         protected readonly INotificationRepository _notificationRepo;
@@ -24,6 +25,7 @@ namespace ship_convenient.Services.GenericService
             _accountRepo = unitOfWork.Accounts;
             _packageRepo = unitOfWork.Packages;
             _notificationRepo = unitOfWork.Notifications;
+            _configRepo = unitOfWork.Configs;
         }
 
         public string? VerifyPaging(int pageIndex, int pageSize) {

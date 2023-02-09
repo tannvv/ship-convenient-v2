@@ -28,13 +28,13 @@ namespace ship_convenient.Services.AccountService
             ApiResponse<ResponseAccountModel> response = new();
             #region verify params
             if (model.IsCreateInfo()) {
-                InfoUser? _checkEmail = await _infoUserRepo.FirstOrDefaultAsync(
+                /*InfoUser? _checkEmail = await _infoUserRepo.FirstOrDefaultAsync(
                     predicate: (ac) => ac.Email == model.Email);
                 if (_checkEmail != null)
                 {
                     response.ToFailedResponse("Email đã tồn tại, không thể đăng kí");
                     return response;
-                }
+                }*/
                 InfoUser? _checkPhone = await _infoUserRepo.FirstOrDefaultAsync(
                     predicate: (ac) => ac.Phone == model.Phone);
                 if (_checkPhone != null)
