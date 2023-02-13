@@ -45,6 +45,12 @@ namespace ship_convenient.Services.FeedbackService
                 response.ToFailedResponse("Không tìm thấy gói hàng");
                 return response;
             }
+            Feedback? FeedbackForRole = await _feedbackRepo.FirstOrDefaultAsync(predicate: (fb) => fb.FeedbackFor == model.FeedbackFor
+                            && fb.PackageId == model.PackageId);
+            if (FeedbackForRole != null) {
+                response.ToFailedResponse($"Phản hồi đã tồn tại dành cho {model.FeedbackFor}");
+                return response;
+            }
             #endregion
             Feedback feedback = model.ToEntity();
             await _feedbackRepo.InsertAsync(feedback);
