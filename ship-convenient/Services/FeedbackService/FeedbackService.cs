@@ -82,7 +82,8 @@ namespace ship_convenient.Services.FeedbackService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid packageId, Guid accountId, int pageIndex, int pageSize)
+        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid packageId, Guid accountId,
+            string FeedbackFor, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseFeedbackModel> response = new();
             #region Verify params
@@ -110,6 +111,7 @@ namespace ship_convenient.Services.FeedbackService
                     return response;
                 }
             }
+        
             #endregion
             #region Predicates
             List<Expression<Func<Feedback, bool>>> predicates = new();
@@ -122,6 +124,11 @@ namespace ship_convenient.Services.FeedbackService
             {
                 Expression<Func<Feedback, bool>> filterAccount = (account) => account.AccountId.Equals(accountId);
                 predicates.Add(filterAccount);
+            }
+            if (!string.IsNullOrEmpty(FeedbackFor))
+            {
+                Expression<Func<Feedback, bool>> filterFor = (fb) => fb.FeedbackFor.Equals(FeedbackFor);
+                predicates.Add(filterFor);
             }
             #endregion
             #region Order
