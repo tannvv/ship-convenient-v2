@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using ship_convenient.Config;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+Console.OutputEncoding = Encoding.GetEncoding("UTF-8");
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();

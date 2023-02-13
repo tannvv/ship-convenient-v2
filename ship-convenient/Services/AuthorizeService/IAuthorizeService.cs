@@ -7,5 +7,6 @@ namespace ship_convenient.Services.AuthorizeService
     {
         Task<ApiResponse<ResponseLoginModel>> Login(LoginModel model);
         Task<ApiResponse<ResponseLoginModel>> Login(LoginFirebaseModel model);
+        Task<ApiResponse> LogOut(Guid accountId);
     }
 }

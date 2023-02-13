@@ -14,10 +14,8 @@ namespace ship_convenient.Services.AuthorizeService
     public class AuthorizeService : GenericService<AuthorizeService>, IAuthorizeService
     {
         private readonly IConfiguration _configuration;
-        private readonly IAccountRepository _accountRepo;
         public AuthorizeService(ILogger<AuthorizeService> logger, IUnitOfWork unitOfWork, IConfiguration configuration) : base(logger, unitOfWork)
         {
-            _accountRepo = unitOfWork.Accounts;
             _configuration = configuration;
         }
 
@@ -52,6 +50,20 @@ namespace ship_convenient.Services.AuthorizeService
         public Task<ApiResponse<ResponseLoginModel>> Login(LoginFirebaseModel model)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<ApiResponse> LogOut(Guid accountId)
+        {
+            ApiResponse response = new();
+            Account? account = _accountRepo.GetById(accountId);
+            if (account != null)
+            {
+                account.RegistrationToken = string.Empty;
+                _accountRepo.Update(account);
+                await _unitOfWork.CompleteAsync();
+            }
+            response.ToSuccessResponse("Đăng xuất thành công");
+            return response;
         }
     }
 }

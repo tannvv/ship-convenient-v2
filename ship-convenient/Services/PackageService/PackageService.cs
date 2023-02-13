@@ -1140,14 +1140,16 @@ namespace ship_convenient.Services.PackageService
             List<Expression<Func<Package, bool>>> predicates = new();
             #region Predicates
             Expression<Func<Package, bool>> predicateStatus = (pkg) => pkg.Status == PackageStatus.DELIVER_PICKUP;
-        /*    Expression<Func<Package, bool>> predicateTime = (pkg) => Utils.CompareEqualTime(
-                pkg.PickupTimeOver.Subtract(TimeSpan.FromMinutes(15)), DateTime.UtcNow);*/
-            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId == null;
+            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId != null;
             #endregion
             predicates.Add(predicateStatus);
-            // predicates.Add(predicateTime);
             predicates.Add(predicateDeliver);
-            return await _packageRepo.GetAllAsync(predicates: predicates);
+
+            #region Includable
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) =>
+                source.Include(p => p.Deliver);
+            #endregion
+            return await _packageRepo.GetAllAsync(predicates: predicates, include: include);
         }
 
         public async Task<List<Package>> GetPackagesNearTimeDelivery()
@@ -1157,7 +1159,7 @@ namespace ship_convenient.Services.PackageService
             Expression<Func<Package, bool>> predicateStatus = (pkg) => pkg.Status == PackageStatus.DELIVERY;
             Expression<Func<Package, bool>> predicateTime = (pkg) => Utils.CompareEqualTime(
                 pkg.DeliveryTimeOver.Subtract(TimeSpan.FromMinutes(15)), DateTime.UtcNow);
-            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId == null;
+            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId != null;
             #endregion
             predicates.Add(predicateStatus);
             predicates.Add(predicateTime);

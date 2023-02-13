@@ -57,5 +57,22 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpPost("logout")]
+        [SwaggerOperation(Summary = "Logout")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Logout(LogOutModel model)
+        {
+            try
+            {
+                ApiResponse logoutResponse = await _authorizeService.LogOut(model.AccountId);
+                return SendResponse(logoutResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Logout exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }
