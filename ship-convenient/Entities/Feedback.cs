@@ -8,7 +8,7 @@ namespace ship_convenient.Entities
         public double Rating { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
-        public string TypeOfFeedback { get; set; } = string.Empty;
+        public string FeedbackFor { get; set; } = string.Empty;
         public Guid PackageId { get; set; }
         public Package? Package { get; set; }
         public Guid AccountId { get; set; }
@@ -21,7 +21,7 @@ namespace ship_convenient.Entities
             model.Id = this.Id;
             model.Content = this.Content;
             model.Rating = this.Rating;
-            model.TypeOfFeedback = this.TypeOfFeedback;
+            model.FeedbackFor = this.FeedbackFor;
             model.PackageId = this.PackageId;
             model.AccountId = this.AccountId;
             model.CreatedAt = this.CreatedAt;

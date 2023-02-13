@@ -8,7 +8,7 @@ namespace ship_convenient.Model.FeedbackModel
         public Guid Id { get; set; }
         public string Content { get; set; } = string.Empty;
         public double Rating { get; set; }
-        public string TypeOfFeedback { get; set; } = string.Empty;
+        public string FeedbackFor { get; set; } = string.Empty;
         public Guid PackageId { get; set; }
         public Guid AccountId { get; set; }
         public DateTime CreatedAt { get; set; }

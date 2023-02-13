@@ -146,17 +146,17 @@ namespace ship_convenient.Services.FeedbackService
                 .Include(feed => feed.Package);
             #endregion
             #region Predicates
-            Expression<Func<Feedback, bool>> filterSender = (feed) =>
-                feed.Package!.SenderId.Equals(accountId) && feed.TypeOfFeedback == TypeOfFeedback.DELIVER;
-            Expression<Func<Feedback, bool>> filterDeliver = (feed) =>
-              feed.Package!.DeliverId.Equals(accountId) && feed.TypeOfFeedback == TypeOfFeedback.SENDER;
+            Expression<Func<Feedback, bool>> filterSenderRole = (feed) =>
+                feed.Package!.SenderId.Equals(accountId) && feed.FeedbackFor == FeedbackFor.SENDER;
+            Expression<Func<Feedback, bool>> filterDeliverRole = (feed) =>
+              feed.Package!.DeliverId.Equals(accountId) && feed.FeedbackFor == FeedbackFor.DELIVER;
             #endregion
-            List<Feedback> feedbackOfSenders = await _feedbackRepo.GetAllAsync(include: includeable, predicate: filterSender);
-            List<Feedback> feedbackOfDelivers = await _feedbackRepo.GetAllAsync(include: includeable, predicate: filterDeliver);
-            int totalRatingSender = feedbackOfSenders.Count;
-            int totalRatingDeliver = feedbackOfDelivers.Count;
-            double averageRatingSender = feedbackOfSenders.Sum(feed => feed.Rating) / totalRatingSender;
-            double averageRatingDeliver = feedbackOfDelivers.Sum(feed => feed.Rating) / totalRatingDeliver;
+            List<Feedback> feedbackOfSendersRole = await _feedbackRepo.GetAllAsync(include: includeable, predicate: filterSenderRole);
+            List<Feedback> feedbackOfDeliversRole = await _feedbackRepo.GetAllAsync(include: includeable, predicate: filterDeliverRole);
+            int totalRatingSender = feedbackOfSendersRole.Count;
+            int totalRatingDeliver = feedbackOfDeliversRole.Count;
+            double averageRatingSender = feedbackOfSendersRole.Sum(feed => feed.Rating) / totalRatingSender;
+            double averageRatingDeliver = feedbackOfDeliversRole.Sum(feed => feed.Rating) / totalRatingDeliver;
             RatingAccountModel model = new()
             {
                 TotalRatingSender = totalRatingSender,
