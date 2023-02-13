@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using ship_convenient.Config;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +22,7 @@ builder.Services.AddDIService();
 builder.Services.AddCorsApp();
 builder.Services.AddSwaggerApp();
 builder.Services.AddHTTPLogingExtension();
-// builder.Services.AddFirebaseApp();
+builder.Services.AddBackgroundServices();
 #endregion
 
 var app = builder.Build();

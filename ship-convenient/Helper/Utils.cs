@@ -28,5 +28,16 @@ namespace ship_convenient.Helper
 
             return hash.ToString();
         }
+
+        public static bool CompareEqualTime(DateTime time1, DateTime time2)
+        {
+            bool isEqualYear = time1.Year == time2.Year;
+            bool isEqualMonth = time1.Month == time2.Month;
+            bool isEqualDay = time1.Day == time2.Day;
+            bool isEqualHour = time1.Hour == time2.Hour;
+            bool isEqualMinute = time1.Minute == time2.Minute;
+            return isEqualYear && isEqualMonth && isEqualDay && isEqualHour && isEqualMinute;
+        }
+  
     }
 }

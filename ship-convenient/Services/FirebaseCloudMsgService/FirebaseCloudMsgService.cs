@@ -43,6 +43,7 @@ namespace ship_convenient.Services.FirebaseCloudMsgService
                     AccountId = model.AccountId,
                     Title = model.Title,
                     Content = model.Body,
+                    TypeOfNotification = model.TypeOfNotification
                 };
                 await _notificationRepo.InsertAsync(notification);
                 response.ToSuccessResponse($"Gửi thông báo thành công - {responseFirebase}");

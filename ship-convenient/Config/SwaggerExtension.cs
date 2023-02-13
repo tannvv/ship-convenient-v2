@@ -1,4 +1,7 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 
 namespace ship_convenient.Config
 {
@@ -10,9 +13,7 @@ namespace ship_convenient.Config
             {
                 c.EnableAnnotations();
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Convenient way", Version = "v1" });
-            
             });
-         
         }
     }
 }

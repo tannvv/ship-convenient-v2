@@ -17,5 +17,7 @@
         public const string REFUND_SUCCESS = "REFUND_SUCCESS";
         public const string REFUND_FAILED = "REFUND_FAILED";
         public const string NOT_EXIST = "NOT_EXIST";
+        public const string PICKUP_TIME = "PICKUP_TIME";
+        public const string DELIVERY_TIME = "DELIVERY_TIME";
     }
 }

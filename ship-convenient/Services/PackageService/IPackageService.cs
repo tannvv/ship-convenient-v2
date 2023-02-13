@@ -1,4 +1,5 @@
 ﻿using ship_convenient.Core.CoreModel;
+using ship_convenient.Entities;
 using unitofwork_core.Model.PackageModel;
 
 namespace ship_convenient.Services.PackageService
@@ -21,5 +22,7 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponse> RefundSuccess(Guid packageId);
         Task<ApiResponse> RefundFailed(Guid packageId);
         Task<ApiResponsePaginated<ResponseComboPackageModel>> SuggestCombo(Guid shipperId, int pageIndex, int pageSize);
+        Task<List<Package>> GetPackagesNearTimePickup();
+        Task<List<Package>> GetPackagesNearTimeDelivery();
     }
 }

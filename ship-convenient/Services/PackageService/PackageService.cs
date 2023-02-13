@@ -29,7 +29,7 @@ namespace ship_convenient.Services.PackageService
         private readonly ITransactionPackageRepository _transactionPackageRepo;
         private readonly ITransactionRepository _transactionRepo;
         private readonly IConfigRepository _configRepo;
-        private readonly IRouteRepository routeRepo;
+        private readonly IRouteRepository _routeRepo;
         private readonly IMapboxService _mapboxService;
         private readonly IFirebaseCloudMsgService _fcmService;
 
@@ -39,7 +39,7 @@ namespace ship_convenient.Services.PackageService
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
             _configRepo = unitOfWork.Configs;
-            routeRepo = unitOfWork.Routes;
+            _routeRepo = unitOfWork.Routes;
 
             _mapboxService = mapboxService;
             _fcmService = fcmService;
@@ -1045,7 +1045,7 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Thông tin người dùng chưa được tạo");
                 return response;
             }
-            Route? route = await routeRepo.FirstOrDefaultAsync(
+            Route? route = await _routeRepo.FirstOrDefaultAsync(
                     predicate: (rou) => rou.InfoUserId == deliver!.InfoUser!.Id && rou.IsActive == true);
             if (route == null)
             {
@@ -1133,6 +1133,36 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             return response;
+        }
+
+        public async Task<List<Package>> GetPackagesNearTimePickup()
+        {
+            List<Expression<Func<Package, bool>>> predicates = new();
+            #region Predicates
+            Expression<Func<Package, bool>> predicateStatus = (pkg) => pkg.Status == PackageStatus.DELIVER_PICKUP;
+        /*    Expression<Func<Package, bool>> predicateTime = (pkg) => Utils.CompareEqualTime(
+                pkg.PickupTimeOver.Subtract(TimeSpan.FromMinutes(15)), DateTime.UtcNow);*/
+            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId == null;
+            #endregion
+            predicates.Add(predicateStatus);
+            // predicates.Add(predicateTime);
+            predicates.Add(predicateDeliver);
+            return await _packageRepo.GetAllAsync(predicates: predicates);
+        }
+
+        public async Task<List<Package>> GetPackagesNearTimeDelivery()
+        {
+            List<Expression<Func<Package, bool>>> predicates = new();
+            #region Predicates
+            Expression<Func<Package, bool>> predicateStatus = (pkg) => pkg.Status == PackageStatus.DELIVERY;
+            Expression<Func<Package, bool>> predicateTime = (pkg) => Utils.CompareEqualTime(
+                pkg.DeliveryTimeOver.Subtract(TimeSpan.FromMinutes(15)), DateTime.UtcNow);
+            Expression<Func<Package, bool>> predicateDeliver = (pkg) => pkg.DeliverId == null;
+            #endregion
+            predicates.Add(predicateStatus);
+            predicates.Add(predicateTime);
+            predicates.Add(predicateDeliver);
+            return await _packageRepo.GetAllAsync(predicates: predicates);
         }
     }
 }
