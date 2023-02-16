@@ -42,7 +42,7 @@ namespace ship_convenient.Core.Context
             {
                 connectionString = _configuration.GetConnectionString("AzureConnection");
             }
-            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DevConnectionPartner"));
+            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ClusterConnection"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
