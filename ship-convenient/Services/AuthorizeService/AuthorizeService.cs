@@ -25,7 +25,7 @@ namespace ship_convenient.Services.AuthorizeService
 
             Func<IQueryable<Account>, IIncludableQueryable<Account, object?>> include = (acc) => acc.Include(a => a.InfoUser).ThenInclude(info => info != null ? info.Routes : null);
             Expression<Func<Account, bool>> predicate = (acc) => 
-                acc.UserName == model.UserName && acc.Password == model.Password;
+                (acc.UserName == model.UserName || acc.InfoUser.Phone == model.UserName) && acc.Password == model.Password;
             Account? account = await _accountRepo.FirstOrDefaultAsync(predicate: predicate, include: include, disableTracking: false);
             if (account != null)
             {
