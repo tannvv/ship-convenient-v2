@@ -21,7 +21,7 @@ namespace ship_convenient.Services.MapboxService
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_configuration["Mapbox:uriDirection"] + model.From.Longitude + "," + model.From.Latitude + ";" + model.To.Longitude + "," + model.To.Latitude + _configuration["Mapbox:endUriDirection"])
+                RequestUri = new Uri(_configuration["Mapbox:uriDirection"] + model.GetCoordsQuery() + _configuration["Mapbox:endUriDirection"])
             };
             _logger.LogDebug("Request mapbox uri: " + request.RequestUri);
             using (var response = await client.SendAsync(request))
@@ -57,10 +57,11 @@ namespace ship_convenient.Services.MapboxService
             List<ResponsePolyLineModel> result;
             JObject bodyResponse;
             HttpClient client = new HttpClient();
+            
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_configuration["Mapbox:uriDirection"] + model.From.Longitude + "," + model.From.Latitude + ";" + model.To.Longitude + "," + model.To.Latitude + _configuration["Mapbox:endUriDirection"])
+                RequestUri = new Uri(_configuration["Mapbox:uriDirection"] + model.GetCoordsQuery() + _configuration["Mapbox:endUriDirection"])
             };
             _logger.LogDebug("Request mapbox uri: " + request.RequestUri);
             using (var response = await client.SendAsync(request))
