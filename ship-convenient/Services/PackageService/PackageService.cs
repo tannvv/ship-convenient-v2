@@ -1047,11 +1047,11 @@ namespace ship_convenient.Services.PackageService
             }
             Route? route = await _routeRepo.FirstOrDefaultAsync(
                     predicate: (rou) => rou.InfoUserId == deliver!.InfoUser!.Id && rou.IsActive == true);
-            if (route == null)
-            {
-                response.ToFailedResponse("Chưa chọn tuyến đường");
-                return response;
-            }
+            /* if (route == null)
+             {
+                 response.ToFailedResponse("Chưa chọn tuyến đường");
+                 return response;
+             }*/
             if (pageIndex < 0 || pageSize < 1)
             {
                 response.ToFailedResponse("Thông tin phân trang không hợp lệ");
@@ -1059,10 +1059,6 @@ namespace ship_convenient.Services.PackageService
             }
             #endregion
 
-            GeoCoordinate homeCoordinate = new GeoCoordinate(route.FromLatitude, route.FromLongitude);
-            GeoCoordinate destinationCoordinate = new GeoCoordinate(route.ToLatitude, route.ToLongitude);
-
-            PolyLineModel polyLineShipper = await _mapboxService.GetPolyLineModel(homeCoordinate, destinationCoordinate);
 
             #region Includale package
             Func<IQueryable<Package>, IIncludableQueryable<Package, object>> include = (source) => source.Include(p => p.Products);
@@ -1072,14 +1068,26 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             #region Find packages valid spacing
-            List<ResponsePackageModel> packagesValid = new List<ResponsePackageModel>();
-            List<Package> packages = (await _packageRepo.GetAllAsync(include: include, predicate: predicate)).ToList();
-            int packageCount = packages.Count;
-            for (int i = 0; i < packageCount; i++)
+            List<ResponsePackageModel> packagesValid;
+            if (route == null)
             {
-                bool isValidOrder = MapHelper.ValidDestinationBetweenShipperAndPackage(polyLineShipper, packages[i]);
-                _logger.LogInformation($"Package valid destination: {packages[i].Id}");
-                if (isValidOrder) packagesValid.Add(packages[i].ToResponseModel());
+                packagesValid = _packageRepo.GetAllAsync(include: include, predicate: predicate).Result.Select(p => p.ToResponseModel()).ToList();
+            }
+            else {
+                GeoCoordinate homeCoordinate = new GeoCoordinate(route.FromLatitude, route.FromLongitude);
+                GeoCoordinate destinationCoordinate = new GeoCoordinate(route.ToLatitude, route.ToLongitude);
+
+                PolyLineModel polyLineShipper = await _mapboxService.GetPolyLineModel(homeCoordinate, destinationCoordinate);
+
+                packagesValid = new();
+                List<Package> packages = (await _packageRepo.GetAllAsync(include: include, predicate: predicate)).ToList();
+                int packageCount = packages.Count;
+                for (int i = 0; i < packageCount; i++)
+                {
+                    bool isValidOrder = MapHelper.ValidDestinationBetweenShipperAndPackage(polyLineShipper, packages[i]);
+                    _logger.LogInformation($"Package valid destination: {packages[i].Id}");
+                    if (isValidOrder) packagesValid.Add(packages[i].ToResponseModel());
+                }
             }
             #endregion
 
