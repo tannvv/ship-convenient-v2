@@ -72,6 +72,22 @@ namespace ship_convenient.Controllers
             }
         }
 
+        [HttpPost("is-valid")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> IsValid(VerifyValidAccountModel model)
+        {
+            try
+            {
+                ApiResponse response = await _accountService.IsCanCreate(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Is valid account exception : " + ex.Message.Substring(0, 300));
+                return BadRequest(ex);
+            }
+        }
+
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(UpdateAccountModel model)
@@ -120,5 +136,7 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex);
             }
         }
+
+        
     }
 }

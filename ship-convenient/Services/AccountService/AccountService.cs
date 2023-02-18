@@ -23,6 +23,28 @@ namespace ship_convenient.Services.AccountService
             _infoUserRepo = unitOfWork.InfoUsers;
         }
 
+        public async Task<ApiResponse> IsCanCreate(VerifyValidAccountModel model)
+        {
+            ApiResponse response = new();
+            #region verify params
+            InfoUser? _checkPhone = await _infoUserRepo.FirstOrDefaultAsync(
+                   predicate: (ac) => ac.Phone == model.Phone);
+            if (_checkPhone != null)
+            {
+                response.ToFailedResponse("Số điện thoại đã tồn tại, không thể đăng kí");
+                return response;
+            }
+            Account? _checkUserName = await _accountRepo.FirstOrDefaultAsync(
+                    predicate: (ac) => ac.UserName == model.UserName);
+            if (_checkUserName != null)
+            {
+                response.ToFailedResponse("Tên đăng nhập đã tồn tại, không thể đăng kí");
+                return response;
+            }
+            #endregion
+            response.ToSuccessResponse("Thông tin hợp lệ để đăng kí");
+            return response;
+        }
         public async Task<ApiResponse<ResponseAccountModel>> Create(CreateAccountModel model)
         {
             ApiResponse<ResponseAccountModel> response = new();
