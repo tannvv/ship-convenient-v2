@@ -75,7 +75,7 @@ namespace ship_convenient.Controllers
         [HttpPost("is-valid")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> IsValid(VerifyValidAccountModel model)
-        {
+        { 
             try
             {
                 ApiResponse response = await _accountService.IsCanCreate(model);
