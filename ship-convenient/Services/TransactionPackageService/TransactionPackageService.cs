@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.UnitOfWork;
@@ -14,13 +15,61 @@ namespace ship_convenient.Services.TransactionPackageService
     public class TransactionPackageService : GenericService<TransactionPackageService>, ITransactionPackageService
     {
         private readonly ITransactionPackageRepository _transactionsPackageRepo;
-        private readonly IPackageRepository _packageRepo;
-        private readonly IAccountRepository _accountRepo;
         public TransactionPackageService(ILogger<TransactionPackageService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
             _transactionsPackageRepo = unitOfWork.TransactionPackages;
-            _packageRepo = unitOfWork.Packages;
-            _accountRepo = unitOfWork.Accounts;
+        }
+
+        public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetCancelPackages(Guid deliverId, Guid senderId, string status, int pageIndex, int pageSize)
+        {
+            ApiResponsePaginated<ResponseCancelPackageModel> response = new();
+            string? errorPaging = VerifyPaging(pageIndex, pageSize);
+            if (errorPaging != null)
+            {
+                response.ToFailedResponse(errorPaging);
+                return response;
+            }
+
+            #region Predicate
+            List<Expression<Func<Package, bool>>> predicates = new();
+            if (deliverId != Guid.Empty)
+            {
+                predicates.Add((source) => source.DeliverId == deliverId);
+            }
+            if (senderId != Guid.Empty)
+            {
+                predicates.Add((source) => source.SenderId == senderId);
+            }
+            if (!string.IsNullOrEmpty(status))
+            {
+                predicates.Add((source) => source.Status == status);
+            }
+            #endregion
+            #region Includable
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.TransactionPackages);
+            #endregion
+            #region Selector
+            Expression<Func<Package, ResponseCancelPackageModel>> selector;
+            if (status == PackageStatus.SENDER_CANCEL)
+            {
+                selector = (source) => source.ToSenderCancelPackage();
+            }
+            else // if(status == PackageStatus.DELIVER_CANCEL)
+            {
+                selector = (source) => source.ToDeliverCancelPackage();
+            }
+            #endregion
+            #region OrderBy
+            Func<IQueryable<Package>, IOrderedQueryable<Package>> orderBy = (source) => source.OrderByDescending(p => p.ModifiedAt);
+            #endregion
+            PaginatedList<ResponseCancelPackageModel> packages = await _packageRepo.GetPagedListAsync(
+                    predicates: predicates,
+                    include: include,
+                    selector: selector,
+                    orderBy: orderBy,
+                    pageIndex: pageIndex, pageSize: pageSize);
+            response.SetData(packages, "Lấy thông tin thành công");
+            return response;
         }
 
         public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetDeliverCancelPackage(Guid deliverId, int pageIndex, int pageSize)
@@ -85,6 +134,8 @@ namespace ship_convenient.Services.TransactionPackageService
             }
             return response;
         }
+
+        
 
         public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetSenderCancelPackage(Guid senderId, int pageIndex, int pageSize)
         {

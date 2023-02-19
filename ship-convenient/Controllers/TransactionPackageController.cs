@@ -4,6 +4,7 @@ using ship_convenient.Core.CoreModel;
 using ship_convenient.Model.PackageModel;
 using ship_convenient.Model.TransactionPackageModel;
 using ship_convenient.Services.TransactionPackageService;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace ship_convenient.Controllers
 {
@@ -66,6 +67,25 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
+
+        [HttpGet("cancel-package")]
+        [SwaggerOperation(Summary = "Allowed status DELIVER_CANCEL, SENDER_CANCEL")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseCancelPackageModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetCancelPackage(Guid deliverId, Guid senderId, string status, int pageIndex = 0, int pageSize = 20)
+        {
+            try
+            {
+                ApiResponsePaginated<ResponseCancelPackageModel> response = await _transactionPackageService.GetCancelPackages(deliverId, senderId, status, pageIndex, pageSize);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get cancel package: " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+        
+       
     }
 
 }

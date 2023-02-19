@@ -28,7 +28,6 @@ namespace ship_convenient.Services.PackageService
     {
         private readonly ITransactionPackageRepository _transactionPackageRepo;
         private readonly ITransactionRepository _transactionRepo;
-        private readonly IConfigRepository _configRepo;
         private readonly IRouteRepository _routeRepo;
         private readonly IMapboxService _mapboxService;
         private readonly IFirebaseCloudMsgService _fcmService;
@@ -38,7 +37,6 @@ namespace ship_convenient.Services.PackageService
         {
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
-            _configRepo = unitOfWork.Configs;
             _routeRepo = unitOfWork.Routes;
 
             _mapboxService = mapboxService;
@@ -306,11 +304,11 @@ namespace ship_convenient.Services.PackageService
             int countPackage = items.Count;
             if (countPackage > 0)
             {
-                response.Message = "Không tìm không đơn hàng";
+                response.Message = "Lấy thông tin thành công";
             }
             else
             {
-                response.Message = "Lấy thông tin đơn hàng thành công";
+                response.Message = "Không tìm thấy đơn hàng";
             }
             #endregion
             return response;
