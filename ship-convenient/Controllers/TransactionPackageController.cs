@@ -71,7 +71,7 @@ namespace ship_convenient.Controllers
         [HttpGet("cancel-package")]
         [SwaggerOperation(Summary = "Allowed status DELIVER_CANCEL, SENDER_CANCEL")]
         [ProducesResponseType(typeof(ApiResponse<ResponseCancelPackageModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetCancelPackage(Guid deliverId, Guid senderId, string status, int pageIndex = 0, int pageSize = 20)
+        public async Task<IActionResult> GetCancelPackage(Guid? deliverId, Guid? senderId, string status, int pageIndex = 0, int pageSize = 20)
         {
             try
             {

@@ -20,7 +20,7 @@ namespace ship_convenient.Services.TransactionPackageService
             _transactionsPackageRepo = unitOfWork.TransactionPackages;
         }
 
-        public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetCancelPackages(Guid deliverId, Guid senderId, string status, int pageIndex, int pageSize)
+        public async Task<ApiResponsePaginated<ResponseCancelPackageModel>> GetCancelPackages(Guid? deliverId, Guid? senderId, string status, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseCancelPackageModel> response = new();
             string? errorPaging = VerifyPaging(pageIndex, pageSize);
@@ -32,11 +32,11 @@ namespace ship_convenient.Services.TransactionPackageService
 
             #region Predicate
             List<Expression<Func<Package, bool>>> predicates = new();
-            if (deliverId != Guid.Empty)
+            if (deliverId != null)
             {
                 predicates.Add((source) => source.DeliverId == deliverId);
             }
-            if (senderId != Guid.Empty)
+            if (senderId != null)
             {
                 predicates.Add((source) => source.SenderId == senderId);
             }
