@@ -46,7 +46,8 @@ namespace ship_convenient.Services.TransactionPackageService
             }
             #endregion
             #region Includable
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.TransactionPackages);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.TransactionPackages)
+                                        .Include(p => p.Sender).Include(p => p.Deliver);
             #endregion
             #region Selector
             Expression<Func<Package, ResponseCancelPackageModel>> selector;
