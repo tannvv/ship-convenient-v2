@@ -1062,7 +1062,7 @@ namespace ship_convenient.Services.PackageService
             Func<IQueryable<Package>, IIncludableQueryable<Package, object>> include = (source) => source.Include(p => p.Products);
             #endregion
             #region Predicate package
-            Expression<Func<Package, bool>> predicate = (source) => source.Status == PackageStatus.APPROVED;
+            Expression<Func<Package, bool>> predicate = (source) => source.Status == PackageStatus.APPROVED && source.SenderId != deliverId;
             #endregion
 
             #region Find packages valid spacing
