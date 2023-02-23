@@ -47,6 +47,7 @@ namespace ship_convenient.Services.TransactionPackageService
             #endregion
             #region Includable
             Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.TransactionPackages)
+                                        .Include(p => p.Products)
                                         .Include(p => p.Sender).ThenInclude(a => a != null ? a.InfoUser : null)
                                         .Include(p => p.Deliver).ThenInclude(a => a != null ? a.InfoUser : null);
             #endregion
