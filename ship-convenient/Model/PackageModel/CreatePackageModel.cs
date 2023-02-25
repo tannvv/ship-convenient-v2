@@ -18,7 +18,9 @@ namespace unitofwork_core.Model.PackageModel
         [Phone]
         public string ReceiverPhone { get; set; } = string.Empty;
         public double Distance { get; set; }
-        public double Volume { get; set; }
+        public double Height { get; set; }
+        public double Width { get; set; }
+        public double Length { get; set; }
         public double Weight { get; set; }
         public int PriceShip { get; set; }
         public string PhotoUrl { get; set; } = string.Empty;
@@ -36,7 +38,9 @@ namespace unitofwork_core.Model.PackageModel
             entity.DestinationLongitude = this.DestinationLongitude;
             entity.DestinationLatitude = this.DestinationLatitude;
             entity.Distance = this.Distance;
-            entity.Volume = this.Volume;
+            entity.Height = this.Height;
+            entity.Width = this.Width;
+            entity.Length = this.Length;
             entity.Weight = this.Weight;
             entity.ReceiverName = this.ReceiverName;
             entity.ReceiverPhone = this.ReceiverPhone;

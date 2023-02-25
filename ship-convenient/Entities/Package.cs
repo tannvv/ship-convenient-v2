@@ -15,7 +15,9 @@ namespace ship_convenient.Entities
         public double Distance { get; set; }
         public string ReceiverName { get; set; } = string.Empty;
         public string ReceiverPhone { get; set; } = string.Empty;
-        public double Volume { get; set; }
+        public double Height { get; set; }
+        public double Width { get; set; }
+        public double Length { get; set; }
         public double Weight { get; set; }
         public string Status { get; set; } = string.Empty;
         public int PriceShip { get; set; }
@@ -64,7 +66,9 @@ namespace ship_convenient.Entities
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;
-            model.Volume = this.Volume;
+            model.Height = this.Height;
+            model.Width = this.Width;
+            model.Length = this.Length;
             model.Weight = this.Weight;
             model.Status = this.Status;
             model.PriceShip = this.PriceShip;
@@ -97,7 +101,9 @@ namespace ship_convenient.Entities
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;
-            model.Volume = this.Volume;
+            model.Length = this.Length;
+            model.Width = this.Width;
+            model.Height = this.Height;
             model.Weight = this.Weight;
             model.Status = this.Status;
             model.PriceShip = this.PriceShip;
@@ -137,7 +143,9 @@ namespace ship_convenient.Entities
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;
-            model.Volume = this.Volume;
+            model.Length = this.Length;
+            model.Width = this.Width;
+            model.Height = this.Height;
             model.Weight = this.Weight;
             model.Status = this.Status;
             model.PriceShip = this.PriceShip;

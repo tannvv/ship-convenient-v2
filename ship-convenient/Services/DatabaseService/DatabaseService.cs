@@ -154,7 +154,9 @@ namespace ship_convenient.Services.DatabaseService
                 .RuleFor(o => o.Distance, faker => faker.Random.Double(min: 2.5, max: 20))
                 .RuleFor(o => o.ReceiverName, faker => faker.Person.FullName)
                 .RuleFor(o => o.ReceiverPhone, faker => faker.Person.Phone)
-                .RuleFor(o => o.Volume, faker => faker.Random.Double(min: 5, max: 50))
+                .RuleFor(o => o.Height, faker => faker.Random.Double(min: 0.2, max: 0.8))
+                .RuleFor(o => o.Width, faker => faker.Random.Double(min: 0.2, max: 0.8))
+                .RuleFor(o => o.Length, faker => faker.Random.Double(min: 0.2, max: 0.8))
                 .RuleFor(o => o.Weight, faker => faker.Random.Int(5, 20))
                 .RuleFor(o => o.PhotoUrl, faker => faker.Image.ToString())
                 .RuleFor(o => o.Note, faker => faker.Lorem.Sentence(6))
@@ -176,7 +178,9 @@ namespace ship_convenient.Services.DatabaseService
                 packageNew.Distance = faker.Random.Double(min: 2.5, max: 20);
                 packageNew.ReceiverName = faker.Person.FullName;
                 packageNew.ReceiverPhone = faker.Person.Phone;
-                packageNew.Volume = faker.Random.Double(min: 5, max: 50);
+                packageNew.Width = faker.Random.Double(min: 0.2, max: 0.8);
+                packageNew.Length = faker.Random.Double(min: 0.2, max: 0.8);
+                packageNew.Height = faker.Random.Double(min: 0.2, max: 0.8);
                 packageNew.Weight = faker.Random.Int(5, 20);
                 packageNew.PhotoUrl = packages[i].PhotoUrl;
                 packageNew.Note = faker.Lorem.Sentence(6);
