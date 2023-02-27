@@ -8,6 +8,7 @@ namespace unitofwork_core.Model.PackageModel
 {
     public class CreatePackageModel
     {
+        public Guid? Id { get; set; }
         public string StartAddress { get; set; } = string.Empty;
         public double StartLongitude { get; set; }
         public double StartLatitude { get; set; }
@@ -31,6 +32,9 @@ namespace unitofwork_core.Model.PackageModel
         public PackageEntity ConverToEntity()
         {
             PackageEntity entity = new PackageEntity();
+            if (Id == null || Id == Guid.Empty) {
+                Id = new Guid();
+            }
             entity.StartAddress = this.StartAddress;
             entity.StartLongitude = this.StartLongitude;
             entity.StartLatitude = this.StartLatitude;
