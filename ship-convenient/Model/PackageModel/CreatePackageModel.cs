@@ -35,6 +35,7 @@ namespace unitofwork_core.Model.PackageModel
             if (Id == null || Id == Guid.Empty) {
                 Id = new Guid();
             }
+            entity.Id = this.Id.Value;
             entity.StartAddress = this.StartAddress;
             entity.StartLongitude = this.StartLongitude;
             entity.StartLatitude = this.StartLatitude;
