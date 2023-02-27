@@ -317,7 +317,7 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> RefundFailed(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
-            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
+            Package? package = await _packageRepo.GetByIdAsync(packageId,include: source => source.Include(p => p.Sender), disableTracking: false);
             #region Verify params
             if (package == null)
             {
@@ -340,6 +340,25 @@ namespace ship_convenient.Services.PackageService
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.REFUND_FAILED;
             #endregion
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Hoàn trả thành công";
+            notification.Content = "Đơn hàng của bạn đã được hoàn trả thành công";
+            notification.AccountId = package.Sender!.Id;
+            notification.TypeOfNotification = TypeOfNotification.REFUND_SUCCESS;
+            #endregion
+
+            int result = await _unitOfWork.CompleteAsync();
+            #region Send notification
+            if (result > 0)
+            {
+                #region Send notification to sender
+                if (package.Sender != null && !string.IsNullOrEmpty(package.Sender.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notification);
+                #endregion
+            }
+            #endregion
+
             await _unitOfWork.CompleteAsync();
 
             return response;
@@ -452,6 +471,7 @@ namespace ship_convenient.Services.PackageService
             notification.AccountId = sender.Id;
             notification.TypeOfNotification = TypeOfNotification.REFUND_SUCCESS;
             #endregion
+            
             int result = await _unitOfWork.CompleteAsync();
             #region Send notification
             if (result > 0)
@@ -1022,6 +1042,65 @@ namespace ship_convenient.Services.PackageService
                 response.ToSuccessResponse("Yêu cầu thành công");
             }
             else {
+                response.ToFailedResponse("Yêu cầu không thành công");
+            }
+            return response;
+        }
+
+        public async Task<ApiResponse> SenderConfirmDeliveryFailed(Guid packageId)
+        {
+            ApiResponse response = new ApiResponse();
+
+            #region Includable pakage
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
+            #endregion
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
+
+            #region Predicate
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            #endregion
+
+            #region Verify params
+            if (package == null)
+            {
+                response.ToFailedResponse("Gói hàng không tồn tại");
+                return response;
+            }
+            if (package.Status != PackageStatus.DELIVERED)
+            {
+                response.ToFailedResponse("Gói hàng chưa được giao để có thể hoàn thành");
+                return response;
+            }
+          
+            #endregion
+
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.SENDER_CONFIRM_DELIVERED_FAILED;
+            history.Description = $"Người gửi xác nhận chưa giao hàng thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.PackageId = package.Id;
+
+            package.Status = history.ToStatus;
+            await _transactionPackageRepo.InsertAsync(history);
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                Notification notification = new Notification();
+                notification.Title = "Xác nhận chưa giao hàng!";
+                notification.Content = "Người gửi đã xác bạn chưa giao hàng thành công\n" +
+                    "Đơn hàng này được đánh dấu là có sự cố, bạn vui lòng lên trung tâm để giải quyết!!!\nMã đơn hàng: " + package.Id;
+                notification.AccountId = package.Deliver!.Id;
+                string? errorMsg = await SenNotificationToAccount(_fcmService, notification);
+                if (errorMsg != null)
+                {
+                    response.ToSuccessResponse("Yêu cầu thành công - " + errorMsg);
+                }
+                response.ToSuccessResponse("Yêu cầu thành công");
+            }
+            else
+            {
                 response.ToFailedResponse("Yêu cầu không thành công");
             }
             return response;

@@ -32,6 +32,7 @@ namespace ship_convenient.Core.UnitOfWork
         public ITransactionPackageRepository TransactionPackages { get; private set; }
 
         public IVehicleRepository Vehicles { get; private set; }
+        public IReportRepository Reports { get; private set; }
         public UnitOfWork(AppDbContext context, ILogger<UnitOfWork> logger)
         {
             _context = context;
@@ -49,6 +50,7 @@ namespace ship_convenient.Core.UnitOfWork
             Vehicles = new VehicleRepository(context, logger);
             Deposits = new DepositRepository(context, logger);
             Feedbacks = new FeedbackRepository(context, logger);
+            Reports = new ReportRepository(context, logger);
         }
 
         public async Task<int> CompleteAsync()

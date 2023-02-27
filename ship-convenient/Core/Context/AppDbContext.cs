@@ -27,6 +27,7 @@ namespace ship_convenient.Core.Context
         public virtual DbSet<Feedback> Feedbacks => Set<Feedback>();
         public virtual DbSet<Transaction> Transactions => Set<Transaction>();
         public virtual DbSet<TransactionPackage> TransactionPackages => Set<TransactionPackage>();
+        public virtual DbSet<Report> Reports => Set<Report>();
 
         #endregion
 
