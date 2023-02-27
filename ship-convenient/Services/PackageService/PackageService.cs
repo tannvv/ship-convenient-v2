@@ -622,7 +622,7 @@ namespace ship_convenient.Services.PackageService
                     totalPriceCombo += pr.Price;
                 });
             });
-            if (deliver == null || deliver.Balance < totalPriceCombo)
+            if (deliver == null || deliver.Balance < totalPriceCombo + 100000)
             {
                 errors.Add("Số dư ví không đủ để thực hiện nhận gói hàng");
             }
@@ -804,7 +804,7 @@ namespace ship_convenient.Services.PackageService
                     totalPrice += pr.Price;
                 });
             }
-            if (deliver == null || deliver.Balance < totalPrice)
+            if (deliver == null || deliver.Balance < totalPrice + 100000)
             {
                 response.ToFailedResponse("Số dư ví không đủ để thực hiện nhận gói hàng");
                 return response;
