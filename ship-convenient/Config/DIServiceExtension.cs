@@ -38,6 +38,7 @@ namespace ship_convenient.Config
             services.AddTransient<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IConfigService, ConfigService>();
+            services.AddScoped<PackageUtils>();
         }
     }
 }

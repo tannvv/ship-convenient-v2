@@ -31,9 +31,11 @@ namespace ship_convenient.Services.PackageService
         private readonly IRouteRepository _routeRepo;
         private readonly IMapboxService _mapboxService;
         private readonly IFirebaseCloudMsgService _fcmService;
-
+        private readonly PackageUtils _packageUtils;
+        
         public PackageService(ILogger<PackageService> logger, IUnitOfWork unitOfWork,
-            IMapboxService mapboxService, IFirebaseCloudMsgService fcmService) : base(logger, unitOfWork)
+            IMapboxService mapboxService, IFirebaseCloudMsgService fcmService, 
+            PackageUtils packageUtils) : base(logger, unitOfWork)
         {
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
@@ -41,7 +43,7 @@ namespace ship_convenient.Services.PackageService
 
             _mapboxService = mapboxService;
             _fcmService = fcmService;
-           
+            _packageUtils = packageUtils;
         }
 
         public async Task<ApiResponse<ResponsePackageModel>> Create(CreatePackageModel model)
@@ -642,7 +644,8 @@ namespace ship_convenient.Services.PackageService
                     totalPriceCombo += pr.Price;
                 });
             });
-            if (deliver == null || deliver.Balance < totalPriceCombo + 100000)
+            int availableBalance = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            if (deliver == null || availableBalance < totalPriceCombo)
             {
                 errors.Add("Số dư ví không đủ để thực hiện nhận gói hàng");
             }
@@ -824,7 +827,8 @@ namespace ship_convenient.Services.PackageService
                     totalPrice += pr.Price;
                 });
             }
-            if (deliver == null || deliver.Balance < totalPrice + 100000)
+            int availableBalance = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            if (deliver == null || availableBalance < totalPrice)
             {
                 response.ToFailedResponse("Số dư ví không đủ để thực hiện nhận gói hàng");
                 return response;
@@ -1106,9 +1110,10 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponseComboPackageModel>> SuggestCombo(Guid deliverId, int pageIndex, int pageSize)
+        public async Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestCombo(Guid deliverId)
         {
-            ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();
+            /*ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();*/
+            ApiResponse<List<ResponseComboPackageModel>> response = new();
             #region Verify params
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId
                 , include: (source) => source.Include(acc => acc.InfoUser));
@@ -1129,11 +1134,11 @@ namespace ship_convenient.Services.PackageService
                  response.ToFailedResponse("Chưa chọn tuyến đường");
                  return response;
              }*/
-            if (pageIndex < 0 || pageSize < 1)
+           /* if (pageIndex < 0 || pageSize < 1)
             {
                 response.ToFailedResponse("Thông tin phân trang không hợp lệ");
                 return response;
-            }
+            }*/
             #endregion
 
 
@@ -1212,9 +1217,19 @@ namespace ship_convenient.Services.PackageService
                 }
 
             }
-            PaginatedList<ResponseComboPackageModel> responseList = await combos.ToPaginatedListAsync(pageIndex, pageSize);
+            #region Valid combo with balance
+            int balanceAvailable = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            combos = combos
+                .Where(c => balanceAvailable - c.ComboPrice >= 0).ToList();
+            #endregion
+
+            /*PaginatedList<ResponseComboPackageModel> responseList = 
+                await combos.ToPaginatedListAsync(pageIndex, pageSize);
             response.SetData(responseList);
-            response.ToSuccessResponse("Lấy những đề xuất combo");
+            response.ToSuccessResponse("Lấy những đề xuất combo");*/
+            int maxSuggestCombo = _configRepo.GetMaxSuggestCombo();
+            List<ResponseComboPackageModel> result = combos.Take(maxSuggestCombo).ToList();
+            response.ToSuccessResponse(result, "Lấy đề xuất thành công");
             #endregion
 
             return response;

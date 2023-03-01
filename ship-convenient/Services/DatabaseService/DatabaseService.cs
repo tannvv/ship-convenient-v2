@@ -127,6 +127,18 @@ namespace ship_convenient.Services.DatabaseService
                 Note = "1000",
                 ModifiedBy = admin.Id
             };
+            ConfigApp configBalanceDefault = new ConfigApp
+            {
+                Name = ConfigConstant.DEFAULT_BALANCE_NEW_ACCOUNT,
+                Note = "100000",
+                ModifiedBy = admin.Id
+            };
+            ConfigApp configMaxSuggestCombo = new ConfigApp
+            {
+                Name = ConfigConstant.DEFAULT_BALANCE_NEW_ACCOUNT,
+                Note = "4",
+                ModifiedBy = admin.Id
+            };
             ConfigApp configMaxPickupSameTime = new ConfigApp
             {
                 Name = ConfigConstant.MAX_PICKUP_SAME_TIME,
@@ -140,7 +152,7 @@ namespace ship_convenient.Services.DatabaseService
                 ModifiedBy = admin.Id
             };
             List<ConfigApp> configApps = new List<ConfigApp> {
-                configProfit, configProfitRefund, configMinimumDistance, configMaxPickupSameTime, configMaxCreateRoute
+                configProfit, configProfitRefund, configMinimumDistance, configMaxPickupSameTime, configMaxCreateRoute, configBalanceDefault, configMaxSuggestCombo
             };
             await _configRepo.InsertAsync(configApps);
 
@@ -189,8 +201,8 @@ namespace ship_convenient.Services.DatabaseService
                 packageNew.Sender = packages[i].Sender;
 
                 Faker<Product> FakerProduct = new Faker<Product>()
-                       .RuleFor(p => p.Name, faker => faker.Lorem.Letter(2))
-                       .RuleFor(p => p.Price, faker => faker.Random.Int(100, 200) * 1000)
+                       .RuleFor(p => p.Name, faker => string.Join(" ", faker.Lorem.Words()))
+                       .RuleFor(p => p.Price, faker => faker.Random.Int(20, 150) * 1000)
                        .RuleFor(p => p.Description, faker => faker.Lorem.Sentence(1));
                 List<Product> products = FakerProduct.Generate(2);
                 List<Product> products2 = FakerProduct.Generate(2);

@@ -70,12 +70,13 @@ namespace ship_convenient.Controllers
 
         [HttpGet("combos")]
         [SwaggerOperation(Summary = "Get suggest combos")]
-        [ProducesResponseType(typeof(ApiResponsePaginated<ResponseComboPackageModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> SuggestCombo(Guid deliverId, int pageIndex = 0, int pageSize = 20)
+        [ProducesResponseType(typeof(ApiResponse<List<ResponseComboPackageModel>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SuggestCombo(Guid deliverId)
         {
             try
             {
-                ApiResponsePaginated<ResponseComboPackageModel> response = await _packageService.SuggestCombo(deliverId, pageIndex, pageSize);
+                /*ApiResponsePaginated<ResponseComboPackageModel> response = await _packageService.SuggestCombo(deliverId, pageIndex, pageSize);*/
+                ApiResponse<List<ResponseComboPackageModel>> response = await _packageService.SuggestCombo(deliverId);
                 return SendResponse(response);
             }
             catch (HttpRequestException ex)
