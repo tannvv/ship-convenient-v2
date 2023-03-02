@@ -135,7 +135,7 @@ namespace ship_convenient.Services.DatabaseService
             };
             ConfigApp configMaxSuggestCombo = new ConfigApp
             {
-                Name = ConfigConstant.DEFAULT_BALANCE_NEW_ACCOUNT,
+                Name = ConfigConstant.MAX_SUGGEST_COMBO,
                 Note = "4",
                 ModifiedBy = admin.Id
             };

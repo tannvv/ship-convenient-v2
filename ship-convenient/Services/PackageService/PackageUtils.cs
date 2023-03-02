@@ -31,6 +31,7 @@ namespace ship_convenient.Services.PackageService
             if (await IsNewDeliver(deliverId)) {
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
                 result += balanceDefault;
+                return result;
             };
             List<string> validStatus = new() {
                 PackageStatus.DELIVER_PICKUP
