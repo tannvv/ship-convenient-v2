@@ -49,6 +49,7 @@ namespace ship_convenient.Services.GoongService
         {
             List<ResponseSearchModel> result = new List<ResponseSearchModel>();
             HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(60);
             string endUri = "&latlng=" + latitude + "," + longitude;
             HttpRequestMessage request = new HttpRequestMessage
             {
@@ -84,6 +85,7 @@ namespace ship_convenient.Services.GoongService
             }
 
             HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(60);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
@@ -124,6 +126,7 @@ namespace ship_convenient.Services.GoongService
         {
             ResponseSearchModel? result = null;
             HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(60);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
@@ -152,10 +155,12 @@ namespace ship_convenient.Services.GoongService
             }
 
             HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(60);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
-                RequestUri = new Uri(_configuration["Goong:uriSearch"] + endUri)
+                RequestUri = new Uri(_configuration["Goong:uriSearch"] + endUri),
+                
             };
             _logger.LogInformation("Request goong uri: " + request.RequestUri);
             using (var response = await client.SendAsync(request))
