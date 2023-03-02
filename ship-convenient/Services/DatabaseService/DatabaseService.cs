@@ -151,8 +151,14 @@ namespace ship_convenient.Services.DatabaseService
                 Note = "3",
                 ModifiedBy = admin.Id
             };
+            ConfigApp configMaxCancelInDay = new ConfigApp
+            {
+                Name = ConfigConstant.MAX_CANCEL_IN_DAY,
+                Note = "2",
+                ModifiedBy = admin.Id
+            };
             List<ConfigApp> configApps = new List<ConfigApp> {
-                configProfit, configProfitRefund, configMinimumDistance, configMaxPickupSameTime, configMaxCreateRoute, configBalanceDefault, configMaxSuggestCombo
+                configProfit, configProfitRefund, configMinimumDistance, configMaxPickupSameTime, configMaxCreateRoute, configBalanceDefault, configMaxSuggestCombo, configMaxCancelInDay
             };
             await _configRepo.InsertAsync(configApps);
 

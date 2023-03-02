@@ -49,7 +49,7 @@ namespace ship_convenient.Services.GoongService
         {
             List<ResponseSearchModel> result = new List<ResponseSearchModel>();
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(200);
             string endUri = "&latlng=" + latitude + "," + longitude;
             HttpRequestMessage request = new HttpRequestMessage
             {
@@ -85,7 +85,7 @@ namespace ship_convenient.Services.GoongService
             }
 
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(200);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
@@ -126,7 +126,7 @@ namespace ship_convenient.Services.GoongService
         {
             ResponseSearchModel? result = null;
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(200);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
@@ -155,7 +155,7 @@ namespace ship_convenient.Services.GoongService
             }
 
             HttpClient client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(60);
+            client.Timeout = TimeSpan.FromSeconds(200);
             HttpRequestMessage request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get,
@@ -180,6 +180,54 @@ namespace ship_convenient.Services.GoongService
             }
             return result;
         }
+
+        public async Task<ApiResponse<List<ResponseSearchDefaultModel>>> SearchLocationDefault(string search, double longitude, double latitude)
+        {
+            ApiResponse<List<ResponseSearchDefaultModel>> response = new();
+            string endUri = $"&input={search}";
+            if (longitude != 0 && latitude != 0)
+            {
+                endUri = endUri + $"&location={latitude},{longitude}";
+            }
+
+            HttpClient client = new HttpClient();
+            client.Timeout = TimeSpan.FromSeconds(60);
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(_configuration["Goong:uriSearch"] + endUri),
+
+            };
+            _logger.LogInformation("Request goong uri: " + request.RequestUri);
+            List<ResponseSearchDefaultModel> locations = new();
+            using (var responseGoong = await client.SendAsync(request))
+            {
+                responseGoong.EnsureSuccessStatusCode();
+                string body = await responseGoong.Content.ReadAsStringAsync();
+                if (!body.Equals(string.Empty))
+                {
+                    JObject jObject = JObject.Parse(body);
+                    int count = jObject["predictions"]!.Count();
+                    for (int i = 0; i < count; i++)
+                    {
+                        string placeId = jObject["predictions"]![i]!["place_id"]!.ToString();
+                        string description = jObject["predictions"]![i]!["description"]!.ToString();
+                        locations.Add(new ResponseSearchDefaultModel(placeId, description));
+                    }
+                }
+            }
+            if (locations.Count > 0)
+            {
+                response.ToSuccessResponse(locations, "Lấy thông tin thành công");
+            }
+            else
+            {
+                response.ToSuccessResponse("Không tìm thấy kết quả");
+            }
+            return response;
+        }
+
+       
 
 
     }

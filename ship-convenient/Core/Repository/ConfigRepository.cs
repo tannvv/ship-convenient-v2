@@ -41,6 +41,16 @@ namespace ship_convenient.Core.Repository
             throw new ArgumentNullException("Không tìm thấy thông tin cấu hình");
         }
 
+        public int GetMaxCancelInDay()
+        {
+            ConfigApp? configApp = _dbSet.FirstOrDefault(con => con.Name.Equals(ConfigConstant.MAX_CANCEL_IN_DAY));
+            if (configApp != null)
+            {
+                return int.Parse(configApp.Note);
+            }
+            throw new ArgumentNullException("Không tìm thấy thông tin cấu hình");
+        }
+
         public int GetMaxSuggestCombo()
         {
             ConfigApp? configApp = _dbSet.FirstOrDefault(con => con.Name.Equals(ConfigConstant.MAX_SUGGEST_COMBO));

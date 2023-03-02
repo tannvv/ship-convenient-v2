@@ -38,6 +38,14 @@ namespace ship_convenient.Helper
             bool isEqualMinute = time1.Minute == time2.Minute;
             return isEqualYear && isEqualMonth && isEqualDay && isEqualHour && isEqualMinute;
         }
-  
+
+
+        public static bool IsTimeToday(DateTime time)
+        {
+            bool isEqualYear = time.Year == DateTime.UtcNow.Year;
+            bool isEqualMonth = time.Month == DateTime.UtcNow.Month;
+            bool isEqualDay = time.Day == DateTime.UtcNow.Day;
+            return isEqualYear && isEqualMonth && isEqualDay;
+        }
     }
 }

@@ -814,6 +814,7 @@ namespace ship_convenient.Services.PackageService
                     response.ToFailedResponse("Có gói hàng không tồn tại không ở trạng thái chờ để duyệt");
                     return response;
                 }
+              
                 packages.Add(package);
             }
 
@@ -831,6 +832,11 @@ namespace ship_convenient.Services.PackageService
             if (deliver == null || availableBalance < totalPrice)
             {
                 response.ToFailedResponse("Số dư ví không đủ để thực hiện nhận gói hàng");
+                return response;
+            }
+            if (await _packageUtils.IsMaxCancelInDay(deliverId))
+            {
+                response.ToFailedResponse("Bạn đã hủy quá nhiều gói hàng trong ngày, không thể tiếp tục nhận hàng");
                 return response;
             }
             #endregion

@@ -36,6 +36,22 @@ namespace ship_convenient.Controllers
             }
         }
 
+        [HttpGet("search-default")]
+        [SwaggerOperation(summary: "Default search only location in HCM city")]
+        public async Task<ActionResult<ApiResponse<List<ResponseSearchDefaultModel>>>> SearchApiDefault(string search, double longitude = 106.64849987615482, double latitude = 10.807953964793464)
+        {
+            try
+            {
+                ApiResponse<List<ResponseSearchDefaultModel>> response = await _goongService.SearchLocationDefault(search, longitude, latitude);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Exception api goongng : " + ex.Message.Substring(0, 200));
+                return StatusCode(500, ex.Message);
+            }
+        }
+
 
         [HttpGet("detail")]
         [SwaggerOperation(summary: "Default search only location in HCM city")]

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
+using ship_convenient.Helper;
 using ship_convenient.Services.GenericService;
 using unitofwork_core.Constant.ConfigConstant;
 using unitofwork_core.Constant.Package;
@@ -20,7 +21,7 @@ namespace ship_convenient.Services.PackageService
             bool result = false;
             List<Package> packages = await _packageRepo.GetAllAsync(
                 predicate: p => p.DeliverId == deliverId);
-            Account? deliver = await _accountRepo.GetByIdAsync(deliverId); 
+            Account? deliver = await _accountRepo.GetByIdAsync(deliverId);
             if (packages.Count == 0 || deliver?.Balance > 0) result = true;
             return result;
         }
@@ -31,7 +32,7 @@ namespace ship_convenient.Services.PackageService
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
                 result += balanceDefault;
             };
-            List<string> validStatus = new() { 
+            List<string> validStatus = new() {
                 PackageStatus.DELIVER_PICKUP
             };
             List<Package> packages = await _packageRepo.GetAllAsync(
@@ -60,6 +61,15 @@ namespace ship_convenient.Services.PackageService
         {
             bool result = false;
             if (accountBalance - combo.ComboPrice >= 0) result = true;
+            return result;
+        }
+
+        public async Task<bool> IsMaxCancelInDay(Guid deliverId) {
+            bool result = false;
+            List<Package> packages = await _packageRepo.GetAllAsync(
+                predicate: p => p.DeliverId == deliverId && p.Status == PackageStatus.DELIVER_CANCEL);
+            packages = packages.Where(p => Utils.IsTimeToday(p.ModifiedAt)).ToList();
+            if (packages.Count > _configRepo.GetMaxCancelInDay()) result = true;
             return result;
         }
     }

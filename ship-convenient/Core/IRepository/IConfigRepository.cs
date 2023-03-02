@@ -12,5 +12,6 @@ namespace ship_convenient.Core.IRepository
         int GetMaxRouteCreate();
         int GetDefaultBalanceNewAccount();
         int GetMaxSuggestCombo();
+        int GetMaxCancelInDay();
     }
 }

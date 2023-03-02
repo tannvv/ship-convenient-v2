@@ -19,6 +19,8 @@ namespace ship_convenient.Services.ConfigService
             return response;
         }
 
+
+
         public async Task<ApiResponse<ConfigApp>> Update(UpdateConfigModel model)
         {
             ApiResponse<ConfigApp> response = new();

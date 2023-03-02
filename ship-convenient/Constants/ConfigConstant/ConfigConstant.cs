@@ -12,5 +12,6 @@
         public const string DEFAULT_BALANCE_NEW_ACCOUNT = "DEFAULT_BALANCE_NEW_ACCOUNT";
         public const string MAX_SUGGEST_COMBO = "MAX_SUGGEST_COMBO";
 
+        public const string MAX_CANCEL_IN_DAY = "MAX_CANCEL_IN_DAY";
     }
 }

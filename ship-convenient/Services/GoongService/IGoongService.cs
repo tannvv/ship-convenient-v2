@@ -10,5 +10,6 @@ namespace ship_convenient.Services.GoongService
         Task<ApiResponse<ResponseSearchModel?>> DetailPlaceApi(string placeId);
         Task<ApiResponse<List<ResponseSearchModel>>> GeocodingLocation(double longitude, double latitude);
         Task<ApiResponse<List<ResponseSearchModel>>> SearchLocation(string search, double longitude, double latitude);
+        Task<ApiResponse<List<ResponseSearchDefaultModel>>> SearchLocationDefault(string search, double longitude, double latitude);
     }
 }
