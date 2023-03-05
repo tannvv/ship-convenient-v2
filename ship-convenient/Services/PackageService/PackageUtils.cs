@@ -16,49 +16,6 @@ namespace ship_convenient.Services.PackageService
         {
         }
 
-        public async Task<bool> IsNewDeliver(Guid deliverId)
-        {
-            bool result = false;
-            List<Package> packages = await _packageRepo.GetAllAsync(
-                predicate: p => p.DeliverId == deliverId);
-            Account? deliver = await _accountRepo.GetByIdAsync(deliverId);
-            if (packages.Count <=1) result = true;
-            if (deliver?.Balance > 0) result = false;
-            return result;
-        }
-
-        public async Task<int> BalanceAvailableDeliver(Guid deliverId) {
-            int result = 0;
-            if (await IsNewDeliver(deliverId)) {
-                int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
-                result += balanceDefault;
-                return result;
-            };
-            List<string> validStatus = new() {
-                PackageStatus.DELIVER_PICKUP
-            };
-            List<Package> packages = await _packageRepo.GetAllAsync(
-                include: source => source.Include(p => p.Products),
-                predicate: p => validStatus.Contains(p.Status) && p.DeliverId == deliverId);
-            int totalBalanceNotAvaiable = 0;
-            foreach (var item in packages) {
-                totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
-            }
-            Account? deliver = await _accountRepo.GetByIdAsync(deliverId);
-            if (deliver == null) throw new ArgumentException("Tài khoản không tồn tại");
-            return deliver.Balance - totalBalanceNotAvaiable;
-        }
-
-        public bool IsValidPackageBalance(int accountBalance, ResponsePackageModel package) {
-            bool result = false;
-            int priceOfPackage = 0;
-            foreach (var item in package.Products) {
-                priceOfPackage += item.Price;
-            }
-            if (accountBalance - priceOfPackage >= 0) result = true;
-            return result;
-        }
-
         public bool IsValidComboBalance(int accountBalance, ResponseComboPackageModel combo)
         {
             bool result = false;

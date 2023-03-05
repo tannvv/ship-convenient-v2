@@ -11,6 +11,7 @@ using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Helper;
 using ship_convenient.Model.MapboxModel;
+using ship_convenient.Services.AccountService;
 using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GenericService;
 using ship_convenient.Services.MapboxService;
@@ -32,10 +33,11 @@ namespace ship_convenient.Services.PackageService
         private readonly IMapboxService _mapboxService;
         private readonly IFirebaseCloudMsgService _fcmService;
         private readonly PackageUtils _packageUtils;
+        private readonly AccountUtils _accountUtils;
         
         public PackageService(ILogger<PackageService> logger, IUnitOfWork unitOfWork,
             IMapboxService mapboxService, IFirebaseCloudMsgService fcmService, 
-            PackageUtils packageUtils) : base(logger, unitOfWork)
+            PackageUtils packageUtils, AccountUtils accountUtils) : base(logger, unitOfWork)
         {
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
@@ -44,6 +46,7 @@ namespace ship_convenient.Services.PackageService
             _mapboxService = mapboxService;
             _fcmService = fcmService;
             _packageUtils = packageUtils;
+            _accountUtils = accountUtils;
         }
 
         public async Task<ApiResponse<ResponsePackageModel>> Create(CreatePackageModel model)
@@ -644,7 +647,7 @@ namespace ship_convenient.Services.PackageService
                     totalPriceCombo += pr.Price;
                 });
             });
-            int availableBalance = await _packageUtils.BalanceAvailableDeliver(deliverId);
+            int availableBalance = await _accountUtils.AvailableBalance(deliverId);
             if (deliver == null || availableBalance < totalPriceCombo)
             {
                 errors.Add("Số dư ví không đủ để thực hiện nhận gói hàng");
@@ -828,7 +831,7 @@ namespace ship_convenient.Services.PackageService
                     totalPrice += pr.Price;
                 });
             }
-            int availableBalance = await _packageUtils.BalanceAvailableDeliver(deliverId);
+            int availableBalance = await _accountUtils.AvailableBalance(deliverId);
             if (deliver == null || availableBalance < totalPrice)
             {
                 response.ToFailedResponse("Số dư ví không đủ để thực hiện nhận gói hàng");
@@ -1224,7 +1227,7 @@ namespace ship_convenient.Services.PackageService
 
             }
             #region Valid combo with balance
-            int balanceAvailable = await _packageUtils.BalanceAvailableDeliver(deliverId);
+            int balanceAvailable = await _accountUtils.AvailableBalance(deliverId);
             combos = combos
                 .Where(c => balanceAvailable - c.ComboPrice >= 0).ToList();
             #endregion
