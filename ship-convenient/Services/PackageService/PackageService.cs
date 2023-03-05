@@ -644,7 +644,7 @@ namespace ship_convenient.Services.PackageService
                     totalPriceCombo += pr.Price;
                 });
             });
-            int availableBalance = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            int availableBalance = await _packageUtils.BalanceAvailableDeliver(deliverId);
             if (deliver == null || availableBalance < totalPriceCombo)
             {
                 errors.Add("Số dư ví không đủ để thực hiện nhận gói hàng");
@@ -1224,7 +1224,7 @@ namespace ship_convenient.Services.PackageService
 
             }
             #region Valid combo with balance
-            int balanceAvailable = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            int balanceAvailable = await _packageUtils.BalanceAvailableDeliver(deliverId);
             combos = combos
                 .Where(c => balanceAvailable - c.ComboPrice >= 0).ToList();
             #endregion

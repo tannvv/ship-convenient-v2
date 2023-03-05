@@ -22,7 +22,8 @@ namespace ship_convenient.Services.PackageService
             List<Package> packages = await _packageRepo.GetAllAsync(
                 predicate: p => p.DeliverId == deliverId);
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId);
-            if (packages.Count <=1 || deliver?.Balance > 0) result = true;
+            if (packages.Count <=1) result = true;
+            if (deliver?.Balance > 0) result = false;
             return result;
         }
 
