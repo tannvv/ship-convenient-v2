@@ -24,6 +24,7 @@ namespace ship_convenient.Controllers
             try
             {
                 ApiResponsePaginated<ResponseAccountModel> response = await _accountService.GetList(userName, status,role, pageIndex, pageSize);
+                
                 return SendResponse(response);
             }
             catch (Exception ex)
