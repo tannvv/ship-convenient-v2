@@ -828,7 +828,7 @@ namespace ship_convenient.Services.PackageService
                     totalPrice += pr.Price;
                 });
             }
-            int availableBalance = await _packageUtils.BalanceAvaiableDeliver(deliverId);
+            int availableBalance = await _packageUtils.BalanceAvailableDeliver(deliverId);
             if (deliver == null || availableBalance < totalPrice)
             {
                 response.ToFailedResponse("Số dư ví không đủ để thực hiện nhận gói hàng");

@@ -14,12 +14,12 @@ namespace ship_convenient.Services.AccountService
 {
     public class AccountService : GenericService<AccountService> ,IAccountService
     {
-        private readonly IAccountRepository _accountRepo;
         private readonly IInfoUserRepository _infoUserRepo;
-        public AccountService(ILogger<AccountService> logger, IUnitOfWork unitOfWork) 
+        private readonly AccountUtils _accountUtils;
+        public AccountService(ILogger<AccountService> logger, IUnitOfWork unitOfWork, AccountUtils accountUtils)
             : base(logger, unitOfWork)
         {
-            _accountRepo = unitOfWork.Accounts;
+            _accountUtils = accountUtils;
             _infoUserRepo = unitOfWork.InfoUsers;
         }
 
@@ -225,6 +225,13 @@ namespace ship_convenient.Services.AccountService
                 repsonse.ToFailedResponse("Có lỗi xảy ra");
             }
             return repsonse;
+        }
+
+        public async Task<ApiResponse<int>> AvailableBalance(Guid accountId)
+        {
+            ApiResponse<int> response = new();
+            response.ToSuccessResponse(await _accountUtils.AvailableBalance(accountId),"Lấy thông tin thành công");
+            return response;
         }
     }
 }

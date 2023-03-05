@@ -39,6 +39,7 @@ namespace ship_convenient.Config
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IConfigService, ConfigService>();
             services.AddScoped<PackageUtils>();
+            services.AddScoped<AccountUtils>();
         }
     }
 }

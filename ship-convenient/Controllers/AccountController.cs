@@ -53,6 +53,26 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex);
             }
         }
+        [HttpGet("available-balance")]
+        [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetBalance(Guid accountId)
+        {
+            try
+            {
+                ApiResponse<int> response = await _accountService.AvailableBalance(accountId);
+                if (response.Success == false)
+                {
+                    return BadRequest(response);
+                }
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get account exception : " + ex.Message.Substring(0, 300));
+                return BadRequest(ex);
+            }
+        }
+
 
         [HttpPost]
         [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]
@@ -136,6 +156,8 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex);
             }
         }
+
+        
 
         
     }

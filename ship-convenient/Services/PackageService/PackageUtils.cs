@@ -22,11 +22,11 @@ namespace ship_convenient.Services.PackageService
             List<Package> packages = await _packageRepo.GetAllAsync(
                 predicate: p => p.DeliverId == deliverId);
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId);
-            if (packages.Count == 0 || deliver?.Balance > 0) result = true;
+            if (packages.Count <=1 || deliver?.Balance > 0) result = true;
             return result;
         }
 
-        public async Task<int> BalanceAvaiableDeliver(Guid deliverId) {
+        public async Task<int> BalanceAvailableDeliver(Guid deliverId) {
             int result = 0;
             if (await IsNewDeliver(deliverId)) {
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
