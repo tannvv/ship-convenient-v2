@@ -596,7 +596,7 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponseListError> DeliverConfirmPackages(List<Guid> packageIds, Guid deliverId)
+        public async Task<ApiResponseListError> ConfirmPackages(Guid packageId)
         {
             ApiResponseListError response = new ApiResponseListError();
 
@@ -607,39 +607,27 @@ namespace ship_convenient.Services.PackageService
             Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
             #endregion
 
-            Account? deliver = await _accountRepo.GetByIdAsync(deliverId, disableTracking: false, include: (source) => source.Include(acc => acc.InfoUser));
             Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(
                 predicate: predicateAdminBalance, disableTracking: false);
 
             #region Verify params
-            List<Package> packages = new List<Package>();
             List<string> errors = new List<string>();
 
-            if (deliver == null || adminBalance == null)
-            {
-                errors.Add("UserId không tồn tại, không tìm thấy ví hệ thống");
-            }
             #region Checking packages valid
-            foreach (Guid id in packageIds)
+            Package? package = await _packageRepo.GetByIdAsync(packageId, include: includePackage, disableTracking: false);
+            if (package == null)
             {
-                Package? package = await _packageRepo.GetByIdAsync(id, include: includePackage, disableTracking: false);
-                if (package == null)
+                string error = $"Có gói hàng không tồn tại id: {packageId}";
+                errors.Add(error);
+            }
+            else
+            {
+                if (package.Status != PackageStatus.DELIVER_PICKUP)
                 {
-                    string error = $"Có gói hàng không tồn tại id: {id}";
+                    string error = $"Có gói hàng không ở trạng thái đã chọn id: {package.Id}-{package.Status}";
                     errors.Add(error);
                 }
-                else
-                {
-                    if (package.Status != PackageStatus.DELIVER_PICKUP)
-                    {
-                        string error = $"Có gói hàng không ở trạng thái đã chọn id: {id}-{package.Status}";
-                        errors.Add(error);
-                    }
-                    else
-                    {
-                        packages.Add(package);
-                    }
-                }
+                
             }
             #endregion
             /*#region Checking balance
@@ -667,72 +655,28 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             #region Create transations, history and update wallet deliver and system
-            int pakageCount = packages.Count();
-            for (int i = 0; i < pakageCount; i++)
-            {
-                Package package = packages[i];
-                /*int packagePrice = 0;
-                package.Products.ToList().ForEach(pr =>
-                {
-                    totalPriceCombo += pr.Price;
-                    packagePrice += pr.Price;
-                });
-                _logger.LogInformation("Total price package: " + packagePrice);
-                #region Create transactions
-                Transaction systemTrans = new Transaction();
-                systemTrans.Title = TransactionTitle.RECEIVE;
-                systemTrans.Description = $"Người giao ({deliver!.Id})" + "đã nhận gói hàng với id: " + package.Id;
-                systemTrans.Status = TransactionStatus.ACCOMPLISHED;
-                systemTrans.TransactionType = TransactionType.PICKUP;
-                systemTrans.CoinExchange = totalPriceCombo;
-                systemTrans.BalanceWallet = adminBalance!.Balance + packagePrice;
-                systemTrans.PackageId = package.Id;
-                systemTrans.AccountId = adminBalance.Id;
-
-                Transaction deliverTrans = new Transaction();
-                deliverTrans.Title = TransactionTitle.RECEIVE;
-                deliverTrans.Description = "Đã nhận đơn hàng id : " + package.Id;
-                deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
-                deliverTrans.TransactionType = TransactionType.PICKUP;
-                deliverTrans.CoinExchange = -packagePrice;
-                deliverTrans.BalanceWallet = deliver!.Balance - packagePrice;
-                deliverTrans.PackageId = package.Id;
-                deliverTrans.AccountId = deliver.Id;
-
-                adminBalance.Balance = adminBalance.Balance + packagePrice;
-                deliver.Balance = deliver.Balance - packagePrice;
-
-                package.DeliverId = deliver.Id;
-
-                List<Transaction> transactions = new List<Transaction> {
-                    systemTrans, deliverTrans
-                };
-                await _transactionRepo.InsertAsync(transactions);
-                #endregion*/
-
-                #region Create history
-                TransactionPackage history = new TransactionPackage();
-                history.FromStatus = package.Status;
-                history.ToStatus = PackageStatus.DELIVERY;
-                history.Description = $"Người lấy hàng hộ bắt đầu giao hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
-                history.PackageId = package.Id;
-                package.Status = PackageStatus.DELIVERY;
-                await _transactionPackageRepo.InsertAsync(history);
-                #endregion
-            };
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.DELIVERY;
+            history.Description = $"Người lấy hàng hộ bắt đầu giao hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.PackageId = package.Id;
+            package.Status = PackageStatus.DELIVERY;
+            await _transactionPackageRepo.InsertAsync(history);
+            #endregion
             #endregion
             #region Create notification to sender
             Notification notification = new Notification();
             notification.Title = "Gói hàng đang được giao";
-            notification.Content = $"Đơn hàng của bạn đang được giao bởi: {deliver!.GetFullName()}";
+            notification.Content = $"Đơn hàng của bạn đang được giao";
             notification.TypeOfNotification = TypeOfNotification.DELIVERY;
-            notification.AccountId = packages[0].SenderId;
+            notification.AccountId = package.SenderId;
             await _notificationRepo.InsertAsync(notification);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
-                Account? sender = await _accountRepo.GetByIdAsync(packages[0].SenderId);
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
                     await SenNotificationToAccount(_fcmService, notification);
             }
