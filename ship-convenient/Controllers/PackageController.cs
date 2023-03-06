@@ -179,12 +179,13 @@ namespace ship_convenient.Controllers
 
         [HttpPut("confirm-packages")]
         [SwaggerOperation(Summary = "Deliver confirms packages and then delivery them")]
-        [ProducesResponseType(typeof(ActionResult<ApiResponseListError>), StatusCodes.Status200OK)]
+        
+        [ProducesResponseType(typeof(ActionResult<ApiResponse>), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeliverConfirmPackage(Guid packageId)
         {
-            try
+            try  
             {
-                ApiResponseListError response = await _packageService.ConfirmPackages(
+                ApiResponse response = await _packageService.ConfirmPackages(
                     packageId);
                 return SendResponse(response);
             }

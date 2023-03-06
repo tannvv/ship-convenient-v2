@@ -596,9 +596,9 @@ namespace ship_convenient.Services.PackageService
             return response;
         }
 
-        public async Task<ApiResponseListError> ConfirmPackages(Guid packageId)
+        public async Task<ApiResponse> ConfirmPackages(Guid packageId)
         {
-            ApiResponseListError response = new ApiResponseListError();
+            ApiResponse response = new ApiResponse();
 
             #region Includable pakage
             Func<IQueryable<Package>, IIncludableQueryable<Package, object>> includePackage = (source) => source.Include(pk => pk.Products);
@@ -611,23 +611,22 @@ namespace ship_convenient.Services.PackageService
                 predicate: predicateAdminBalance, disableTracking: false);
 
             #region Verify params
-            List<string> errors = new List<string>();
 
             #region Checking packages valid
             Package? package = await _packageRepo.GetByIdAsync(packageId, include: includePackage, disableTracking: false);
             if (package == null)
             {
-                string error = $"Có gói hàng không tồn tại id: {packageId}";
-                errors.Add(error);
+                response.ToFailedResponse("Gói hàng không tồn tại");
+                return response;
             }
             else
             {
                 if (package.Status != PackageStatus.DELIVER_PICKUP)
                 {
-                    string error = $"Có gói hàng không ở trạng thái đã chọn id: {package.Id}-{package.Status}";
-                    errors.Add(error);
+                    response.ToFailedResponse("Gói hàng không ở trạng thái đã nhận, không thể xác nhận");
+                    return response;
                 }
-                
+
             }
             #endregion
             /*#region Checking balance
@@ -646,12 +645,6 @@ namespace ship_convenient.Services.PackageService
             }
 
             #endregion*/
-
-            if (errors.Count > 0)
-            {
-                response.ToFailedResponse(errors);
-                return response;
-            }
             #endregion
 
             #region Create transations, history and update wallet deliver and system
@@ -666,23 +659,43 @@ namespace ship_convenient.Services.PackageService
             #endregion
             #endregion
             #region Create notification to sender
-            Notification notification = new Notification();
-            notification.Title = "Gói hàng đang được giao";
-            notification.Content = $"Đơn hàng của bạn đang được giao";
-            notification.TypeOfNotification = TypeOfNotification.DELIVERY;
-            notification.AccountId = package.SenderId;
-            await _notificationRepo.InsertAsync(notification);
+            Notification notificationSender = new Notification();
+            notificationSender.Title = "Gói hàng đang được giao";
+            notificationSender.Content = $"Đơn hàng của bạn đang được giao\nMã gói hàng: {package.Id}";
+            notificationSender.TypeOfNotification = TypeOfNotification.DELIVERY;
+            notificationSender.AccountId = package.SenderId;
+            await _notificationRepo.InsertAsync(notificationSender);
+            #endregion
+            #region Create notification to deliver
+            Notification notificationDeliver = new Notification();
+            notificationDeliver.Title = "Gói hàng đang được giao";
+            notificationDeliver.Content = $"Bạn đang giao gói hàng\nMã gói hàng: {package.Id}";
+            notificationDeliver.TypeOfNotification = TypeOfNotification.DELIVERY;
+            notificationDeliver.AccountId = package.SenderId;
+            await _notificationRepo.InsertAsync(notificationDeliver);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
-                    await SenNotificationToAccount(_fcmService, notification);
+                    await SenNotificationToAccount(_fcmService, notificationSender);
+
+                if (package.DeliverId != null) {
+                    Account? deliver = await _accountRepo.GetByIdAsync(package.DeliverId.Value);
+                    if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
+                        await SenNotificationToAccount(_fcmService, notificationDeliver);
+                }
             }
             #region Response result
-            response.Success = result > 0 ? true : false;
-            response.Note = result > 0 ? "Nhận hàng để giao thành công" : "Nhận hàng để giao thất bại";
+            if (result > 0)
+            {
+                response.ToSuccessResponse("Yêu cầu thành công");
+            }
+            else
+            {
+                response.ToFailedResponse("Lỗi không xác định");
+            }
             #endregion
 
             return response;
