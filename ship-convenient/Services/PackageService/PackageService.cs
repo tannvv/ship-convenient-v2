@@ -547,8 +547,12 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> DeliverCancelPackage(Guid packageId, string? reason)
         {
             ApiResponse response = new ApiResponse();
-            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
-
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false,
+                include: p => p.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products));
+            Account? deliver = package?.Deliver;
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(
+               predicate: predicateAdminBalance, disableTracking: false);
             #region Verify params
             if (package == null)
             {
@@ -560,6 +564,35 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Gói hàng đang ở trạng thái không thể hủy");
                 return response;
             }
+            #endregion
+            #region Transactions
+            Transaction systemTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.DELIVER_CANCEL;
+            systemTrans.Description = $"Gói hàng đã bị hủy bởi người lấy dùm hàng\nMã gói hàng: {package.Id}";
+            systemTrans.Status = TransactionStatus.ACCOMPLISHED;
+            systemTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            systemTrans.CoinExchange = package.GetPricePackage();
+            systemTrans.BalanceWallet = adminBalance!.Balance + package.GetPricePackage();
+            systemTrans.PackageId = package.Id;
+            systemTrans.AccountId = adminBalance!.Id;
+
+            adminBalance.Balance = systemTrans.BalanceWallet;
+            _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
+
+            Transaction deliverTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.DELIVER_CANCEL;
+            deliverTrans.Description = $"Bạn đã hủy gói hàng\nMã gói hàng: {package.Id}";
+            deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
+            deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            deliverTrans.CoinExchange = - package.GetPricePackage();
+            deliverTrans.BalanceWallet = deliver!.Balance - package.GetPricePackage();
+            deliverTrans.PackageId = package.Id;
+            deliverTrans.AccountId = deliver.Id;
+
+            deliver.Balance = deliverTrans.BalanceWallet;
+            _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
+            await _transactionRepo.InsertAsync(systemTrans);
+            await _transactionRepo.InsertAsync(deliverTrans);
             #endregion
             #region Create history
             TransactionPackage history = new TransactionPackage();
@@ -666,14 +699,6 @@ namespace ship_convenient.Services.PackageService
             notificationSender.AccountId = package.SenderId;
             await _notificationRepo.InsertAsync(notificationSender);
             #endregion
-            #region Create notification to deliver
-            Notification notificationDeliver = new Notification();
-            notificationDeliver.Title = "Gói hàng đang được giao";
-            notificationDeliver.Content = $"Bạn đang giao gói hàng\nMã gói hàng: {package.Id}";
-            notificationDeliver.TypeOfNotification = TypeOfNotification.DELIVERY;
-            notificationDeliver.AccountId = package.SenderId;
-            await _notificationRepo.InsertAsync(notificationDeliver);
-            #endregion
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
@@ -682,6 +707,14 @@ namespace ship_convenient.Services.PackageService
                     await SenNotificationToAccount(_fcmService, notificationSender);
 
                 if (package.DeliverId != null) {
+                    #region Create notification to deliver
+                    Notification notificationDeliver = new Notification();
+                    notificationDeliver.Title = "Gói hàng đang được giao";
+                    notificationDeliver.Content = $"Bạn đang giao gói hàng\nMã gói hàng: {package.Id}";
+                    notificationDeliver.TypeOfNotification = TypeOfNotification.DELIVERY;
+                    notificationDeliver.AccountId = package.DeliverId.Value;
+                    await _notificationRepo.InsertAsync(notificationDeliver);
+                    #endregion
                     Account? deliver = await _accountRepo.GetByIdAsync(package.DeliverId.Value);
                     if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
                         await SenNotificationToAccount(_fcmService, notificationDeliver);
@@ -959,6 +992,7 @@ namespace ship_convenient.Services.PackageService
                 return response;
             }
             #endregion
+            
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;

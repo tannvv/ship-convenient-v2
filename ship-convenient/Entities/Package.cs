@@ -181,6 +181,16 @@ namespace ship_convenient.Entities
             }
             return model;
         }
+
+        public int GetPricePackage() {
+            int price = 0;
+            int countProduct = this.Products.Count;
+            for (int i = 0; i < countProduct; i++)
+            {
+                price += this.Products[i].Price;
+            }
+            return price;
+        }
     }
 }
 
