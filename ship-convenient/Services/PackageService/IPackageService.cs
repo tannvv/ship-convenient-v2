@@ -18,8 +18,8 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponseListError> DeliverConfirmPackages(List<Guid> packageIds, Guid deliverId);
         Task<ApiResponse> DeliverDeliverySuccess(Guid packageId);
         Task<ApiResponse> DeliveryFailed(Guid packageId);
-        Task<ApiResponse> SenderConfirmDeliverySuccess(Guid packageId);
-        Task<ApiResponse> SenderConfirmDeliveryFailed(Guid packageId);
+   /*     Task<ApiResponse> SenderConfirmDeliverySuccess(Guid packageId);
+        Task<ApiResponse> SenderConfirmDeliveryFailed(Guid packageId);*/
         Task<ApiResponse> RefundSuccess(Guid packageId);
         Task<ApiResponse> RefundFailed(Guid packageId);
     /*    Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestCombo(Guid shipperId, int pageIndex, int pageSize);*/
