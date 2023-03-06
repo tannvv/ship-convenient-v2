@@ -55,12 +55,12 @@ namespace ship_convenient.Controllers
             }
         }
         [HttpGet("available-balance")]
-        [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiResponse<ResponseBalanceModel>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetBalance(Guid accountId)
         {
             try
             {
-                ApiResponse<int> response = await _accountService.AvailableBalance(accountId);
+                ApiResponse<ResponseBalanceModel> response = await _accountService.AvailableBalance(accountId);
                 if (response.Success == false)
                 {
                     return BadRequest(response);

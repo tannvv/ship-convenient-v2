@@ -12,7 +12,7 @@ namespace ship_convenient.Services.AccountService
         Task<ApiResponse<ResponseAccountModel>> GetId(Guid id);
         Task<ApiResponse> UpdateRegistrationToken(UpdateTokenModel model);
         Task<ApiResponsePaginated<ResponseAccountModel>> GetList(string? userName, string? status,string? role, int pageIndex, int pageSize);
-        Task<ApiResponse<int>> AvailableBalance(Guid accountId);
+        Task<ApiResponse<ResponseBalanceModel>> AvailableBalance(Guid accountId);
           
     }
 }

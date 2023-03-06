@@ -227,10 +227,10 @@ namespace ship_convenient.Services.AccountService
             return repsonse;
         }
 
-        public async Task<ApiResponse<int>> AvailableBalance(Guid accountId)
+        public async Task<ApiResponse<ResponseBalanceModel>> AvailableBalance(Guid accountId)
         {
-            ApiResponse<int> response = new();
-            response.ToSuccessResponse(await _accountUtils.AvailableBalance(accountId),"Lấy thông tin thành công");
+            ApiResponse<ResponseBalanceModel> response = new();
+            response.ToSuccessResponse(await _accountUtils.AvailableBalanceModel(accountId),"Lấy thông tin thành công");
             return response;
         }
     }
