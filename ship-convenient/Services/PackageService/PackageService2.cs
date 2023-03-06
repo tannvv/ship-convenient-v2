@@ -1,4 +1,4 @@
-﻿using GeoCoordinatePortable;
+﻿/*using GeoCoordinatePortable;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using ship_convenient.Constants.AccountConstant;
@@ -34,9 +34,9 @@ namespace ship_convenient.Services.PackageService
         private readonly IFirebaseCloudMsgService _fcmService;
         private readonly PackageUtils _packageUtils;
         private readonly AccountUtils _accountUtils;
-
+        
         public PackageService(ILogger<PackageService> logger, IUnitOfWork unitOfWork,
-            IMapboxService mapboxService, IFirebaseCloudMsgService fcmService,
+            IMapboxService mapboxService, IFirebaseCloudMsgService fcmService, 
             PackageUtils packageUtils, AccountUtils accountUtils) : base(logger, unitOfWork)
         {
             _transactionPackageRepo = unitOfWork.TransactionPackages;
@@ -121,11 +121,10 @@ namespace ship_convenient.Services.PackageService
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             string? errorSendNotification;
-            if (result > 0)
-            {
+            if (result > 0) {
                 #region Send notification to sender
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
-                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken)) 
                     errorSendNotification = await SenNotificationToAccount(_fcmService, notification);
                 #endregion
             }
@@ -174,11 +173,10 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
+            if (result > 0) {
                 #region Send notification to sender
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
-                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken)) 
                     await SenNotificationToAccount(_fcmService, notification);
                 #endregion
             }
@@ -285,12 +283,12 @@ namespace ship_convenient.Services.PackageService
             if (status != null)
             {
                 string[] statuses = status.Split(",");
-                /* int length = statuses.Count();
+                *//* int length = statuses.Count();
                  for (int i = 0; i < length; i++)
                  {
                      Expression<Func<Package, bool>> filterStatus = (p) => p.Status.Equals(statuses[i].ToString());
                      predicates.Add(filterStatus);
-                 }*/
+                 }*//*
                 Expression<Func<Package, bool>> filterStatus = (p) => statuses.Contains(p.Status);
                 predicates.Add(filterStatus);
             }
@@ -324,7 +322,7 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> RefundFailed(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
-            Package? package = await _packageRepo.GetByIdAsync(packageId, include: source => source.Include(p => p.Sender), disableTracking: false);
+            Package? package = await _packageRepo.GetByIdAsync(packageId,include: source => source.Include(p => p.Sender), disableTracking: false);
             #region Verify params
             if (package == null)
             {
@@ -478,7 +476,7 @@ namespace ship_convenient.Services.PackageService
             notification.AccountId = sender.Id;
             notification.TypeOfNotification = TypeOfNotification.REFUND_SUCCESS;
             #endregion
-
+            
             int result = await _unitOfWork.CompleteAsync();
             #region Send notification
             if (result > 0)
@@ -528,8 +526,7 @@ namespace ship_convenient.Services.PackageService
             await _notificationRepo.InsertAsync(notification);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
+            if (result > 0) {
                 #region Send notification to sender
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
@@ -580,8 +577,7 @@ namespace ship_convenient.Services.PackageService
             await _notificationRepo.InsertAsync(notification);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
+            if (result > 0) {
                 #region Send notification to sender
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
@@ -608,7 +604,7 @@ namespace ship_convenient.Services.PackageService
             #endregion
 
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId, disableTracking: false, include: (source) => source.Include(acc => acc.InfoUser));
-            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(
+            Account ? adminBalance = await _accountRepo.FirstOrDefaultAsync(
                 predicate: predicateAdminBalance, disableTracking: false);
 
             #region Verify params
@@ -642,7 +638,7 @@ namespace ship_convenient.Services.PackageService
                 }
             }
             #endregion
-            /*#region Checking balance
+            #region Checking balance
             int totalPriceCombo = 0;
             packages.ForEach(p =>
             {
@@ -657,7 +653,7 @@ namespace ship_convenient.Services.PackageService
                 errors.Add("Số dư ví không đủ để thực hiện nhận gói hàng");
             }
 
-            #endregion*/
+            #endregion
 
             if (errors.Count > 0)
             {
@@ -671,7 +667,7 @@ namespace ship_convenient.Services.PackageService
             for (int i = 0; i < pakageCount; i++)
             {
                 Package package = packages[i];
-                /*int packagePrice = 0;
+                int packagePrice = 0;
                 package.Products.ToList().ForEach(pr =>
                 {
                     totalPriceCombo += pr.Price;
@@ -708,13 +704,13 @@ namespace ship_convenient.Services.PackageService
                     systemTrans, deliverTrans
                 };
                 await _transactionRepo.InsertAsync(transactions);
-                #endregion*/
+                #endregion
 
                 #region Create history
                 TransactionPackage history = new TransactionPackage();
                 history.FromStatus = package.Status;
                 history.ToStatus = PackageStatus.DELIVERY;
-                history.Description = $"Người lấy hàng hộ bắt đầu giao hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+                history.Description = $"Người giao đang giao đơn hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
                 history.PackageId = package.Id;
                 package.Status = PackageStatus.DELIVERY;
                 await _transactionPackageRepo.InsertAsync(history);
@@ -723,8 +719,8 @@ namespace ship_convenient.Services.PackageService
             #endregion
             #region Create notification to sender
             Notification notification = new Notification();
-            notification.Title = "Gói hàng đang được giao";
-            notification.Content = $"Đơn hàng của bạn đang được giao bởi: {deliver!.GetFullName()}";
+            notification.Title = "Đơn hàng đã được nhận";
+            notification.Content = $"Đơn hàng của bạn đang được giao bởi: {deliver!.GetFullName()}" ;
             notification.TypeOfNotification = TypeOfNotification.DELIVERY;
             notification.AccountId = packages[0].SenderId;
             await _notificationRepo.InsertAsync(notification);
@@ -747,22 +743,7 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> DeliverDeliverySuccess(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
-            decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE)) / 100;
-
-
-            #region Includable pakage
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => 
-                            source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
-            #endregion
-            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
-
-            #region Predicate
-            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
-            #endregion
-
-            Account? deliver = package?.Deliver;
-            Account? sender = package?.Sender;
-            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicateAdminBalance, disableTracking: false);
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
 
             #region Verify params
             if (package == null)
@@ -775,105 +756,31 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Gói hàng không ở trạng thái đang giao để chuyển sang giao thành công");
                 return response;
             }
-            if (deliver == null)
-            {
-                response.ToFailedResponse("Người lấy dùm hàng không tồn tại");
-                return response;
-            }
-            if (sender == null)
-            {
-                response.ToFailedResponse("Người nhớ lấy hàng không tồn tại");
-                return response;
-            }
-            if (adminBalance == null)
-            {
-                response.ToFailedResponse("Không tìm thấy ví hệ thống");
-                return response;
-            }
-            #endregion
-            int totalPrice = 0;
-            package.Products.ToList().ForEach(pr =>
-            {
-                totalPrice += pr.Price;
-            });
-            _logger.LogInformation($"Profit percent: {profitPercent} ,Total price : {totalPrice}");
-            #region Create transactions
-            Transaction systemTrans = new Transaction();
-            systemTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
-            systemTrans.Description = $"Gói hàng {package.Id} đã được giao thành công";
-            systemTrans.Status = TransactionStatus.ACCOMPLISHED;
-            systemTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
-            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent - totalPrice);
-            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
-            systemTrans.PackageId = package.Id;
-            systemTrans.AccountId = adminBalance.Id;
-            _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
-
-            Transaction deliverTrans = new Transaction();
-            deliverTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
-            deliverTrans.Description = "Giao thành công gói hàng id : " + package.Id;
-            deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
-            deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
-            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(totalPrice + package.PriceShip * (1 - profitPercent));
-            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
-            deliverTrans.PackageId = package.Id;
-            deliverTrans.AccountId = deliver.Id;
-            _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
-
-            Transaction senderTrans = new Transaction();
-            senderTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
-            senderTrans.Description = "Người lấy hàng hộ đã giao thành công đơn hàng id : " + package.Id;
-            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
-            senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
-            senderTrans.CoinExchange = - totalPrice - package.PriceShip;
-            senderTrans.BalanceWallet = sender.Balance - totalPrice - package.PriceShip;
-            senderTrans.PackageId = package.Id;
-            senderTrans.AccountId = sender.Id;
-            _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
-
-            adminBalance.Balance = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
-            deliver.Balance = ParseHelper.RoundedToInt(
-                deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
-            sender.Balance = sender.Balance - totalPrice - package.PriceShip;
-
-            List<Transaction> transactions = new List<Transaction> {
-                    systemTrans, deliverTrans, senderTrans
-                };
-            await _transactionRepo.InsertAsync(transactions);
             #endregion
 
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.DELIVERED;
-            history.Description = $"Gói hàng được giao thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Description = $"Người giao ({package.DeliverId}) giao hàng thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.DELIVERED;
             #endregion
             #region Create notification to sender
             Notification notification = new Notification();
-            notification.Title = "Giao thành công";
-            notification.Content = $"Gói hàng được giao thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT); 
-            notification.TypeOfNotification = TypeOfNotification.DELIVERED;
-            notification.AccountId = package.SenderId;
-            await _notificationRepo.InsertAsync(notification);
-            #endregion
-            #region Create notification to deliver
-            Notification notificationDeliver = new Notification();
-            notification.Title = "Giao thành công";
-            notification.Content = $"Bạn đã giao thành công gói hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT) + 
-                $"\nMã gói hàng: {package.Id}";
-            notification.TypeOfNotification = TypeOfNotification.DELIVERED;
+            notification.Title = "Đơn hàng đã được giao thành công";
+            notification.Content = $"Đơn hàng của bạn đã được giao thành công bởi: {package.DeliverId}";
+            notification.TypeOfNotification = TypeOfNotification.DELIVERY;
             notification.AccountId = package.SenderId;
             await _notificationRepo.InsertAsync(notification);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0)
-            {
+            if (result > 0) {
+                Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
                     await SenNotificationToAccount(_fcmService, notification);
-            }
+                }
             #region Response result
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Yêu cầu thành công" : "Yêu cầu thất bại";
@@ -910,7 +817,7 @@ namespace ship_convenient.Services.PackageService
                     response.ToFailedResponse("Có gói hàng không tồn tại không ở trạng thái chờ để duyệt");
                     return response;
                 }
-
+              
                 packages.Add(package);
             }
 
@@ -966,8 +873,7 @@ namespace ship_convenient.Services.PackageService
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             #region Send notification to senders
-            if (result > 0)
-            {
+            if (result > 0) {
                 for (int i = 0; i < notifications.Count; i++)
                 {
                     Notification notification = notifications[i];
@@ -1006,7 +912,7 @@ namespace ship_convenient.Services.PackageService
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.SENDER_CANCEL;
-            history.Description = "Đơn hàng đã bị người nhờ lấy hộ hủy vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Description = "Đơn hàng đã bị shop hủy vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
             history.Reason = reason;
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
@@ -1014,8 +920,7 @@ namespace ship_convenient.Services.PackageService
             package.Status = history.ToStatus;
 
             int result = await _unitOfWork.CompleteAsync();
-            if (result > 0 && package.DeliverId != null)
-            {
+            if (result > 0 && package.DeliverId != null) { 
                 Notification notification = new Notification();
                 notification.Title = "Đơn hàng đã bị hủy";
                 notification.Content = $"Đơn hàng bị hủy bởi người gửi\nMã đơn hàng: {package.Id}";
@@ -1033,9 +938,190 @@ namespace ship_convenient.Services.PackageService
 
             return response;
         }
+
+        public async Task<ApiResponse> SenderConfirmDeliverySuccess(Guid packageId)
+        {
+            ApiResponse response = new ApiResponse();
+            decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE)) / 100;
+
+
+            #region Includable pakage
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
+            #endregion
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
+
+            #region Predicate
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            #endregion
+
+            Account? deliver = package?.Deliver;
+            Account? sender = package?.Sender;
+            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicateAdminBalance, disableTracking: false);
+            #region Verify params
+            if (package == null)
+            {
+                response.ToFailedResponse("Gói hàng không tồn tại");
+                return response;
+            }
+            if (deliver == null)
+            {
+                response.ToFailedResponse("Đơn hàng chưa được người giao pickup");
+                return response;
+            }
+            if (package.Status != PackageStatus.DELIVERED)
+            {
+                response.ToFailedResponse("Gói hàng chưa được giao để có thể hoàn thành");
+                return response;
+            }
+            if (deliver == null || sender == null || adminBalance == null)
+            {
+                response.ToFailedResponse("Không tìm thấy đủ các ví để tạo giao dịch");
+                return response;
+            }
+            #endregion
+            int totalPrice = 0;
+            package.Products.ToList().ForEach(pr =>
+            {
+                totalPrice += pr.Price;
+            });
+            _logger.LogInformation($"Profit percent: {profitPercent} ,Total price : {totalPrice}");
+
+            #region Create transactions
+            Transaction systemTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
+            systemTrans.Description = $"({deliver.Id}) giao thành công gói hàng với id: {package.Id}";
+            systemTrans.Status = TransactionStatus.ACCOMPLISHED;
+            systemTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent - totalPrice);
+            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
+            systemTrans.PackageId = package.Id;
+            systemTrans.AccountId = adminBalance.Id;
+            _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
+
+            Transaction deliverTrans = new Transaction();
+            deliverTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
+            deliverTrans.Description = "Giao thành công đơn hàng id : " + package.Id;
+            deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
+            deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(totalPrice + package.PriceShip * (1 - profitPercent));
+            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
+            deliverTrans.PackageId = package.Id;
+            deliverTrans.AccountId = deliver.Id;
+            _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
+
+            Transaction senderTrans = new Transaction();
+            senderTrans.Title = TransactionTitle.DELIVERY_SUCCESS;
+            senderTrans.Description = "Người lấy hàng hộ đã giao thành công đơn hàng id : " + package.Id;
+            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
+            senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            senderTrans.CoinExchange = -totalPrice - package.PriceShip;
+            senderTrans.BalanceWallet = sender.Balance - totalPrice - package.PriceShip;
+            senderTrans.PackageId = package.Id;
+            senderTrans.AccountId = sender.Id;
+            _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
+
+            adminBalance.Balance = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
+            deliver.Balance = ParseHelper.RoundedToInt(
+                deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
+            sender.Balance = sender.Balance - totalPrice - package.PriceShip;
+
+            List<Transaction> transactions = new List<Transaction> {
+                    systemTrans, deliverTrans, senderTrans
+                };
+            await _transactionRepo.InsertAsync(transactions);
+            #endregion
+
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.SENDER_CONFIRM_DELIVERED;
+            history.Description = $"Người tạo xác nhận đã giao hàng thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.PackageId = package.Id;
+
+            package.Status = history.ToStatus;
+            await _transactionPackageRepo.InsertAsync(history);
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                Notification notification = new Notification();
+                notification.Title = "Xác nhận đã giao hàng!";
+                notification.Content = "Người gửi đã xác nhận bạn giao hàng thành công\nMã đơn hàng: " + package.Id;
+                notification.AccountId = deliver.Id;
+                string? errorMsg = await SenNotificationToAccount(_fcmService,notification);
+                if (errorMsg != null) {
+                    response.ToSuccessResponse("Yêu cầu thành công - " + errorMsg);
+                }
+                response.ToSuccessResponse("Yêu cầu thành công");
+            }
+            else {
+                response.ToFailedResponse("Yêu cầu không thành công");
+            }
+            return response;
+        }
+
+        public async Task<ApiResponse> SenderConfirmDeliveryFailed(Guid packageId)
+        {
+            ApiResponse response = new ApiResponse();
+
+            #region Includable pakage
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
+            #endregion
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
+
+            #region Predicate
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            #endregion
+
+            #region Verify params
+            if (package == null)
+            {
+                response.ToFailedResponse("Gói hàng không tồn tại");
+                return response;
+            }
+            if (package.Status != PackageStatus.DELIVERED)
+            {
+                response.ToFailedResponse("Gói hàng chưa được giao để có thể hoàn thành");
+                return response;
+            }
+          
+            #endregion
+
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.SENDER_CONFIRM_DELIVERED_FAILED;
+            history.Description = $"Người gửi xác nhận chưa giao hàng thành công vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.PackageId = package.Id;
+
+            package.Status = history.ToStatus;
+            await _transactionPackageRepo.InsertAsync(history);
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                Notification notification = new Notification();
+                notification.Title = "Xác nhận chưa giao hàng!";
+                notification.Content = "Người gửi đã xác bạn chưa giao hàng thành công\n" +
+                    "Đơn hàng này được đánh dấu là có sự cố, bạn vui lòng lên trung tâm để giải quyết!!!\nMã đơn hàng: " + package.Id;
+                notification.AccountId = package.Deliver!.Id;
+                string? errorMsg = await SenNotificationToAccount(_fcmService, notification);
+                if (errorMsg != null)
+                {
+                    response.ToSuccessResponse("Yêu cầu thành công - " + errorMsg);
+                }
+                response.ToSuccessResponse("Yêu cầu thành công");
+            }
+            else
+            {
+                response.ToFailedResponse("Yêu cầu không thành công");
+            }
+            return response;
+        }
+
         public async Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestCombo(Guid deliverId)
         {
-            /*ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();*/
+            *//*ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();*//*
             ApiResponse<List<ResponseComboPackageModel>> response = new();
             #region Verify params
             Account? deliver = await _accountRepo.GetByIdAsync(deliverId
@@ -1052,16 +1138,16 @@ namespace ship_convenient.Services.PackageService
             }
             Route? route = await _routeRepo.FirstOrDefaultAsync(
                     predicate: (rou) => rou.InfoUserId == deliver!.InfoUser!.Id && rou.IsActive == true);
-            /* if (route == null)
+            *//* if (route == null)
              {
                  response.ToFailedResponse("Chưa chọn tuyến đường");
                  return response;
              }*/
-            /* if (pageIndex < 0 || pageSize < 1)
-             {
-                 response.ToFailedResponse("Thông tin phân trang không hợp lệ");
-                 return response;
-             }*/
+           /* if (pageIndex < 0 || pageSize < 1)
+            {
+                response.ToFailedResponse("Thông tin phân trang không hợp lệ");
+                return response;
+            }*//*
             #endregion
 
 
@@ -1078,8 +1164,7 @@ namespace ship_convenient.Services.PackageService
             {
                 packagesValid = _packageRepo.GetAllAsync(include: include, predicate: predicate).Result.Select(p => p.ToResponseModel()).ToList();
             }
-            else
-            {
+            else {
                 GeoCoordinate homeCoordinate = new GeoCoordinate(route.FromLatitude, route.FromLongitude);
                 GeoCoordinate destinationCoordinate = new GeoCoordinate(route.ToLatitude, route.ToLongitude);
 
@@ -1111,7 +1196,7 @@ namespace ship_convenient.Services.PackageService
             foreach (Guid senderId in senderIds)
             {
                 List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
-                /*List<CoordinateApp> coordStartSame = new();
+                List<CoordinateApp> coordStartSame = new();
                 foreach (ResponsePackageModel package in packagesWithSender)
                 {
                     if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
@@ -1138,37 +1223,7 @@ namespace ship_convenient.Services.PackageService
                     combo.ComboPrice = comboPrice;
                     _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
                     combos.Add(combo);
-                }*/
-                List<CoordinateApp> coordEndSame = new();
-                foreach (ResponsePackageModel package in packagesWithSender)
-                {
-                    if (coordEndSame.FirstOrDefault(co => co.Latitude == package.DestinationLatitude &&
-                    co.Longitude == package.DestinationLongitude) == null)
-                    {
-                        coordEndSame.Add(new CoordinateApp(package.DestinationLongitude, package.DestinationLatitude));
-                    }
                 }
-                for (int i = 0; i < coordEndSame.Count; i++)
-                {
-                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
-                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
-                        include: (source) => source.Include(acc => acc.InfoUser)
-                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
-                    combo.Packages = packagesWithSender.Where(p => p.DestinationLongitude == coordEndSame[i].Longitude 
-                            && p.DestinationLatitude == coordEndSame[i].Latitude).ToList();
-                    int comboPrice = 0;
-                    foreach (ResponsePackageModel pac in combo.Packages)
-                    {
-                        foreach (ResponseProductModel pr in pac.Products)
-                        {
-                            comboPrice += pr.Price;
-                        }
-                    }
-                    combo.ComboPrice = comboPrice;
-                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
-                    combos.Add(combo);
-                }
-
 
             }
             #region Valid combo with balance
@@ -1177,10 +1232,10 @@ namespace ship_convenient.Services.PackageService
                 .Where(c => balanceAvailable - c.ComboPrice >= 0).ToList();
             #endregion
 
-            /*PaginatedList<ResponseComboPackageModel> responseList = 
+            *//*PaginatedList<ResponseComboPackageModel> responseList = 
                 await combos.ToPaginatedListAsync(pageIndex, pageSize);
             response.SetData(responseList);
-            response.ToSuccessResponse("Lấy những đề xuất combo");*/
+            response.ToSuccessResponse("Lấy những đề xuất combo");*//*
             int maxSuggestCombo = _configRepo.GetMaxSuggestCombo();
             List<ResponseComboPackageModel> result = combos.Take(maxSuggestCombo).ToList();
             response.ToSuccessResponse(result, "Lấy đề xuất thành công");
@@ -1222,3 +1277,4 @@ namespace ship_convenient.Services.PackageService
         }
     }
 }
+*/

@@ -13,6 +13,8 @@ namespace ship_convenient.Entities
         public double DestinationLongitude { get; set; }
         public double DestinationLatitude { get; set; }
         public double Distance { get; set; }
+        public string PickupName { get; set; } = string.Empty;
+        public string PickupPhone { get; set; } = string.Empty;
         public string ReceiverName { get; set; } = string.Empty;
         public string ReceiverPhone { get; set; } = string.Empty;
         public double Height { get; set; }
@@ -65,6 +67,8 @@ namespace ship_convenient.Entities
             model.DestinationAddress = this.DestinationAddress;
             model.DestinationLongitude = this.DestinationLongitude;
             model.DestinationLatitude = this.DestinationLatitude;
+            model.PickupName = this.PickupName;
+            model.PickupPhone = this.PickupPhone;
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;
@@ -100,6 +104,8 @@ namespace ship_convenient.Entities
             model.DestinationAddress = this.DestinationAddress;
             model.DestinationLongitude = this.DestinationLongitude;
             model.DestinationLatitude = this.DestinationLatitude;
+            model.PickupName = this.PickupName;
+            model.PickupPhone = this.PickupPhone;
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;
@@ -142,6 +148,8 @@ namespace ship_convenient.Entities
             model.DestinationAddress = this.DestinationAddress;
             model.DestinationLongitude = this.DestinationLongitude;
             model.DestinationLatitude = this.DestinationLatitude;
+            model.PickupName = this.PickupName;
+            model.PickupPhone = this.PickupPhone;
             model.ReceiverName = this.ReceiverName;
             model.ReceiverPhone = this.ReceiverPhone;
             model.Distance = this.Distance;

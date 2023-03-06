@@ -15,6 +15,8 @@ namespace unitofwork_core.Model.PackageModel
         public string DestinationAddress { get; set; } = string.Empty;
         public double DestinationLongitude { get; set; }
         public double DestinationLatitude { get; set; }
+        public string PickupName { get; set; } = string.Empty;
+        public string PickupPhone { get; set; } = string.Empty;
         public string ReceiverName { get; set; } = string.Empty;
         [Phone]
         public string ReceiverPhone { get; set; } = string.Empty;

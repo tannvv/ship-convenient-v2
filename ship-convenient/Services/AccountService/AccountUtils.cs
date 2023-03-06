@@ -36,9 +36,19 @@ namespace ship_convenient.Services.AccountService
             {
                 totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
             }
-            Account? deliver = await _accountRepo.GetByIdAsync(accountId);
-            if (deliver == null) throw new ArgumentException("Tài khoản không tồn tại");
-            return deliver.Balance - totalBalanceNotAvaiable;
+
+            List<string> validStatusSender = new() {
+                PackageStatus.APPROVED, PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY,
+            };
+            List<Package> packagesSender = await _packageRepo.GetAllAsync(
+                predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
+            int totalBalanceNotAvailabelSenderRole = 0;
+            foreach (var item in packagesSender) {
+                totalBalanceNotAvaiable += item.PriceShip;   
+            }
+            Account? account = await _accountRepo.GetByIdAsync(accountId);
+            if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
+            return account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
         }
         
         public async Task<bool> IsNewAccount(Guid accountId)
