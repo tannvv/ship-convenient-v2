@@ -229,7 +229,7 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("sender-confirm-delivery-success")]
+        /*[HttpPut("sender-confirm-delivery-success")]
         [SwaggerOperation(Summary = "Sender confirm delivery success")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> SenderConfirmDeliverySuccessPackage(Guid packageId)
@@ -261,7 +261,7 @@ namespace ship_convenient.Controllers
                 _logger.LogError("Shop confirm delivery success has exception : " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
-        }
+        }*/
 
         [HttpPut("refund-success")]
         [SwaggerOperation(Summary = "Deliver refund package for sender success")]
