@@ -49,6 +49,8 @@ namespace unitofwork_core.Model.PackageModel
             entity.Width = this.Width;
             entity.Length = this.Length;
             entity.Weight = this.Weight;
+            entity.PickupName = this.PickupName;
+            entity.PickupPhone = this.PickupPhone;
             entity.ReceiverName = this.ReceiverName;
             entity.ReceiverPhone = this.ReceiverPhone;
             entity.Status = PackageStatus.WAITING;

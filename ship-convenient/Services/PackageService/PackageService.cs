@@ -992,7 +992,12 @@ namespace ship_convenient.Services.PackageService
                 return response;
             }
             #endregion
-            
+            #region Create transaction
+            if (PackageStatus.DELIVER_PICKUP == package.Status)
+            {
+                
+            }
+            #endregion
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
