@@ -76,7 +76,8 @@ namespace ship_convenient.Services.Notificationservice
             {
                 try
                 {
-                    if (!string.IsNullOrEmpty(packages[i].Sender?.RegistrationToken)) {
+                    if (!string.IsNullOrEmpty(packages[i].Sender?.RegistrationToken))
+                    {
                         Message message = new Message();
                         message.Notification = new FcmNotification()
                         {
@@ -85,18 +86,19 @@ namespace ship_convenient.Services.Notificationservice
                         message.Token = packages[i].Sender?.RegistrationToken;
                         message.Data = model.Data;
                         string responseFirebase = await _firebaseCloudMsgService.SendNotification(message);
-                        if (!string.IsNullOrEmpty(responseFirebase)) {
+                        if (!string.IsNullOrEmpty(responseFirebase))
+                        {
                             numberNotify = numberNotify + 1;
                         }
                     }
-                    response.ToSuccessResponse("Số lượng tin nhắn đã gửi: " + numberNotify);
                 }
-                catch (Exception e)
-                {
-                    response.ToFailedResponse("Error when send notification to sender");
+                catch (Exception e) {
+                    // response.ToFailedResponse("Error when send notification to sender");
                     _logger.LogError(e, "Error when send notification to sender");
                 }
+               
             }
+            response.ToSuccessResponse("Số lượng tin nhắn đã gửi: " + numberNotify);
             #endregion
             return response;
         }
