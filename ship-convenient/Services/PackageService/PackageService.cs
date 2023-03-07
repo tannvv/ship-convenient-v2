@@ -1170,7 +1170,8 @@ namespace ship_convenient.Services.PackageService
             #region Valid combo with balance
             int balanceAvailable = await _accountUtils.AvailableBalance(deliverId);
             combos = combos
-                .Where(c => balanceAvailable - c.ComboPrice >= 0).ToList();
+                .Where(c => balanceAvailable - c.ComboPrice >= 0)
+                .OrderByDescending(combo => combo.Packages.Count).ToList();
             #endregion
 
             /*PaginatedList<ResponseComboPackageModel> responseList = 
