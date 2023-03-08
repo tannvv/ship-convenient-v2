@@ -79,10 +79,6 @@ namespace ship_convenient.Services.Notificationservice
                     if (!string.IsNullOrEmpty(packages[i].Sender?.RegistrationToken))
                     {
                         Message message = new Message();
-                        message.Notification = new FcmNotification()
-                        {
-                            Title = TypeOfNotification.TRACKING
-                        };
                         message.Token = packages[i].Sender?.RegistrationToken;
                         message.Data = model.Data;
                         string responseFirebase = await _firebaseCloudMsgService.SendNotification(message);
