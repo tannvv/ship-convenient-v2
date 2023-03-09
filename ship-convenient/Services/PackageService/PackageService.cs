@@ -906,6 +906,8 @@ namespace ship_convenient.Services.PackageService
 
                 packages.Add(package);
             }
+            #region package not valid
+            #endregion
 
             #region Verify params
             decimal totalPrice = 0;

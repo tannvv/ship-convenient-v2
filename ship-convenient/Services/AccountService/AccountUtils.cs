@@ -61,7 +61,7 @@ namespace ship_convenient.Services.AccountService
                 return result;
             };
             List<string> validStatus = new() {
-                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERED
+                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERY_FAILED
             };
             List<Package> packages = await _packageRepo.GetAllAsync(
                 include: source => source.Include(p => p.Products),
