@@ -52,12 +52,6 @@ namespace ship_convenient.Services.GenericService
         {
             try
             {
-                await _notificationRepo.InsertAsync(notification);
-                int result = await _unitOfWork.CompleteAsync();
-                if (result == 0)
-                {
-                    return "Không tạo được thông báo";
-                }
                 string? registrationToken = (await _unitOfWork.Accounts.GetByIdAsync(id: notification.AccountId))?.RegistrationToken;
                 if (string.IsNullOrEmpty(registrationToken))
                 {

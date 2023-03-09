@@ -87,7 +87,8 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> ApprovedPackage(Guid id)
         {
             ApiResponse response = new ApiResponse();
-            Package? package = await _packageRepo.GetByIdAsync(id, disableTracking: false);
+            Package? package = await _packageRepo.GetByIdAsync(id, disableTracking: false
+                   );
 
             #region Verify params
             if (package == null)
@@ -112,12 +113,12 @@ namespace ship_convenient.Services.PackageService
             #endregion
             package.Status = PackageStatus.APPROVED;
             #region Create notification for sender
-            Notification notification = new Notification();
-            notification.Title = "Đơn hàng đã được duyệt";
-            notification.Content = "Đơn hàng của bạn đã được duyệt\nMã đơn hàng: " + package.Id;
-            notification.AccountId = package.SenderId;
-            notification.TypeOfNotification = TypeOfNotification.APPROVED;
-            await _notificationRepo.InsertAsync(notification);
+            Notification notificationSender = new Notification();
+            notificationSender.Title = "Đơn hàng đã được duyệt";
+            notificationSender.Content = "Đơn hàng của bạn đã được duyệt\nMã đơn hàng: " + package.Id;
+            notificationSender.AccountId = package.SenderId;
+            notificationSender.TypeOfNotification = TypeOfNotification.APPROVED;
+            await _notificationRepo.InsertAsync(notificationSender);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             string? errorSendNotification;
@@ -126,7 +127,7 @@ namespace ship_convenient.Services.PackageService
                 #region Send notification to sender
                 Account? sender = await _accountRepo.GetByIdAsync(package.SenderId);
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
-                    errorSendNotification = await SenNotificationToAccount(_fcmService, notification);
+                    errorSendNotification = await SenNotificationToAccount(_fcmService, notificationSender);
                 #endregion
             }
             #region Response result
