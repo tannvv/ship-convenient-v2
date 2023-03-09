@@ -37,5 +37,10 @@ namespace ship_convenient.Entities
             }
             return model;
         }
+
+        public string GetFullName()
+        {
+            return (this.LastName + " " + this.FirstName).Trim();
+        }
     }
 }

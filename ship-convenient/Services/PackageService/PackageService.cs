@@ -852,18 +852,20 @@ namespace ship_convenient.Services.PackageService
             #endregion
             #region Create notification to deliver
             Notification notificationDeliver = new Notification();
-            notification.Title = "Giao thành công";
-            notification.Content = $"Bạn đã giao thành công gói hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT) + 
+            notificationDeliver.Title = "Giao thành công";
+            notificationDeliver.Content = $"Bạn đã giao thành công gói hàng vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT) + 
                 $"\nMã gói hàng: {package.Id}";
-            notification.TypeOfNotification = TypeOfNotification.DELIVERED;
-            notification.AccountId = package.SenderId;
-            await _notificationRepo.InsertAsync(notification);
+            notificationDeliver.TypeOfNotification = TypeOfNotification.DELIVERED;
+            notificationDeliver.AccountId = package.DeliverId!.Value;
+            await _notificationRepo.InsertAsync(notificationDeliver);
             #endregion
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
                     await SenNotificationToAccount(_fcmService, notification);
+                if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
+                    await SenNotificationToAccount(_fcmService, notificationDeliver);
             }
             #region Response result
             response.Success = result > 0 ? true : false;
@@ -948,7 +950,7 @@ namespace ship_convenient.Services.PackageService
                 Package package = packages[i];
                 Notification notification = new Notification();
                 notification.Title = "Đơn hàng đã được nhận";
-                notification.Content = $"Đơn hàng của bạn đã được nhận bởi: {deliverId}\nMã đơn hàng: {package.Id}";
+                notification.Content = $"Đơn hàng của bạn đã được nhận bởi: {deliver?.InfoUser?.GetFullName()}\nMã đơn hàng: {package.Id}";
                 notification.TypeOfNotification = TypeOfNotification.DELIVERY;
                 notification.AccountId = package.SenderId;
                 notifications.Add(notification);

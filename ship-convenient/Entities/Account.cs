@@ -52,7 +52,7 @@ namespace ship_convenient.Entities
         }
 
         public string GetFullName() {
-            return this.InfoUser?.LastName + " " + this.InfoUser?.FirstName;
+            return (this.InfoUser?.LastName + " " + this.InfoUser?.FirstName).Trim();
         }
     }
 }
