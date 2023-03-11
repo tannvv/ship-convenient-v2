@@ -906,7 +906,14 @@ namespace ship_convenient.Services.PackageService
 
                 packages.Add(package);
             }
-            #region package not valid
+            #region Check max pickup same time
+            List<Package> packagePickuped = await _packageRepo.GetAllAsync(predicate: p => p.DeliverId == deliverId && p.Status == PackageStatus.DELIVER_PICKUP);
+            int maxPickupSameTime = _configRepo.GetMaxPickupSameTime();
+            if (packagePickuped.Count + packages.Count > maxPickupSameTime)
+            {
+                response.ToFailedResponse($"Bạn chỉ được nhận tối đa {maxPickupSameTime} gói hàng cùng lúc");
+                return response;
+            }
             #endregion
 
             #region Verify params
