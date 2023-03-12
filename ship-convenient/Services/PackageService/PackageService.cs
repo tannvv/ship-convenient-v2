@@ -375,14 +375,14 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> RefundSuccess(Guid packageId)
         {
             ApiResponse response = new ApiResponse();
-            decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE));
-            decimal profitPercentRefund = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE_REFUND));
+            decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE)) / 100;
+            decimal profitPercentRefund = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE_REFUND)) / 100;
 
             #region Predicate
             Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
             #endregion
             #region Includable pakage
-            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver);
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) => source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
             #endregion
             Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
             Account? deliver = package?.Deliver;
@@ -432,7 +432,7 @@ namespace ship_convenient.Services.PackageService
             deliverTrans.Title = TransactionTitle.RETURN;
             deliverTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
             deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
-            deliverTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            deliverTrans.TransactionType = TransactionType.REFUND;
             deliverTrans.CoinExchange = Convert.ToInt32(Math.Round(
                 totalPrice + package.PriceShip * (1 - profitPercent)));
             deliverTrans.BalanceWallet = Convert.ToInt32(
@@ -445,7 +445,7 @@ namespace ship_convenient.Services.PackageService
             senderTrans.Title = TransactionTitle.RETURN;
             senderTrans.Description = "Hoàn trả thành công đơn hàng id : " + package.Id;
             senderTrans.Status = TransactionStatus.ACCOMPLISHED;
-            senderTrans.TransactionType = TransactionType.DELIVERED_SUCCESS;
+            senderTrans.TransactionType = TransactionType.REFUND;
             senderTrans.CoinExchange = -package.PriceShip;
             senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
             senderTrans.PackageId = package.Id;
@@ -484,10 +484,15 @@ namespace ship_convenient.Services.PackageService
             #region Send notification
             if (result > 0)
             {
+                response.ToSuccessResponse("Hoàn trả thành công");
                 #region Send notification to sender
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
                     await SenNotificationToAccount(_fcmService, notification);
                 #endregion
+            }
+            else
+            {
+                response.ToSuccessResponse("Hoàn trả không thành công");
             }
             #endregion
             return response;
