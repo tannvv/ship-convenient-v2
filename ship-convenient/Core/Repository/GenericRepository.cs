@@ -505,5 +505,60 @@ namespace ship_convenient.Core.Repository
             }
             return await query.ToListAsync();
         }
+
+        public List<TEntity> GetAll(List<Expression<Func<TEntity, bool>>> predicates, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, bool disableTracking = true, bool ignoreQueqyFilter = false)
+        {
+            IQueryable<TEntity> query = _dbSet;
+            if (disableTracking)
+            {
+                query.AsNoTracking();
+            }
+            if (include != null)
+            {
+                query = include(query);
+            }
+            if (predicates != null && predicates.Count > 0)
+            {
+                int count = predicates.Count;
+                for (int i = 0; i < count; i++)
+                {
+                    query = query.Where(predicates[i]);
+                }
+            }
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            if (ignoreQueqyFilter)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            return query.ToList();
+        }
+
+        public List<TEntity> GetAll(Expression<Func<TEntity, bool>>? predicate = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null, Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null, bool disableTracking = true, bool ignoreQueryFilter = false)
+        {
+            IQueryable<TEntity> query = _dbSet;
+            if (disableTracking)
+            {
+                query.AsNoTracking();
+            }
+            if (include != null)
+            {
+                query = include(query);
+            }
+            if (predicate != null) {
+                query = query.Where(predicate);
+            }
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+            if (ignoreQueryFilter)
+            {
+                query = query.IgnoreQueryFilters();
+            }
+            return query.ToList();
+        }
     }
 }

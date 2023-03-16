@@ -9,13 +9,20 @@ namespace ship_convenient.Entities
         public double FromLatitude { get; set; }
         public double FromLongitude { get; set; }
         public string ToName { get; set; } = string.Empty;
+        public double Distance { get; set; }
         public double ToLatitude { get; set; }
         public double ToLongitude { get; set; }
 
         #region Relationship
         public Guid InfoUserId { get; set; }
         public InfoUser? InfoUser { get; set; }
+        public List<RoutePoint> RoutePoints { get; set; }
         #endregion
+
+        public Route()
+        {
+            RoutePoints = new List<RoutePoint>();
+        }
 
         public ResponseRouteModel ToResponseModel()
         {

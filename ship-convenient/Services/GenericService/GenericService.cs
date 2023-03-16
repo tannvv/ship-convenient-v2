@@ -18,6 +18,10 @@ namespace ship_convenient.Services.GenericService
         protected readonly IAccountRepository _accountRepo;
         protected readonly IPackageRepository _packageRepo;
         protected readonly INotificationRepository _notificationRepo;
+        protected readonly IConfigUserRepository _configUserRepo;
+        protected readonly IRoutePointRepository _routePointRepo;
+        protected readonly IRouteRepository _routeRepo;
+
         public GenericService(ILogger<T> logger, IUnitOfWork unitOfWork)
         {
             _logger = logger;
@@ -26,6 +30,9 @@ namespace ship_convenient.Services.GenericService
             _packageRepo = unitOfWork.Packages;
             _notificationRepo = unitOfWork.Notifications;
             _configRepo = unitOfWork.Configs;
+            _configUserRepo = unitOfWork.ConfigUsers;
+            _routePointRepo = unitOfWork.RoutePoints;
+            _routeRepo = unitOfWork.Routes;
         }
 
         public string? VerifyPaging(int pageIndex, int pageSize) {

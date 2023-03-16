@@ -28,6 +28,8 @@ namespace ship_convenient.Core.Context
         public virtual DbSet<Transaction> Transactions => Set<Transaction>();
         public virtual DbSet<TransactionPackage> TransactionPackages => Set<TransactionPackage>();
         public virtual DbSet<Report> Reports => Set<Report>();
+        public virtual DbSet<ConfigUser> ConfigUsers => Set<ConfigUser>();
+        public virtual DbSet<RoutePoint> RoutePoints => Set<RoutePoint>();
 
         #endregion
 
@@ -44,8 +46,8 @@ namespace ship_convenient.Core.Context
                 connectionString = _configuration.GetConnectionString("AzureConnection");
             }
 
-            // if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DevConnection"));
-            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ClusterConnection"));
+            if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DevConnection"));
+            // if (!string.IsNullOrEmpty(connectionString)) optionsBuilder.UseSqlServer(_configuration.GetConnectionString("ClusterConnection"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

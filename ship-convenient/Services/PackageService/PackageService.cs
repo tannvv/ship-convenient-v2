@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using ship_convenient.Constants.AccountConstant;
+using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Constants.DatimeConstant;
 using ship_convenient.Constants.PackageConstant;
 using ship_convenient.Core.CoreModel;
@@ -34,6 +35,7 @@ namespace ship_convenient.Services.PackageService
         private readonly IFirebaseCloudMsgService _fcmService;
         private readonly PackageUtils _packageUtils;
         private readonly AccountUtils _accountUtils;
+        private readonly IRoutePointRepository _routePointRepo;
 
         public PackageService(ILogger<PackageService> logger, IUnitOfWork unitOfWork,
             IMapboxService mapboxService, IFirebaseCloudMsgService fcmService,
@@ -42,6 +44,7 @@ namespace ship_convenient.Services.PackageService
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
             _routeRepo = unitOfWork.Routes;
+            _routePointRepo = unitOfWork.RoutePoints;
 
             _mapboxService = mapboxService;
             _fcmService = fcmService;
@@ -129,6 +132,7 @@ namespace ship_convenient.Services.PackageService
                 if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
                     errorSendNotification = await SenNotificationToAccount(_fcmService, notificationSender);
                 #endregion
+                await _packageUtils.NotificationValidUserWithPackage(package);
             }
             #region Response result
             response.Success = result > 0 ? true : false;
@@ -931,7 +935,7 @@ namespace ship_convenient.Services.PackageService
                     totalPrice += pr.Price;
                 });
             }
-            int availableBalance = await _accountUtils.AvailableBalance(deliverId);
+            int availableBalance = await _accountUtils.AvailableBalanceAsync(deliverId);
             if (deliver == null || availableBalance < totalPrice)
             {
                 response.ToFailedResponse($"Số dư khả dụng {availableBalance} không đủ để thực hiện nhận gói hàng");
@@ -1185,7 +1189,196 @@ namespace ship_convenient.Services.PackageService
 
             }
             #region Valid combo with balance
-            int balanceAvailable = await _accountUtils.AvailableBalance(deliverId);
+            int balanceAvailable = await _accountUtils.AvailableBalanceAsync(deliverId);
+            combos = combos
+                .Where(c => balanceAvailable - c.ComboPrice >= 0)
+                .OrderByDescending(combo => combo.Packages.Count).ToList();
+            #endregion
+
+            /*PaginatedList<ResponseComboPackageModel> responseList = 
+                await combos.ToPaginatedListAsync(pageIndex, pageSize);
+            response.SetData(responseList);
+            response.ToSuccessResponse("Lấy những đề xuất combo");*/
+            int maxSuggestCombo = _configRepo.GetMaxSuggestCombo();
+            List<ResponseComboPackageModel> result = combos.Take(maxSuggestCombo).ToList();
+            response.ToSuccessResponse(result, "Lấy đề xuất thành công");
+            #endregion
+
+            return response;
+        }
+        public async Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestComboV2(Guid deliverId)
+        {
+            /*ApiResponsePaginated<ResponseComboPackageModel> response = new ApiResponsePaginated<ResponseComboPackageModel>();*/
+            ApiResponse<List<ResponseComboPackageModel>> response = new();
+            #region Verify params
+            Account? deliver = await _accountRepo.GetByIdAsync(deliverId
+                , include: (source) => source.Include(acc => acc.InfoUser));
+            if (deliver == null)
+            {
+                response.ToFailedResponse("Người dùng không tồn tại");
+                return response;
+            }
+            if (deliver.InfoUser == null)
+            {
+                response.ToFailedResponse("Thông tin người dùng chưa được tạo");
+                return response;
+            }
+            Route? route = await _routeRepo.FirstOrDefaultAsync(
+                    predicate: (rou) => rou.InfoUserId == deliver!.InfoUser!.Id && rou.IsActive == true);
+            int spacingValid = _configUserRepo.GetPackageDistance(deliver.InfoUser.Id);
+            string directionSuggest = _configUserRepo.GetDirectionSuggest(deliver.InfoUser.Id);
+            #endregion
+            #region Get route points deliver
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate:
+                (routePoint) => route == null ? false : routePoint.RouteId == route.Id); 
+            if (directionSuggest == DirectionTypeConstant.FORWARD)
+            {
+                routePoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.FORWARD)
+                        .OrderBy(source => source.Index).ToList();
+            }
+            else if(directionSuggest == DirectionTypeConstant.BACKWARD){
+                routePoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.BACKWARD)
+                        .OrderBy(source => source.Index).ToList();
+            }
+            #endregion
+            #region Includale package
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object>> include = (source) => source.Include(p => p.Products);
+            #endregion
+            #region Predicate package
+            Expression<Func<Package, bool>> predicate = (source) => source.Status == PackageStatus.APPROVED && source.SenderId != deliverId;
+            #endregion
+
+            #region Find packages valid spacing
+            List<ResponsePackageModel> packagesValid;
+            if (route == null)
+            {
+                packagesValid = _packageRepo.GetAllAsync(include: include, predicate: predicate).Result.Select(p => p.ToResponseModel()).ToList();
+            }
+            else
+            {
+                packagesValid = new();
+                List<Package> packages = (await _packageRepo.GetAllAsync(include: include, predicate: predicate)).ToList();
+                int packageCount = packages.Count;
+                for (int i = 0; i < packageCount; i++)
+                {
+                    bool isValidOrder = MapHelper.ValidDestinationBetweenDeliverAndPackage(routePoints, packages[i], spacingValid);
+                    _logger.LogInformation($"Package valid destination: {packages[i].Id}");
+                    if (isValidOrder) packagesValid.Add(packages[i].ToResponseModel());
+                }
+            }
+            #endregion
+
+            #region Group with phone number and location
+            List<Guid> senderIds = new List<Guid>();
+            foreach (ResponsePackageModel p in packagesValid)
+            {
+                if (!senderIds.Contains(p.SenderId))
+                {
+                    senderIds.Add(p.SenderId);
+                    _logger.LogInformation($"Shop have combos suggest: {p.SenderId}");
+                }
+            }
+            List<ResponseComboPackageModel> combos = new List<ResponseComboPackageModel>();
+            foreach (Guid senderId in senderIds)
+            {
+                List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
+                List<CoordinateApp> coordStartSame = new();
+                List<CoordinateApp> coordEndSame = new();
+                foreach (ResponsePackageModel package in packagesWithSender)
+                {
+                    if (coordEndSame.FirstOrDefault(co => co.Latitude == package.DestinationLatitude &&
+                    co.Longitude == package.DestinationLongitude) == null)
+                    {
+                        coordEndSame.Add(new CoordinateApp(package.DestinationLongitude, package.DestinationLatitude));
+                    }
+                }
+
+                foreach (ResponsePackageModel package in packagesWithSender)
+                {
+                    if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
+                    co.Longitude == package.StartLongitude) == null)
+                    {
+                        coordStartSame.Add(new CoordinateApp(package.StartLongitude, package.StartLatitude));
+                    }
+                }
+
+                for (int i = 0; i < coordEndSame.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = packagesWithSender.Where(p => p.DestinationLongitude == coordEndSame[i].Longitude
+                            && p.DestinationLatitude == coordEndSame[i].Latitude).ToList();
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                    if (combo.Packages.Count >= 2)
+                    {
+                        combos.Add(combo);
+                        for (int a = 0; a < combo.Packages.Count; a++)
+                        {
+                            packagesWithSender.Remove(combo.Packages[a]);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < coordStartSame.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = packagesWithSender.Where(p => p.StartLongitude == coordStartSame[i].Longitude
+                            && p.StartLatitude == coordStartSame[i].Latitude).ToList();
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                    if (combo.Packages.Count >= 2)
+                    {
+                        combos.Add(combo);
+                        for (int a = 0; a < combo.Packages.Count; a++)
+                        {
+                            packagesWithSender.Remove(combo.Packages[a]);
+                        }
+                    }
+                }
+                for (int i = 0; i < packagesWithSender.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = new List<ResponsePackageModel>{ packagesWithSender[i]};
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    combos.Add(combo);
+                }
+                
+            }
+            #region Valid combo with balance
+            int balanceAvailable = await _accountUtils.AvailableBalanceAsync(deliverId);
             combos = combos
                 .Where(c => balanceAvailable - c.ComboPrice >= 0)
                 .OrderByDescending(combo => combo.Packages.Count).ToList();

@@ -106,5 +106,16 @@ namespace ship_convenient.Core.IRepository
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
             bool disableTracking = true,
             bool ignoreQueryFilters = false);
+        List<TEntity> GetAll(List<Expression<Func<TEntity, bool>>> predicates,
+           Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+           Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+           bool disableTracking = true,
+           bool ignoreQueqyFilter = false);
+        List<TEntity> GetAll(
+            Expression<Func<TEntity, bool>>? predicate = null,
+            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object?>>? include = null,
+            bool disableTracking = true,
+            bool ignoreQueryFilter = false);
     }
 }

@@ -91,6 +91,29 @@ namespace ship_convenient.Controllers
             }
         }
 
+        [HttpGet("combos-v2")]
+        [SwaggerOperation(Summary = "Get suggest combos")]
+        [ProducesResponseType(typeof(ApiResponse<List<ResponseComboPackageModel>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> SuggestComboV2(Guid deliverId)
+        {
+            try
+            {
+                /*ApiResponsePaginated<ResponseComboPackageModel> response = await _packageService.SuggestCombo(deliverId, pageIndex, pageSize);*/
+                ApiResponse<List<ResponseComboPackageModel>> response = await _packageService.SuggestComboV2(deliverId);
+                return SendResponse(response);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError("Api mapbox has exception : " + ex.Message);
+                return StatusCode(500, "Api mapbox has exception : " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get suggest combo has exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPut("approve")]
         [SwaggerOperation(Summary = "Approved pakage from status waiting")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]

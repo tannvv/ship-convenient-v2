@@ -3,6 +3,8 @@ using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Services.AccountService;
 using ship_convenient.Services.AuthorizeService;
 using ship_convenient.Services.ConfigService;
+using ship_convenient.Services.ConfigUserService;
+using ship_convenient.Services.DashboardService;
 using ship_convenient.Services.DatabaseService;
 using ship_convenient.Services.DepositService;
 using ship_convenient.Services.FeedbackService;
@@ -38,6 +40,8 @@ namespace ship_convenient.Config
             services.AddTransient<IFirebaseCloudMsgService, FirebaseCloudMsgService>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<IConfigService, ConfigService>();
+            services.AddTransient<IConfigUserService, ConfigUserService>();
+            services.AddTransient<IDashboardService, DashboardService>();
             services.AddScoped<PackageUtils>();
             services.AddScoped<AccountUtils>();
         }

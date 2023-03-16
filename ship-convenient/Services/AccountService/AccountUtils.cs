@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
@@ -17,9 +18,9 @@ namespace ship_convenient.Services.AccountService
             _transactionRepo = unitOfWork.Transactions;
         }
 
-        public async Task<int> AvailableBalance(Guid accountId)
+        public async Task<int> AvailableBalanceAsync(Guid accountId)
         {
-            if (await IsNewAccount(accountId))
+            if (await IsNewAccountAsync(accountId))
             {
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
                 return balanceDefault;
@@ -50,10 +51,11 @@ namespace ship_convenient.Services.AccountService
             return account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
         }
 
+        
         public async Task<ResponseBalanceModel> AvailableBalanceModel(Guid accountId)
         {
             ResponseBalanceModel result = new();
-            if (await IsNewAccount(accountId))
+            if (await IsNewAccountAsync(accountId))
             {
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
                 result.IsNewAccount = true;
@@ -89,7 +91,7 @@ namespace ship_convenient.Services.AccountService
         }
 
 
-        public async Task<bool> IsNewAccount(Guid accountId)
+        public async Task<bool> IsNewAccountAsync(Guid accountId)
         {
             bool result = false;
             List<Package> packages = await _packageRepo.GetAllAsync(
@@ -99,5 +101,62 @@ namespace ship_convenient.Services.AccountService
             if (packages.Count == 0 && transactions.Count == 0) result = true;
             return result;
         }
+
+
+        
+        public bool IsNewAccount(Guid accountId)
+        {
+            bool result = false;
+            List<Package> packages = _packageRepo.GetAll(
+                predicate: p => p.DeliverId == accountId || p.SenderId == accountId);
+            List<Transaction> transactions = _transactionRepo.GetAll(
+                predicate: t => t.AccountId == accountId);
+            if (packages.Count == 0 && transactions.Count == 0) result = true;
+            return result;
+        }
+
+        public int AvailableBalance(Guid accountId)
+        {
+            if (IsNewAccount(accountId))
+            {
+                int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
+                return balanceDefault;
+            };
+            List<string> validStatus = new() {
+                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERED
+            };
+            List<Package> packages = _packageRepo.GetAll(
+                include: source => source.Include(p => p.Products),
+                predicate: p => validStatus.Contains(p.Status) && p.DeliverId == accountId);
+            int totalBalanceNotAvaiable = 0;
+            foreach (var item in packages)
+            {
+                totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
+            }
+
+            List<string> validStatusSender = new() {
+                PackageStatus.APPROVED, PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY,
+            };
+            List<Package> packagesSender = _packageRepo.GetAll(
+                predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
+            int totalBalanceNotAvailabelSenderRole = 0;
+            foreach (var item in packagesSender)
+            {
+                totalBalanceNotAvaiable += item.PriceShip;
+            }
+            Account? account = _accountRepo.GetById(accountId);
+            if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
+            return account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
+        }
+
+        public async Task<List<Account>> GetListAccountActive()
+        {
+            List<ConfigUser> configActives = await _configUserRepo.GetAllAsync(
+                predicate: (config) => config.Name == DefaultUserConfigConstant.IS_ACTIVE && config.Value == "TRUE",
+                include: source => source.Include(cf => cf.InfoUser).ThenInclude(info => info.Account));
+            List<Account?> activeAccounts = configActives.Select(config => config.InfoUser.Account).ToList();
+            return activeAccounts;
+        }
+
     }
 }

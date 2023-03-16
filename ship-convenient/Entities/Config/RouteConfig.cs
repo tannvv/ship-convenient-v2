@@ -8,6 +8,8 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<Route> builder)
         {
             builder.ToTable("Route");
+            builder.HasMany(route => route.RoutePoints)
+               .WithOne(routePoint => routePoint.Route).HasForeignKey(routePoint => routePoint.RouteId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

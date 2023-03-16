@@ -20,6 +20,8 @@ namespace ship_convenient.Core.UnitOfWork
         IDepositRepository Deposits { get; }
         IFeedbackRepository Feedbacks { get; }
         IReportRepository Reports { get; }
+        IConfigUserRepository ConfigUsers { get; }
+        IRoutePointRepository RoutePoints { get; }
         Task<int> CompleteAsync();
         int Complete();
     }

@@ -21,12 +21,12 @@ namespace ship_convenient.Controllers
         [HttpGet("{accountId}")]
         [SwaggerOperation(Summary = "Get route with accountId")]
         [ProducesResponseType(typeof(ApiResponse<ResponseRouteModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> 
+        public async Task<IActionResult>
             GetAccountRoute(Guid accountId)
         {
             try
             {
-                ApiResponse<List<ResponseRouteModel>> response = 
+                ApiResponse<List<ResponseRouteModel>> response =
                     await _routeService.GetRouteUserId(accountId);
                 return SendResponse(response);
             }
@@ -86,7 +86,24 @@ namespace ship_convenient.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-    }
 
-    
+        [HttpGet("point-list/{routeId}")]
+        [ProducesResponseType(typeof(ApiResponse<ResponseRoutePointListModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetListRoutePoint(Guid routeId)
+        {
+
+            try
+            {
+                ApiResponse<ResponseRoutePointListModel> response =
+                    await _routeService.GetPointList(routeId);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get list route point : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+
+        }
+    }
 }

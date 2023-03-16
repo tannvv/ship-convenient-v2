@@ -6,9 +6,13 @@
         public const string APPROVED = "APPROVED";
         public const string REJECT = "REJECT";
         public const string DELIVER_PICKUP = "DELIVER_PICKUP";
+        public const string DELIVER_PICKUP_FAILED_1 = "DELIVER_PICKUP_FAILED_1";
+        public const string DELIVER_PICKUP_FAILED_2 = "DELIVER_PICKUP_FAILED_2";
         public const string DELIVER_CANCEL = "DELIVER_CANCEL";
         public const string SENDER_CANCEL = "SENDER_CANCEL";
         public const string DELIVERY = "DELIVERY";
+        public const string DELIVERY_FAILED_1 = "DELIVERY_FAILED_1";
+        public const string DELIVERY_FAILED_2 = "DELIVERY_FAILED_2";
         public const string DELIVERED = "DELIVERED";
         public const string DELIVERY_FAILED = "DELIVERY_FAILED";
        /* public const string SENDER_CONFIRM_DELIVERED = "SENDER_CONFIRM_DELIVERED";

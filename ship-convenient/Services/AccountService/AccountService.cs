@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using ship_convenient.Constants.AccountConstant;
+using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.Repository;
@@ -75,6 +76,7 @@ namespace ship_convenient.Services.AccountService
             #endregion
             Account account = model.ToEntityModel();
             account.Status = AccountStatus.NO_ROUTE;
+            
             await _accountRepo.InsertAsync(account);
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0) {
@@ -233,5 +235,7 @@ namespace ship_convenient.Services.AccountService
             response.ToSuccessResponse(await _accountUtils.AvailableBalanceModel(accountId),"Lấy thông tin thành công");
             return response;
         }
+
+       
     }
 }

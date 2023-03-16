@@ -11,6 +11,7 @@ namespace ship_convenient.Model.RouteModel
         public double ToLongitude { get; set; }
         public double ToLatitude { get; set; }
         public Guid AccountId { get; set; }
+        public List<CreateRoutePointModel> RoutePoints { get; set; } = new();
 
         public Route ConvertToEntity(Guid infoUserId)
         {
@@ -22,6 +23,7 @@ namespace ship_convenient.Model.RouteModel
             route.ToLatitude = this.ToLatitude;
             route.ToLongitude = this.ToLongitude;
             route.InfoUserId = infoUserId;
+            route.RoutePoints = this.RoutePoints.Select(x => x.ToEntity()).ToList();
             return route;
         }
     }

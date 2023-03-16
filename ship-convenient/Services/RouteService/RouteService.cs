@@ -7,6 +7,7 @@ using ship_convenient.Services.GenericService;
 using ship_convenient.Entities;
 using Microsoft.EntityFrameworkCore;
 using ship_convenient.Constants.AccountConstant;
+using ship_convenient.Constants.ConfigConstant;
 
 namespace ship_convenient.Services.RouteService
 {
@@ -14,12 +15,12 @@ namespace ship_convenient.Services.RouteService
     {
         private readonly IRouteRepository _routeRepo;
         private readonly IInfoUserRepository _infoUserRepo;
-        private readonly IAccountRepository _accountRepo;
+        private readonly IRoutePointRepository _routePointRepo;
         public RouteService(ILogger<RouteService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
             _routeRepo = unitOfWork.Routes;
             _infoUserRepo = unitOfWork.InfoUsers;
-            _accountRepo = unitOfWork.Accounts;
+            _routePointRepo = unitOfWork.RoutePoints;
         }
 
         public async Task<ApiResponse<ResponseRouteModel>> Create(CreateRouteModel model)
@@ -78,6 +79,22 @@ namespace ship_convenient.Services.RouteService
             return reponse;
         }
 
+        public async Task<ApiResponse<ResponseRoutePointListModel>> GetPointList(Guid routeId)
+        {
+            ApiResponse<ResponseRoutePointListModel> response = new();
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate: (routePoint) => routePoint.RouteId == routeId);
+            List<ResponseRoutePointModel> forwardPoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.FORWARD)
+                .OrderBy(source => source.Index).Select(source => source.ToResponseModel()).ToList();
+            List<ResponseRoutePointModel> backwardPoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.BACKWARD)
+                .OrderBy(source => source.Index).Select(source => source.ToResponseModel()).ToList();
+            ResponseRoutePointListModel data = new();
+            data.RouteId = routeId;
+            data.ForwardPoints = forwardPoints;
+            data.BackwardPoints = backwardPoints;
+            response.ToSuccessResponse(data, "Lấy danh sách điểm thành công");
+            return response;
+        }
+
         public async Task<ApiResponse<List<ResponseRouteModel>>> GetRouteUserId(Guid accountId)
         {
             ApiResponse<List<ResponseRouteModel>> response = new();
@@ -91,7 +108,7 @@ namespace ship_convenient.Services.RouteService
             }
             else
             {
-                response.ToFailedResponse("Người giao không tồn tại");
+                response.ToFailedResponse("Bạn chưa tạo tuyến đường nào");
             }
             return await Task.FromResult(response);
 
