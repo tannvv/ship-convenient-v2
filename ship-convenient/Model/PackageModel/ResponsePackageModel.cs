@@ -27,6 +27,11 @@ namespace unitofwork_core.Model.PackageModel
         public int? PriceShip { get; set; } = null;
         public string PhotoUrl { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
+        public DateTime PickupTimeStart { get; set; }
+        public DateTime PickupTimeOver { get; set; }
+        public DateTime DeliveryTimeStart { get; set; }
+        public DateTime DeliveryTimeOver { get; set; }
+        public DateTime SelectedBefore { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
         public Guid SenderId { get; set; }   

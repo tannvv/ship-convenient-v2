@@ -30,6 +30,7 @@ namespace ship_convenient.Entities
         public DateTime PickupTimeOver { get; set; }
         public DateTime DeliveryTimeStart { get; set; }
         public DateTime DeliveryTimeOver { get; set; }
+        public DateTime SelectedBefore { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
@@ -46,6 +47,7 @@ namespace ship_convenient.Entities
         public List<Product> Products { get; set; }
         public List<Feedback> Feedbacks { get; set; }
         public List<Report> Reports { get; set; }
+        public List<Notification> Notifications { get; set; }
         #endregion
 
         public Package()
@@ -55,6 +57,7 @@ namespace ship_convenient.Entities
             Products = new List<Product>();
             Feedbacks = new List<Feedback>();
             Reports = new List<Report>();
+            Notifications = new List<Notification>();
         }
 
         public ResponsePackageModel ToResponseModel()
@@ -80,6 +83,11 @@ namespace ship_convenient.Entities
             model.PriceShip = this.PriceShip;
             model.PhotoUrl = this.PhotoUrl;
             model.Note = this.Note;
+            model.PickupTimeStart = this.PickupTimeStart;
+            model.PickupTimeOver = this.PickupTimeOver;
+            model.DeliveryTimeStart = this.DeliveryTimeStart;
+            model.DeliveryTimeOver = this.DeliveryTimeOver;
+            model.SelectedBefore = this.SelectedBefore;
             model.CreatedAt = this.CreatedAt;
             model.ModifiedAt = this.ModifiedAt;
             model.SenderId = this.SenderId;

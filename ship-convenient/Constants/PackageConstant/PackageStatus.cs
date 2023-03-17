@@ -5,20 +5,17 @@
         public const string WAITING = "WAITING";
         public const string APPROVED = "APPROVED";
         public const string REJECT = "REJECT";
-        public const string DELIVER_PICKUP = "DELIVER_PICKUP";
-        public const string DELIVER_PICKUP_FAILED_1 = "DELIVER_PICKUP_FAILED_1";
-        public const string DELIVER_PICKUP_FAILED_2 = "DELIVER_PICKUP_FAILED_2";
+        public const string SELECTED = "SELECTED";
+        public const string PICKUP_SUCCESS = "PICKUP_SUCCESS";
+        public const string PICKUP_FAILED = "PICKUP_FAILED";
         public const string DELIVER_CANCEL = "DELIVER_CANCEL";
         public const string SENDER_CANCEL = "SENDER_CANCEL";
-        public const string DELIVERY = "DELIVERY";
-        public const string DELIVERY_FAILED_1 = "DELIVERY_FAILED_1";
-        public const string DELIVERY_FAILED_2 = "DELIVERY_FAILED_2";
-        public const string DELIVERED = "DELIVERED";
-        public const string DELIVERY_FAILED = "DELIVERY_FAILED";
-       /* public const string SENDER_CONFIRM_DELIVERED = "SENDER_CONFIRM_DELIVERED";
-        public const string SENDER_CONFIRM_DELIVERED_FAILED = "SENDER_CONFIRM_DELIVERED_FAILED";*/
-        public const string REFUND_SUCCESS = "REFUND_SUCCESS";
-        public const string REFUND_FAILED = "REFUND_FAILED";
+        public const string DELIVERED_SUCCESS = "DELIVERED_SUCCESS";
+        public const string DELIVERED_FAILED = "DELIVERED_FAILED";
+        public const string SUCCESS = "SUCCESS";
+        public const string REFUND_TO_WAREHOUSE_SUCCESS = "REFUND_TO_WAREHOUSE_SUCCESS";
+        public const string REFUND_TO_WAREHOUSE_FAILED = "REFUND_TO_WAREHOUSE_FAILED";
         public const string NOT_EXIST = "NOT_EXIST";
+        public const string EXPIRED = "EXPRIRED";
     }
 }

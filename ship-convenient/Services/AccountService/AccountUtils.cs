@@ -1,10 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using ship_convenient.Constants.AccountConstant;
 using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Model.UserModel;
 using ship_convenient.Services.GenericService;
+using System.Linq.Expressions;
 using unitofwork_core.Constant.Package;
 using Transaction = ship_convenient.Entities.Transaction;
 
@@ -26,7 +28,7 @@ namespace ship_convenient.Services.AccountService
                 return balanceDefault;
             };
             List<string> validStatus = new() {
-                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERED
+                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS
             };
             List<Package> packages = await _packageRepo.GetAllAsync(
                 include: source => source.Include(p => p.Products),
@@ -38,7 +40,7 @@ namespace ship_convenient.Services.AccountService
             }
 
             List<string> validStatusSender = new() {
-                PackageStatus.APPROVED, PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY,
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
             };
             List<Package> packagesSender = await _packageRepo.GetAllAsync(
                 predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
@@ -63,7 +65,7 @@ namespace ship_convenient.Services.AccountService
                 return result;
             };
             List<string> validStatus = new() {
-                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERY_FAILED
+                 PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS
             };
             List<Package> packages = await _packageRepo.GetAllAsync(
                 include: source => source.Include(p => p.Products),
@@ -75,7 +77,7 @@ namespace ship_convenient.Services.AccountService
             }
 
             List<string> validStatusSender = new() {
-                PackageStatus.APPROVED, PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY,
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
             };
             List<Package> packagesSender = await _packageRepo.GetAllAsync(
                 predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
@@ -123,7 +125,7 @@ namespace ship_convenient.Services.AccountService
                 return balanceDefault;
             };
             List<string> validStatus = new() {
-                PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY, PackageStatus.DELIVERED
+                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS
             };
             List<Package> packages = _packageRepo.GetAll(
                 include: source => source.Include(p => p.Products),
@@ -135,7 +137,7 @@ namespace ship_convenient.Services.AccountService
             }
 
             List<string> validStatusSender = new() {
-                PackageStatus.APPROVED, PackageStatus.DELIVER_PICKUP, PackageStatus.DELIVERY,
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
             };
             List<Package> packagesSender = _packageRepo.GetAll(
                 predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
@@ -156,6 +158,16 @@ namespace ship_convenient.Services.AccountService
                 include: source => source.Include(cf => cf.InfoUser).ThenInclude(info => info.Account));
             List<Account?> activeAccounts = configActives.Select(config => config.InfoUser.Account).ToList();
             return activeAccounts;
+        }
+
+        public async Task<Account> GetAdminBalance() {
+            #region Predicate
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            #endregion
+
+            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicateAdminBalance, disableTracking: false);
+            if (adminBalance == null) throw new ArgumentException("Không tìm thấy tài khoản quản lý tiền");
+            return adminBalance;
         }
 
     }

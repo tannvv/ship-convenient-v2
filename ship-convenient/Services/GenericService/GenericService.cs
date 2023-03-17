@@ -55,7 +55,7 @@ namespace ship_convenient.Services.GenericService
             return _unitOfWork.Packages.GetById(id: id) != null;
         }
 
-        public async Task<string?> SenNotificationToAccount(IFirebaseCloudMsgService _fcmService ,Notification notification)
+        public async Task<string?> SendNotificationToAccount(IFirebaseCloudMsgService _fcmService ,Notification notification)
         {
             try
             {

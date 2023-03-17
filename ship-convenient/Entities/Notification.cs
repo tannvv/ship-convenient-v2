@@ -8,6 +8,8 @@ namespace ship_convenient.Entities
         public string Title { get; set; } = string.Empty;
         public string Content { get; set; } = string.Empty;
         public bool IsSend { get; set; } = false;
+        public Guid? PackageId { get; set; }
+        public Package? Package { get; set; }
         public string TypeOfNotification { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         #region Relationship

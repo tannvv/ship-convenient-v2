@@ -148,14 +148,14 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("deliver-pickup")]
+        [HttpPut("deliver-selected")]
         [SwaggerOperation(Summary = "Shipper pickup a package")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> PickupPackage(ShipperPickUpModel model)
+        public async Task<IActionResult> SelectedPackages(DeliverSelectedPackagesModel model)
         {
             try
             {
-                ApiResponse response = await _packageService.DeliverPickupPackages(model.deliverId,
+                ApiResponse response = await _packageService.DeliverSelectedPackages(model.deliverId,
                     model.packageIds);
                 return SendResponse(response);
             }
@@ -200,15 +200,15 @@ namespace ship_convenient.Controllers
         }
 
 
-        [HttpPut("confirm-packages")]
+        [HttpPut("pickup-success")]
         [SwaggerOperation(Summary = "Deliver confirms packages and then delivery them")]
         
         [ProducesResponseType(typeof(ActionResult<ApiResponse>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeliverConfirmPackage(Guid packageId)
+        public async Task<IActionResult> PickupPackageSuccess(Guid packageId)
         {
             try  
             {
-                ApiResponse response = await _packageService.ConfirmPackages(
+                ApiResponse response = await _packageService.PickupPackageSuccess(
                     packageId);
                 return SendResponse(response);
             }
@@ -219,14 +219,33 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("delivery-failed")]
-        [SwaggerOperation(Summary = "Shipper delivery failed package")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> DeliverDeliveryFailedPackage(Guid packageId)
+        [HttpPut("pickup-failed")]
+        [SwaggerOperation(Summary = "Deliver confirms packages and then delivery them")]
+
+        [ProducesResponseType(typeof(ActionResult<ApiResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> PickupPackageFailed(PickupPackageFailedModel model)
         {
             try
             {
-                ApiResponse response = await _packageService.DeliveryFailed(packageId);
+                ApiResponse response = await _packageService.PickupPackageFailed(
+                    model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Deliver confrims packages has exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("delivered-failed")]
+        [SwaggerOperation(Summary = "Shipper delivery failed package")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeliveredFailedPackage(DeliveredFailedModel packageId)
+        {
+            try
+            {
+                ApiResponse response = await _packageService.DeliveredFailed(packageId);
                 return SendResponse(response);
             }
             catch (Exception ex)
@@ -236,14 +255,14 @@ namespace ship_convenient.Controllers
             }
         }
 
-        [HttpPut("delivery-success")]
+        [HttpPut("delivered-success")]
         [SwaggerOperation(Summary = "Shipper delivery success pakage")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
         public async Task<IActionResult> DeliverDeliverySuccessPackage(Guid packageId)
         {
             try
             {
-                ApiResponse response = await _packageService.DeliverDeliverySuccess(packageId);
+                ApiResponse response = await _packageService.DeliveredSuccess(packageId);
                 return SendResponse(response);
             }
             catch (Exception ex)

@@ -29,14 +29,15 @@ namespace ship_convenient.Services.AccountService
             ApiResponse response = new();
             #region verify params
             InfoUser? _checkPhone = await _infoUserRepo.FirstOrDefaultAsync(
-                   predicate: (ac) => ac.Phone == model.Phone);
+                   predicate: (ac) => ac.Phone == model.Phone && model.Role == ac.Account.Role,
+                   include: source => source.Include(ac => ac.Account));
             if (_checkPhone != null)
             {
                 response.ToFailedResponse("Số điện thoại đã tồn tại, không thể đăng kí");
                 return response;
             }
             Account? _checkUserName = await _accountRepo.FirstOrDefaultAsync(
-                    predicate: (ac) => ac.UserName == model.UserName);
+                    predicate: (ac) => ac.UserName == model.UserName );
             if (_checkUserName != null)
             {
                 response.ToFailedResponse("Tên đăng nhập đã tồn tại, không thể đăng kí");
@@ -59,7 +60,8 @@ namespace ship_convenient.Services.AccountService
                     return response;
                 }*/
                 InfoUser? _checkPhone = await _infoUserRepo.FirstOrDefaultAsync(
-                    predicate: (ac) => ac.Phone == model.Phone);
+                    predicate: (ac) => ac.Phone == model.Phone && ac.Account.Role == model.Role,
+                    include: source => source.Include(ac => ac.Account));
                 if (_checkPhone != null)
                 {
                     response.ToFailedResponse("Số điện thoại đã tồn tại, không thể đăng kí");

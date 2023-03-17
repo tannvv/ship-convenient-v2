@@ -28,6 +28,11 @@ namespace unitofwork_core.Model.PackageModel
         public int PriceShip { get; set; }
         public string PhotoUrl { get; set; } = string.Empty;
         public string Note { get; set; } = string.Empty;
+        public DateTime PickupTimeStart { get; set; }
+        public DateTime PickupTimeOver { get; set; }
+        public DateTime DeliveryTimeStart { get; set; }
+        public DateTime DeliveryTimeOver { get; set; }
+        public DateTime SelectedBefore { get; set; }
         public Guid SenderId { get; set; }
         public List<CreateProductModel> Products { get; set; } = new List<CreateProductModel>();
 
@@ -58,6 +63,11 @@ namespace unitofwork_core.Model.PackageModel
             entity.PhotoUrl = this.PhotoUrl;
             entity.Note = this.Note;
             entity.SenderId = this.SenderId;
+            entity.PickupTimeStart = this.PickupTimeStart;
+            entity.PickupTimeOver = this.PickupTimeOver;
+            entity.DeliveryTimeStart = this.DeliveryTimeStart;
+            entity.DeliveryTimeOver = this.DeliveryTimeOver;
+            entity.SelectedBefore = this.SelectedBefore;
 
             int productCount = this.Products.Count;
             for (int i = 0; i < productCount; i++)

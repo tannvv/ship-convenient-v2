@@ -55,9 +55,8 @@ namespace ship_convenient.Services.Notificationservice
             Expression<Func<Package, bool>> predicate = (source) => source.DeliverId == model.DeliverId;
             predicates.Add(predicate);
             List<string> validStatus = new List<string> {
-                PackageStatus.DELIVER_PICKUP,
-                PackageStatus.DELIVERY,
-                PackageStatus.DELIVERY_FAILED,
+                PackageStatus.SELECTED,
+                PackageStatus.PICKUP_SUCCESS,
             };
             Expression<Func<Package, bool>> predicateStatus = (source) => validStatus.Contains(source.Status);
             predicates.Add(predicateStatus);

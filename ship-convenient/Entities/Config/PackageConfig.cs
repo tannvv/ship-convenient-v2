@@ -19,7 +19,12 @@ namespace ship_convenient.Entities.Config
                 .WithOne(tr => tr.Package).HasForeignKey(tr => tr.PackageId).OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(pa => pa.Reports)
                 .WithOne(rp => rp.Package).HasForeignKey(rp => rp.PackageId).OnDelete(DeleteBehavior.Cascade);
-  
+            builder.HasMany(pa => pa.Feedbacks)
+                .WithOne(fb => fb.Package).HasForeignKey(fb => fb.PackageId).OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(pa => pa.Notifications)
+                .WithOne(nt => nt.Package).HasForeignKey(nt => nt.PackageId).OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 }
