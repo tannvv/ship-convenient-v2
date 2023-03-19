@@ -14,6 +14,7 @@ using ship_convenient.Services.MapboxService;
 using ship_convenient.Services.Notificationservice;
 using ship_convenient.Services.PackageService;
 using ship_convenient.Services.RouteService;
+using ship_convenient.Services.SendSmsService;
 using ship_convenient.Services.TransactionPackageService;
 using ship_convenient.Services.TransactionService;
 using ship_convenient.Services.VnPayService;
@@ -42,6 +43,7 @@ namespace ship_convenient.Config
             services.AddTransient<IConfigService, ConfigService>();
             services.AddTransient<IConfigUserService, ConfigUserService>();
             services.AddTransient<IDashboardService, DashboardService>();
+            services.AddTransient<ISendSMSService, SendSmsService>();
             services.AddScoped<PackageUtils>();
             services.AddScoped<AccountUtils>();
         }

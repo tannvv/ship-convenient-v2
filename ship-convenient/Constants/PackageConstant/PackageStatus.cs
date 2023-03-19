@@ -16,6 +16,6 @@
         public const string REFUND_TO_WAREHOUSE_SUCCESS = "REFUND_TO_WAREHOUSE_SUCCESS";
         public const string REFUND_TO_WAREHOUSE_FAILED = "REFUND_TO_WAREHOUSE_FAILED";
         public const string NOT_EXIST = "NOT_EXIST";
-        public const string EXPIRED = "EXPRIRED";
+        public const string EXPIRED = "EXPIRED";
     }
 }

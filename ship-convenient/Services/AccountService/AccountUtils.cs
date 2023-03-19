@@ -20,7 +20,7 @@ namespace ship_convenient.Services.AccountService
             _transactionRepo = unitOfWork.Transactions;
         }
 
-        public async Task<int> AvailableBalanceAsync(Guid accountId)
+       /* public async Task<int> AvailableBalanceAsync(Guid accountId)
         {
             if (await IsNewAccountAsync(accountId))
             {
@@ -45,16 +45,106 @@ namespace ship_convenient.Services.AccountService
             List<Package> packagesSender = await _packageRepo.GetAllAsync(
                 predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
             int totalBalanceNotAvailabelSenderRole = 0;
-            foreach (var item in packagesSender) {
-                totalBalanceNotAvaiable += item.PriceShip;   
+            foreach (var item in packagesSender)
+            {
+                totalBalanceNotAvaiable += item.PriceShip;
             }
             Account? account = await _accountRepo.GetByIdAsync(accountId);
             if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
             return account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
         }
+*/
+        public async Task<int> AvailableBalanceAsync(Guid accountId)
+        {
+            if (await IsNewAccountAsync(accountId))
+            {
+                int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
+                return balanceDefault;
+            };
+            int result = 0;
+            Account? account = await _accountRepo.GetByIdAsync(accountId);
+            if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
+            if (account.Role == RoleName.DELIVER)
+            {
+                List<string> validStatus = new() {
+                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS, PackageStatus.DELIVERED_FAILED
+                };
+                List<Package> packages = await _packageRepo.GetAllAsync(
+                    include: source => source.Include(p => p.Products),
+                    predicate: p => validStatus.Contains(p.Status) && p.DeliverId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packages)
+                {
+                    totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
+                }
+                result = account.Balance - totalBalanceNotAvaiable;
+            }
+            else if (account.Role == RoleName.SENDER) {
+                List<string> validStatusSender = new() {
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
+                };
+                List<Package> packagesSender = await _packageRepo.GetAllAsync(
+                    predicate: p => validStatusSender.Contains(p.Status) && p.SenderId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packagesSender)
+                {
+                    totalBalanceNotAvaiable += item.PriceShip;
+                }
+                result = account.Balance - totalBalanceNotAvaiable;
+            }
 
-        
+            return result;
+        }
+
         public async Task<ResponseBalanceModel> AvailableBalanceModel(Guid accountId)
+        {
+            ResponseBalanceModel result = new();
+            if (await IsNewAccountAsync(accountId))
+            {
+                int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
+                result.IsNewAccount = true;
+                result.Balance = balanceDefault;
+                return result;
+            };
+            Account? account = await _accountRepo.GetByIdAsync(accountId);
+            if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
+            if (account.Role == RoleName.DELIVER)
+            {
+                List<string> validStatus = new() {
+                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS, PackageStatus.DELIVERED_FAILED
+                };
+                List<Package> packages = await _packageRepo.GetAllAsync(
+                    include: source => source.Include(p => p.Products),
+                    predicate: p => validStatus.Contains(p.Status) && p.DeliverId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packages)
+                {
+                    totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
+                }
+                result.Balance = account.Balance - totalBalanceNotAvaiable;
+            }
+            else if (account.Role == RoleName.SENDER)
+            {
+                List<string> validStatusSender = new() {
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
+                };
+                List<Package> packagesSender = await _packageRepo.GetAllAsync(
+                    predicate: p => validStatusSender.Contains(p.Status) && p.SenderId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packagesSender)
+                {
+                    totalBalanceNotAvaiable += item.PriceShip;
+                }
+                result.Balance = account.Balance - totalBalanceNotAvaiable;
+            }
+            return result;
+        }
+
+
+
+
+
+        /*public async Task<ResponseBalanceModel> AvailableBalanceModel(Guid accountId)
         {
             ResponseBalanceModel result = new();
             if (await IsNewAccountAsync(accountId))
@@ -91,7 +181,7 @@ namespace ship_convenient.Services.AccountService
             result.Balance = account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
             return result;
         }
-
+*/
 
         public async Task<bool> IsNewAccountAsync(Guid accountId)
         {
@@ -105,7 +195,7 @@ namespace ship_convenient.Services.AccountService
         }
 
 
-        
+
         public bool IsNewAccount(Guid accountId)
         {
             bool result = false;
@@ -124,31 +214,40 @@ namespace ship_convenient.Services.AccountService
                 int balanceDefault = _configRepo.GetDefaultBalanceNewAccount();
                 return balanceDefault;
             };
-            List<string> validStatus = new() {
-                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS
-            };
-            List<Package> packages = _packageRepo.GetAll(
-                include: source => source.Include(p => p.Products),
-                predicate: p => validStatus.Contains(p.Status) && p.DeliverId == accountId);
-            int totalBalanceNotAvaiable = 0;
-            foreach (var item in packages)
-            {
-                totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
-            }
-
-            List<string> validStatusSender = new() {
-                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
-            };
-            List<Package> packagesSender = _packageRepo.GetAll(
-                predicate: p => validStatus.Contains(p.Status) && p.SenderId == accountId);
-            int totalBalanceNotAvailabelSenderRole = 0;
-            foreach (var item in packagesSender)
-            {
-                totalBalanceNotAvaiable += item.PriceShip;
-            }
+            int result = 0;
             Account? account = _accountRepo.GetById(accountId);
             if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
-            return account.Balance - totalBalanceNotAvaiable - totalBalanceNotAvailabelSenderRole;
+            if (account.Role == RoleName.DELIVER)
+            {
+                List<string> validStatus = new() {
+                PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS, PackageStatus.DELIVERED_FAILED
+                };
+                List<Package> packages = _packageRepo.GetAll(
+                    include: source => source.Include(p => p.Products),
+                    predicate: p => validStatus.Contains(p.Status) && p.DeliverId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packages)
+                {
+                    totalBalanceNotAvaiable += item.Products.Sum(pro => pro.Price);
+                }
+                result = account.Balance - totalBalanceNotAvaiable;
+            }
+            else if (account.Role == RoleName.SENDER)
+            {
+                List<string> validStatusSender = new() {
+                PackageStatus.APPROVED, PackageStatus.SELECTED, PackageStatus.PICKUP_SUCCESS,
+                };
+                List<Package> packagesSender = _packageRepo.GetAll(
+                    predicate: p => validStatusSender.Contains(p.Status) && p.SenderId == accountId);
+                int totalBalanceNotAvaiable = 0;
+                foreach (var item in packagesSender)
+                {
+                    totalBalanceNotAvaiable += item.PriceShip;
+                }
+                result = account.Balance - totalBalanceNotAvaiable;
+            }
+
+            return result;
         }
 
         public async Task<List<Account>> GetListAccountActive()
@@ -160,7 +259,8 @@ namespace ship_convenient.Services.AccountService
             return activeAccounts;
         }
 
-        public async Task<Account> GetAdminBalance() {
+        public async Task<Account> GetAdminBalance()
+        {
             #region Predicate
             Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
             #endregion

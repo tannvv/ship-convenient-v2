@@ -37,7 +37,7 @@ namespace ship_convenient.Services.AccountService
                 return response;
             }
             Account? _checkUserName = await _accountRepo.FirstOrDefaultAsync(
-                    predicate: (ac) => ac.UserName == model.UserName );
+                    predicate: (ac) => ac.UserName == model.UserName && ac.Role == model.Role);
             if (_checkUserName != null)
             {
                 response.ToFailedResponse("Tên đăng nhập đã tồn tại, không thể đăng kí");
@@ -69,7 +69,7 @@ namespace ship_convenient.Services.AccountService
                 }
             }
             Account? _checkUserName = await _accountRepo.FirstOrDefaultAsync(
-                    predicate: (ac) => ac.UserName == model.UserName);
+                    predicate: (ac) => ac.UserName == model.UserName && ac.Role == model.Role);
             if (_checkUserName != null)
             {
                 response.ToFailedResponse("Tên đăng nhập đã tồn tại, không thể đăng kí");

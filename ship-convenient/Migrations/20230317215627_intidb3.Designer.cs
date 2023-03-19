@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ship_convenient.Core.Context;
 
@@ -11,9 +12,10 @@ using ship_convenient.Core.Context;
 namespace ship_convenient.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230317215627_intidb3")]
+    partial class intidb3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -359,9 +361,6 @@ namespace ship_convenient.Migrations
                     b.Property<double>("Distance")
                         .HasColumnType("float");
 
-                    b.Property<DateTime>("ExpiredTime")
-                        .HasColumnType("datetime2");
-
                     b.Property<double>("Height")
                         .HasColumnType("float");
 
@@ -405,6 +404,9 @@ namespace ship_convenient.Migrations
                     b.Property<string>("ReceiverPhone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("SelectedBefore")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");

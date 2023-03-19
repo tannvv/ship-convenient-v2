@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Model.UserModel;
 using ship_convenient.Services.AccountService;
+using ship_convenient.Services.SendSmsService;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace ship_convenient.Controllers
@@ -11,10 +12,12 @@ namespace ship_convenient.Controllers
     {
         private readonly IAccountService _accountService;
         private readonly ILogger<AccountController> _logger;
-        public AccountController(IAccountService accountService, ILogger<AccountController> logger)
+        private readonly ISendSMSService _smsService;
+        public AccountController(IAccountService accountService, ILogger<AccountController> logger, ISendSMSService smsService)
         {
             _accountService = accountService;
             _logger = logger;
+            _smsService = smsService;
         }
         
         [HttpGet]
@@ -108,6 +111,7 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex);
             }
         }
+
 
         [HttpPut]
         [ProducesResponseType(typeof(ApiResponse<ResponseAccountModel>), StatusCodes.Status200OK)]

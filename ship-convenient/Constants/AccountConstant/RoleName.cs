@@ -4,7 +4,7 @@
     {
         public const string ADMIN = "ADMIN";
         public const string ADMIN_BALANCE = "ADMIN_BALANCE";
-        public const string USER = "SENDER";
+        public const string SENDER = "SENDER";
         public const string DELIVER = "DELIVER";
     }
 }

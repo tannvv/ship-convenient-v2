@@ -30,7 +30,7 @@ namespace ship_convenient.Entities
         public DateTime PickupTimeOver { get; set; }
         public DateTime DeliveryTimeStart { get; set; }
         public DateTime DeliveryTimeOver { get; set; }
-        public DateTime SelectedBefore { get; set; }
+        public DateTime ExpiredTime { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
@@ -87,7 +87,7 @@ namespace ship_convenient.Entities
             model.PickupTimeOver = this.PickupTimeOver;
             model.DeliveryTimeStart = this.DeliveryTimeStart;
             model.DeliveryTimeOver = this.DeliveryTimeOver;
-            model.SelectedBefore = this.SelectedBefore;
+            model.ExpiredTime = this.ExpiredTime;
             model.CreatedAt = this.CreatedAt;
             model.ModifiedAt = this.ModifiedAt;
             model.SenderId = this.SenderId;

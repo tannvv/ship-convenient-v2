@@ -32,7 +32,7 @@ namespace unitofwork_core.Model.PackageModel
         public DateTime PickupTimeOver { get; set; }
         public DateTime DeliveryTimeStart { get; set; }
         public DateTime DeliveryTimeOver { get; set; }
-        public DateTime SelectedBefore { get; set; }
+        public DateTime ExpiredTime { get; set; }
         public Guid SenderId { get; set; }
         public List<CreateProductModel> Products { get; set; } = new List<CreateProductModel>();
 
@@ -67,7 +67,7 @@ namespace unitofwork_core.Model.PackageModel
             entity.PickupTimeOver = this.PickupTimeOver;
             entity.DeliveryTimeStart = this.DeliveryTimeStart;
             entity.DeliveryTimeOver = this.DeliveryTimeOver;
-            entity.SelectedBefore = this.SelectedBefore;
+            entity.ExpiredTime = this.ExpiredTime;
 
             int productCount = this.Products.Count;
             for (int i = 0; i < productCount; i++)

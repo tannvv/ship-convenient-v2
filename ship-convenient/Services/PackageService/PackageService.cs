@@ -738,8 +738,8 @@ namespace ship_convenient.Services.PackageService
             systemTrans.Description = $"Kiện hàng {package.Id} đã được giao thành công";
             systemTrans.Status = TransactionStatus.ACCOMPLISHED;
             systemTrans.TransactionType = TransactionType.INCREASE;
-            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent - totalPrice);
-            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
+            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent);
+            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance + package.PriceShip * profitPercent);
             systemTrans.PackageId = package.Id;
             systemTrans.AccountId = adminBalance.Id;
             _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
@@ -749,8 +749,8 @@ namespace ship_convenient.Services.PackageService
             deliverTrans.Description = "Bạn đã giao hàng thành công";
             deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
             deliverTrans.TransactionType = TransactionType.INCREASE;
-            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(totalPrice + package.PriceShip * (1 - profitPercent));
-            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
+            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * (1 - profitPercent));
+            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + package.PriceShip * (1 - profitPercent));
             deliverTrans.PackageId = package.Id;
             deliverTrans.AccountId = deliver.Id;
             _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
@@ -760,16 +760,15 @@ namespace ship_convenient.Services.PackageService
             senderTrans.Description = "Kiện hàng của bạn đã được giao thành công";
             senderTrans.Status = TransactionStatus.ACCOMPLISHED;
             senderTrans.TransactionType = TransactionType.DECREASE;
-            senderTrans.CoinExchange = - totalPrice - package.PriceShip;
-            senderTrans.BalanceWallet = sender.Balance - totalPrice - package.PriceShip;
+            senderTrans.CoinExchange = - package.PriceShip;
+            senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
             senderTrans.PackageId = package.Id;
             senderTrans.AccountId = sender.Id;
             _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
 
-            adminBalance.Balance = ParseHelper.RoundedToInt(adminBalance.Balance - totalPrice + package.PriceShip * profitPercent);
-            deliver.Balance = ParseHelper.RoundedToInt(
-                deliver.Balance + totalPrice + package.PriceShip * (1 - profitPercent));
-            sender.Balance = sender.Balance - totalPrice - package.PriceShip;
+            adminBalance.Balance = systemTrans.BalanceWallet;
+            deliver.Balance = deliverTrans.BalanceWallet;
+            sender.Balance = senderTrans.BalanceWallet;
 
             List<Transaction> transactions = new List<Transaction> {
                     systemTrans, deliverTrans, senderTrans
@@ -933,8 +932,10 @@ namespace ship_convenient.Services.PackageService
         public async Task<ApiResponse> SenderCancelPackage(Guid packageId, string? reason)
         {
             ApiResponse response = new ApiResponse();
-            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false);
-
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false,
+                include: p => p.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products));
+            Account? deliver = package?.Deliver;
+            Account? sender = package?.Sender;
             #region Verify params
             if (package == null)
             {
@@ -948,7 +949,33 @@ namespace ship_convenient.Services.PackageService
             }
             #endregion
             #region Create transaction
-          
+            if (package.Status == PackageStatus.SELECTED) {
+                Transaction deliverTrans = new Transaction();
+                deliverTrans.Title = TransactionTitle.SENDER_CANCEL;
+                deliverTrans.Description = $"Kiện hàng đã bị hủy";
+                deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
+                deliverTrans.TransactionType = TransactionType.INCREASE;
+                deliverTrans.CoinExchange = package.PriceShip;
+                deliverTrans.BalanceWallet = deliver.Balance + package.PriceShip;
+                deliverTrans.PackageId = package.Id;
+                deliverTrans.AccountId = deliver.Id;
+
+                Transaction senderTrans = new Transaction();
+                senderTrans.Title = TransactionTitle.SENDER_CANCEL;
+                senderTrans.Description = "Bạn đã hủy kiện hàng";
+                senderTrans.Status = TransactionStatus.ACCOMPLISHED;
+                senderTrans.TransactionType = TransactionType.DECREASE;
+                senderTrans.CoinExchange = - package.PriceShip;
+                senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
+                senderTrans.PackageId = package.Id;
+                senderTrans.AccountId = deliver.Id;
+
+                deliver.Balance = deliverTrans.BalanceWallet;
+                sender.Balance = senderTrans.BalanceWallet;
+
+                await _transactionRepo.InsertAsync(deliverTrans);
+                await _transactionRepo.InsertAsync(senderTrans);
+            }
             #endregion
             #region Create history
             TransactionPackage history = new TransactionPackage();
@@ -970,7 +997,6 @@ namespace ship_convenient.Services.PackageService
                 notification.TypeOfNotification = TypeOfNotification.SENDER_CANCEL;
                 notification.AccountId = package.DeliverId.Value;
                 await _notificationRepo.InsertAsync(notification);
-                Account? deliver = await _accountRepo.GetByIdAsync(notification.AccountId);
                 if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
                     await SendNotificationToAccount(_fcmService, notification);
             }
