@@ -37,11 +37,12 @@ namespace ship_convenient.Controllers
 
         [HttpGet("package-count")]
         [ProducesResponseType(typeof(ApiResponse<PackageCountModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetPackageCounts()
+        public async Task<IActionResult> GetPackageCounts(Guid? deliverId, Guid? senderId)
         {
             try
             {
-                ApiResponse<PackageCountModel> response = await _dashboardService.GetCountPackage();
+                ApiResponse<PackageCountModel> response = await _dashboardService.GetCountPackage(
+                    deliverId: deliverId, senderId: senderId);
                 return SendResponse(response);
             }
             catch (Exception ex)
@@ -50,5 +51,7 @@ namespace ship_convenient.Controllers
                 return BadRequest(ex);
             }
         }
+
+        
     }
 }

@@ -24,7 +24,7 @@ builder.Services.AddDIService();
 builder.Services.AddCorsApp();
 builder.Services.AddSwaggerApp();
 builder.Services.AddHTTPLogingExtension();
-// builder.Services.AddBackgroundServices();
+builder.Services.AddBackgroundServices();
 #endregion
 
 var app = builder.Build();

@@ -8,7 +8,7 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<TransactionPackage> builder)
         {
             builder.ToTable("TransactionPackage");
-            builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETDATE()")
+            builder.Property(t => t.CreatedAt).HasDefaultValueSql("GETUTCDATE()")
                 .ValueGeneratedOnAdd();
         }
     }

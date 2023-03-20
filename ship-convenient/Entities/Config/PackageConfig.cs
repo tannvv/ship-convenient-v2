@@ -8,9 +8,9 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<Package> builder)
         {
             builder.ToTable("Package");
-            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAdd();
             builder.Property(u => u.ModifiedAt)
-                .HasDefaultValueSql("GETDATE()").ValueGeneratedOnAddOrUpdate();
+                .HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAddOrUpdate();
             builder.HasMany(pa => pa.Products)
                 .WithOne(pro => pro.Package).HasForeignKey(pro => pro.PackageId).OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(pa => pa.Transactions)

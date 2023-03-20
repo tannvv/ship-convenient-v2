@@ -68,7 +68,7 @@ namespace ship_convenient.Services.PackageService
             TransactionPackage history = new();
             history.FromStatus = PackageStatus.NOT_EXIST;
             history.ToStatus = PackageStatus.WAITING;
-            history.Description = "Đơn hàng được tạo vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Description = "Đơn hàng được tạo";
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
@@ -107,7 +107,7 @@ namespace ship_convenient.Services.PackageService
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.APPROVED;
-            history.Description = "Đơn hàng được duyệt vào lúc: " + DateTime.UtcNow.ToString(DateTimeFormat.DEFAULT);
+            history.Description = "Đơn hàng đã được duyệt";
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             #endregion
@@ -115,7 +115,7 @@ namespace ship_convenient.Services.PackageService
             #region Create notification for sender
             Notification notificationSender = new Notification();
             notificationSender.Title = "Đơn hàng đã được duyệt";
-            notificationSender.Content = "Đơn hàng của bạn đã được duyệt\nMã đơn hàng: " + package.Id;
+            notificationSender.Content = "Đơn hàng của bạn đã được duyệt";
             notificationSender.AccountId = package.SenderId;
             notificationSender.TypeOfNotification = TypeOfNotification.APPROVED;
             await _notificationRepo.InsertAsync(notificationSender);
@@ -312,7 +312,8 @@ namespace ship_convenient.Services.PackageService
             #region Includable
             Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> include = (source) => source.Include(p => p.Products)
                 .Include(p => p.Deliver).ThenInclude(p => p != null ? p.InfoUser : null)
-                .Include(p => p.Sender).ThenInclude(c => c != null ? c.InfoUser : null);
+                .Include(p => p.Sender).ThenInclude(c => c != null ? c.InfoUser : null)
+                .Include(p => p.TransactionPackages);
             #endregion
 
             #region Predicates
@@ -732,55 +733,12 @@ namespace ship_convenient.Services.PackageService
                 totalPrice += pr.Price;
             });
             _logger.LogInformation($"Profit percent: {profitPercent} ,Total price : {totalPrice}");
-            #region Create transactions
-            Transaction systemTrans = new Transaction();
-            systemTrans.Title = TransactionTitle.DELIVERED_SUCCESS;
-            systemTrans.Description = $"Kiện hàng {package.Id} đã được giao thành công";
-            systemTrans.Status = TransactionStatus.ACCOMPLISHED;
-            systemTrans.TransactionType = TransactionType.INCREASE;
-            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent);
-            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance + package.PriceShip * profitPercent);
-            systemTrans.PackageId = package.Id;
-            systemTrans.AccountId = adminBalance.Id;
-            _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
-
-            Transaction deliverTrans = new Transaction();
-            deliverTrans.Title = TransactionTitle.DELIVERED_SUCCESS;
-            deliverTrans.Description = "Bạn đã giao hàng thành công";
-            deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
-            deliverTrans.TransactionType = TransactionType.INCREASE;
-            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * (1 - profitPercent));
-            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + package.PriceShip * (1 - profitPercent));
-            deliverTrans.PackageId = package.Id;
-            deliverTrans.AccountId = deliver.Id;
-            _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
-
-            Transaction senderTrans = new Transaction();
-            senderTrans.Title = TransactionTitle.DELIVERED_SUCCESS;
-            senderTrans.Description = "Kiện hàng của bạn đã được giao thành công";
-            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
-            senderTrans.TransactionType = TransactionType.DECREASE;
-            senderTrans.CoinExchange = - package.PriceShip;
-            senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
-            senderTrans.PackageId = package.Id;
-            senderTrans.AccountId = sender.Id;
-            _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
-
-            adminBalance.Balance = systemTrans.BalanceWallet;
-            deliver.Balance = deliverTrans.BalanceWallet;
-            sender.Balance = senderTrans.BalanceWallet;
-
-            List<Transaction> transactions = new List<Transaction> {
-                    systemTrans, deliverTrans, senderTrans
-                };
-            await _transactionRepo.InsertAsync(transactions);
-            #endregion
 
             #region Create history
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.DELIVERED_SUCCESS;
-            history.Description = $"Kiện hàng đã được giao thành công";
+            history.Description = $"Kiện hàng đã được giao";
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.DELIVERED_SUCCESS;
@@ -788,7 +746,8 @@ namespace ship_convenient.Services.PackageService
             #region Create notification to sender
             Notification notification = new Notification();
             notification.Title = "Giao thành công";
-            notification.Content = $"Kiện hàng của bạn đã được giao thành công"; 
+            notification.Content = $"Kiện hàng của bạn đã được giao, bạn có 24h để phản hồi. Nếu qua thời gian này chúng tôi sẽ không " +
+                $"giải quyết các khiếu nại"; 
             notification.TypeOfNotification = TypeOfNotification.DELIVERED_SUCCESS;
             notification.AccountId = package.SenderId;
             await _notificationRepo.InsertAsync(notification);
@@ -1747,6 +1706,144 @@ namespace ship_convenient.Services.PackageService
                 response.ToFailedResponse("Lỗi không xác định");
             }
            
+            return response;
+        }
+
+        public async Task<ApiResponse> ToSuccessPackage(Guid packageId)
+        {
+            ApiResponse response = new ApiResponse();
+            decimal profitPercent = decimal.Parse(_configRepo.GetValueConfig(ConfigConstant.PROFIT_PERCENTAGE)) / 100;
+
+
+            #region Includable pakage
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage = (source) =>
+                            source.Include(p => p.Sender).Include(p => p.Deliver).Include(p => p.Products);
+            #endregion
+            Package? package = await _packageRepo.GetByIdAsync(packageId, disableTracking: false, include: includePackage);
+
+            #region Predicate
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            #endregion
+
+            Account? deliver = package?.Deliver;
+            Account? sender = package?.Sender;
+            Account? adminBalance = await _accountRepo.FirstOrDefaultAsync(predicateAdminBalance, disableTracking: false);
+
+            #region Verify params
+            if (package == null)
+            {
+                response.ToFailedResponse("Gói hàng không tồn tại");
+                return response;
+            }
+            if (package.Status != PackageStatus.DELIVERED_SUCCESS)
+            {
+                response.ToFailedResponse("Gói hàng chưa được giao để có thể hoàn thành");
+                return response;
+            }
+            if (deliver == null)
+            {
+                response.ToFailedResponse("Người lấy dùm hàng không tồn tại");
+                return response;
+            }
+            if (sender == null)
+            {
+                response.ToFailedResponse("Người nhờ lấy hàng không tồn tại");
+                return response;
+            }
+            if (adminBalance == null)
+            {
+                response.ToFailedResponse("Không tìm thấy ví hệ thống");
+                return response;
+            }
+            #endregion
+            int totalPrice = 0;
+            package.Products.ToList().ForEach(pr =>
+            {
+                totalPrice += pr.Price;
+            });
+            _logger.LogInformation($"Profit percent: {profitPercent} ,Total price : {totalPrice}");
+            #region Create transactions
+            Transaction systemTrans = new Transaction();
+            systemTrans.Title = TransactionTitle.SUCCESS;
+            systemTrans.Description = $"Kiện hàng {package.Id} được đánh dấu đã giao hàng thành công";
+            systemTrans.Status = TransactionStatus.ACCOMPLISHED;
+            systemTrans.TransactionType = TransactionType.INCREASE;
+            systemTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * profitPercent);
+            systemTrans.BalanceWallet = ParseHelper.RoundedToInt(adminBalance.Balance + package.PriceShip * profitPercent);
+            systemTrans.PackageId = package.Id;
+            systemTrans.AccountId = adminBalance.Id;
+            _logger.LogInformation($"System transaction: {systemTrans.CoinExchange}, Balance: {systemTrans.BalanceWallet}");
+
+            Transaction deliverTrans = new Transaction();
+            deliverTrans.Title = TransactionTitle.SUCCESS;
+            deliverTrans.Description = "Giao hàng thành công";
+            deliverTrans.Status = TransactionStatus.ACCOMPLISHED;
+            deliverTrans.TransactionType = TransactionType.INCREASE;
+            deliverTrans.CoinExchange = ParseHelper.RoundedToInt(package.PriceShip * (1 - profitPercent));
+            deliverTrans.BalanceWallet = ParseHelper.RoundedToInt(deliver.Balance + package.PriceShip * (1 - profitPercent));
+            deliverTrans.PackageId = package.Id;
+            deliverTrans.AccountId = deliver.Id;
+            _logger.LogInformation($"Shipper transaction: {deliverTrans.CoinExchange}, Balance: {deliverTrans.BalanceWallet}");
+
+            Transaction senderTrans = new Transaction();
+            senderTrans.Title = TransactionTitle.SUCCESS;
+            senderTrans.Description = "Kiện hàng của bạn đã được gia thành công";
+            senderTrans.Status = TransactionStatus.ACCOMPLISHED;
+            senderTrans.TransactionType = TransactionType.DECREASE;
+            senderTrans.CoinExchange = - package.PriceShip;
+            senderTrans.BalanceWallet = sender.Balance - package.PriceShip;
+            senderTrans.PackageId = package.Id;
+            senderTrans.AccountId = sender.Id;
+            _logger.LogInformation($"Shop transaction: {senderTrans.CoinExchange}, Balance: {senderTrans.BalanceWallet}");
+
+            adminBalance.Balance = systemTrans.BalanceWallet;
+            deliver.Balance = deliverTrans.BalanceWallet;
+            sender.Balance = senderTrans.BalanceWallet;
+
+            List<Transaction> transactions = new List<Transaction> {
+                    systemTrans, deliverTrans, senderTrans
+                };
+            await _transactionRepo.InsertAsync(transactions);
+            #endregion
+
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.SUCCESS;
+            history.Description = $"Kiện hàng đã được giao thành công";
+            history.PackageId = package.Id;
+            await _transactionPackageRepo.InsertAsync(history);
+            package.Status = PackageStatus.SUCCESS;
+            #endregion
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Giao thành công";
+            notification.Content = $"Kiện hàng của bạn được xác nhận đã thành công";
+            notification.TypeOfNotification = TypeOfNotification.SUCCESS;
+            notification.AccountId = package.SenderId;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
+            #region Create notification to deliver
+            Notification notificationDeliver = new Notification();
+            notificationDeliver.Title = "Giao thành công";
+            notificationDeliver.Content = $"Bạn đã giao thành công kiện hàng";
+            notificationDeliver.TypeOfNotification = TypeOfNotification.SUCCESS;
+            notificationDeliver.AccountId = package.DeliverId!.Value;
+            await _notificationRepo.InsertAsync(notificationDeliver);
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SendNotificationToAccount(_fcmService, notification);
+                if (deliver != null && !string.IsNullOrEmpty(deliver.RegistrationToken))
+                    await SendNotificationToAccount(_fcmService, notificationDeliver);
+            }
+            #region Response result
+            response.Success = result > 0 ? true : false;
+            response.Message = result > 0 ? "Yêu cầu thành công" : "Yêu cầu thất bại";
+            #endregion
+
             return response;
         }
     }

@@ -9,8 +9,8 @@ namespace ship_convenient.Entities.Config
         {
             builder.ToTable("Report");
             builder.HasKey(x => x.Id);
-            builder.Property(x => x.CreatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
-            builder.Property(x => x.ModifiedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAddOrUpdate();
+            builder.Property(x => x.CreatedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAdd();
+            builder.Property(x => x.ModifiedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAddOrUpdate();
         }
     }
 }

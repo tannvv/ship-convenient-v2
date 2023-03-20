@@ -1,4 +1,5 @@
-﻿using ship_convenient.Model.UserModel;
+﻿using ship_convenient.Model.TransactionPackageModel;
+using ship_convenient.Model.UserModel;
 using System.ComponentModel.DataAnnotations;
 using unitofwork_core.Model.ProductModel;
 
@@ -38,6 +39,7 @@ namespace unitofwork_core.Model.PackageModel
         public ResponseAccountModel? Sender { get; set; }
         public Guid? DeliverId { get; set; }
         public ResponseAccountModel? Deliver { get; set; }
-        public IList<ResponseProductModel> Products { get; set; } = new List<ResponseProductModel>();
+        public List<ResponseProductModel> Products { get; set; } = new List<ResponseProductModel>();
+        public List<ResponseTransactionPackageModel> PackageTransactions { get; set; } = new List<ResponseTransactionPackageModel>();
     }
 }

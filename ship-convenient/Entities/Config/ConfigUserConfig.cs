@@ -8,7 +8,7 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<ConfigUser> builder)
         {
             builder.ToTable("ConfigUser");
-            builder.Property(x => x.ModifiedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAddOrUpdate();
+            builder.Property(x => x.ModifiedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAddOrUpdate();
         }
     }
 }

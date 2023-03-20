@@ -8,5 +8,6 @@ namespace ship_convenient.Services.DashboardService
     {
         Task<ApiResponse<List<ResponseAccountModel>>> GetListAccountActive();
         Task<ApiResponse<PackageCountModel>> GetCountPackage();
+        Task<ApiResponse<PackageCountModel>> GetCountPackage(Guid? deliverId, Guid? senderId);
     }
 }

@@ -9,7 +9,7 @@ namespace ship_convenient.Entities.Config
         {
             builder.ToTable("Account");
             // builder.HasIndex(ac => ac.UserName).IsUnique();
-            builder.Property(ac => ac.CreatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+            builder.Property(ac => ac.CreatedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAdd();
             builder.HasMany(ac => ac.Notifications)
                 .WithOne(noti => noti.Account).HasForeignKey(noti => noti.AccountId).OnDelete(DeleteBehavior.Cascade);
             builder.HasMany(ac => ac.PackageSenders)

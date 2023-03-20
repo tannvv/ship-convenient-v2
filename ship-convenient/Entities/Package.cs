@@ -100,6 +100,12 @@ namespace ship_convenient.Entities
             {
                 model.Products.Add(this.Products[i].ToResponseModel());
             }
+
+            int countTransaction = this.TransactionPackages.Count;
+            for (int i = 0; i < countTransaction; i++)
+            {
+                model.PackageTransactions.Add(this.TransactionPackages[i].ToResponseModel());
+            }
             return model;
         }
         public ResponseCancelPackageModel ToDeliverCancelPackage()

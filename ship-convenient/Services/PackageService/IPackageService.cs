@@ -19,6 +19,7 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponse> PickupPackageFailed(PickupPackageFailedModel model);
         Task<ApiResponse> PickupPackageSuccess(Guid packageId);
         Task<ApiResponse> DeliveredSuccess(Guid packageId);
+        Task<ApiResponse> ToSuccessPackage(Guid packageId);
         Task<ApiResponse> DeliveredFailed(DeliveredFailedModel packageId);
         Task<ApiResponse> RefundSuccess(Guid packageId);
         Task<ApiResponse> RefundFailed(Guid packageId);

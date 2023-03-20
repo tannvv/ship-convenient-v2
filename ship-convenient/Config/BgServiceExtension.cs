@@ -6,7 +6,9 @@ namespace ship_convenient.Config
     {
         public static void AddBackgroundServices(this IServiceCollection services)
         {
-            services.AddHostedService<BgServiceNotifyTimePickup>();
+            // services.AddHostedService<BgServiceNotifyTimePickup>();
+            services.AddHostedService<BgServiceSuccessPackage>();
+            services.AddHostedService<BgServiceExpiredPackage>();
         }
     }
 }

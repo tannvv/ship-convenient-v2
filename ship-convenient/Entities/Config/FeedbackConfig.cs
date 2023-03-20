@@ -8,9 +8,9 @@ namespace ship_convenient.Entities.Config
         public void Configure(EntityTypeBuilder<Feedback> builder)
         {
             builder.ToTable("Feedback");
-            builder.Property(f => f.CreatedAt).HasDefaultValueSql("GETDATE()").ValueGeneratedOnAdd();
+            builder.Property(f => f.CreatedAt).HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAdd();
             builder.Property(f => f.ModifiedAt)
-                .HasDefaultValueSql("GETDATE()").ValueGeneratedOnAddOrUpdate();
+                .HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAddOrUpdate();
             builder.HasOne(f => f.Package).WithMany(p => p.Feedbacks).HasForeignKey(f => f.PackageId).OnDelete(DeleteBehavior.Cascade);
             builder.HasOne(f => f.Account).WithMany(p => p.Feedbacks).HasForeignKey(f => f.AccountId).OnDelete(DeleteBehavior.Cascade);
         }

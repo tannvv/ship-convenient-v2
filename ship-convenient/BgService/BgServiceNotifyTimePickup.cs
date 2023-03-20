@@ -42,7 +42,6 @@ namespace ship_convenient.BgService
             List<Package> packagesNearTimePickup = await packageService.GetPackagesNearTimePickup();
             packagesNearTimePickup = packagesNearTimePickup.Where(
                 item => Utils.CompareEqualTime(item.PickupTimeOver, DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30)))).ToList();
-            Console.WriteLine(DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30)));
             _logger.LogInformation("Số lượng gói hàng cần được thông báo pickup: {count}", packagesNearTimePickup.Count);
             foreach (Package package in packagesNearTimePickup)
             {

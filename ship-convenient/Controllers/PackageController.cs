@@ -219,6 +219,25 @@ namespace ship_convenient.Controllers
             }
         }
 
+        [HttpPut("confirm-success")]
+        [SwaggerOperation(Summary = "Confirm sender is recevied packages")]
+
+        [ProducesResponseType(typeof(ActionResult<ApiResponse>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> ConfirmSuccess(Guid packageId)
+        {
+            try
+            {
+                ApiResponse response = await _packageService.ToSuccessPackage(
+                    packageId);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Deliver confrims packages has exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPut("pickup-failed")]
         [SwaggerOperation(Summary = "Deliver confirms packages and then delivery them")]
 

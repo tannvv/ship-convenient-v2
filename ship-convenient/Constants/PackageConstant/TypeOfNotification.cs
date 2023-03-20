@@ -16,8 +16,10 @@
         public const string DELIVERED_FAILED = "DELIVERED_FAILED";
         public const string REFUND_TO_WAREHOUSE_SUCCESS = "REFUND_TO_WAREHOUSE_SUCCESS";
         public const string REFUND_TO_WAREHOUSE_FAILED = "REFUND_TO_WAREHOUSE_FAILED";
+        public const string SUCCESS = "SUCCESS";
         public const string NOT_EXIST = "NOT_EXIST";
         public const string PICKUP_TIME = "PICKUP_TIME";
         public const string DELIVERY_TIME = "DELIVERY_TIME";
+        public const string EXPIRED = "EXPIRED";
     }
 }

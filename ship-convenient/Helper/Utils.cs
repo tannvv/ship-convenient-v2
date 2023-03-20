@@ -39,6 +39,23 @@ namespace ship_convenient.Helper
             return isEqualYear && isEqualMonth && isEqualDay && isEqualHour && isEqualMinute;
         }
 
+        public static bool CompareEqualTimeDate(DateTime time1, DateTime time2)
+        {
+            bool isEqualYear = time1.Year == time2.Year;
+            bool isEqualMonth = time1.Month == time2.Month;
+            bool isEqualDay = time1.Day == time2.Day;
+            return isEqualYear && isEqualMonth && isEqualDay;
+        }
+
+        public static bool CompareEqualTimeHour(DateTime time1, DateTime time2)
+        {
+            bool isEqualYear = time1.Year == time2.Year;
+            bool isEqualMonth = time1.Month == time2.Month;
+            bool isEqualDay = time1.Day == time2.Day;
+            bool isEqualHour = time1.Hour == time2.Hour;
+            return isEqualYear && isEqualMonth && isEqualDay && isEqualHour;
+        }
+
 
         public static bool IsTimeToday(DateTime time)
         {
