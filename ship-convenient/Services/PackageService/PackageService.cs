@@ -1810,23 +1810,23 @@ namespace ship_convenient.Services.PackageService
             TransactionPackage history = new TransactionPackage();
             history.FromStatus = package.Status;
             history.ToStatus = PackageStatus.SUCCESS;
-            history.Description = $"Kiện hàng đã được giao thành công";
+            history.Description = $"Kiện hàng đã được hoàn tất";
             history.PackageId = package.Id;
             await _transactionPackageRepo.InsertAsync(history);
             package.Status = PackageStatus.SUCCESS;
             #endregion
             #region Create notification to sender
             Notification notification = new Notification();
-            notification.Title = "Giao thành công";
-            notification.Content = $"Kiện hàng của bạn được xác nhận đã thành công";
+            notification.Title = "Hoàn tất";
+            notification.Content = $"Kiện hàng của bạn được xác nhận đã hoàn tất";
             notification.TypeOfNotification = TypeOfNotification.SUCCESS;
             notification.AccountId = package.SenderId;
             await _notificationRepo.InsertAsync(notification);
             #endregion
             #region Create notification to deliver
             Notification notificationDeliver = new Notification();
-            notificationDeliver.Title = "Giao thành công";
-            notificationDeliver.Content = $"Bạn đã giao thành công kiện hàng";
+            notificationDeliver.Title = "Hoàn tất";
+            notificationDeliver.Content = $"Bạn đã hoàn tất kiện hàng";
             notificationDeliver.TypeOfNotification = TypeOfNotification.SUCCESS;
             notificationDeliver.AccountId = package.DeliverId!.Value;
             await _notificationRepo.InsertAsync(notificationDeliver);

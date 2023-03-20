@@ -82,8 +82,8 @@ namespace ship_convenient.Services.FeedbackService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid packageId, Guid accountId,
-            string FeedbackFor, int pageIndex, int pageSize)
+        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid? packageId, Guid? accountId,
+            string feedbackFor, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseFeedbackModel> response = new();
             #region Verify params
@@ -93,41 +93,22 @@ namespace ship_convenient.Services.FeedbackService
                 response.ToFailedResponse(errorPaging);
                 return response;
             }
-            if (accountId != Guid.Empty)
-            {
-                Account? account = await _accountRepo.GetByIdAsync(accountId);
-                if (account == null)
-                {
-                    response.ToFailedResponse("Thông tìm thấy thông tin tài khoản");
-                    return response;
-                }
-            }
-            if (packageId != Guid.Empty)
-            {
-                Package? package = await _packageRepo.GetByIdAsync(packageId);
-                if (package == null)
-                {
-                    response.ToFailedResponse("Không tìm thấy thông tin gói hàng");
-                    return response;
-                }
-            }
-        
             #endregion
             #region Predicates
             List<Expression<Func<Feedback, bool>>> predicates = new();
-            if (packageId != Guid.Empty)
+            if (packageId != null)
             {
                 Expression<Func<Feedback, bool>> filterPackage = (feed) => feed.PackageId.Equals(packageId);
                 predicates.Add(filterPackage);
             }
-            if (accountId != Guid.Empty)
+            if (accountId != null)
             {
                 Expression<Func<Feedback, bool>> filterAccount = (account) => account.AccountId.Equals(accountId);
                 predicates.Add(filterAccount);
             }
-            if (!string.IsNullOrEmpty(FeedbackFor))
+            if (!string.IsNullOrEmpty(feedbackFor))
             {
-                Expression<Func<Feedback, bool>> filterFor = (fb) => fb.FeedbackFor.Equals(FeedbackFor);
+                Expression<Func<Feedback, bool>> filterFor = (fb) => fb.FeedbackFor.Equals(feedbackFor);
                 predicates.Add(filterFor);
             }
             #endregion
