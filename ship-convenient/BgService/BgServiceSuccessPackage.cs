@@ -43,7 +43,7 @@ namespace ship_convenient.BgService
             List<Package> deliveredPackages = await packageRepo.GetAllAsync(predicate: item =>
                 item.Status == PackageStatus.DELIVERED_SUCCESS);
             deliveredPackages = deliveredPackages.Where(
-                item => Utils.CompareEqualTime(item.ModifiedAt.AddMinutes(3), DateTime.UtcNow)).ToList();
+                item => Utils.CompareEqualTimeHour(item.ModifiedAt.AddHours(1), DateTime.UtcNow)).ToList();
             _logger.LogInformation($"{DateTime.UtcNow} - Số lượng gói hàng cần tự động chuyển trạng thái thành công: {deliveredPackages.Count}");
             foreach (Package package in deliveredPackages)
             {
