@@ -199,9 +199,6 @@ namespace ship_convenient.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -210,6 +207,9 @@ namespace ship_convenient.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FeedbackFor")
                         .IsRequired()
@@ -226,11 +226,16 @@ namespace ship_convenient.Migrations
                     b.Property<double>("Rating")
                         .HasColumnType("float");
 
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("PackageId");
+
+                    b.HasIndex("ReceiverId");
 
                     b.ToTable("Feedback", (string)null);
                 });
@@ -473,6 +478,9 @@ namespace ship_convenient.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -507,6 +515,8 @@ namespace ship_convenient.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("PackageId");
 
@@ -729,10 +739,10 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Feedback", b =>
                 {
-                    b.HasOne("ship_convenient.Entities.Account", "Account")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("ship_convenient.Entities.Account", "Creator")
+                        .WithMany("CreatorFeedbacks")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ship_convenient.Entities.Package", "Package")
@@ -741,9 +751,17 @@ namespace ship_convenient.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
+                    b.HasOne("ship_convenient.Entities.Account", "Receiver")
+                        .WithMany("ReceiverFeedbacks")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
 
                     b.Navigation("Package");
+
+                    b.Navigation("Receiver");
                 });
 
             modelBuilder.Entity("ship_convenient.Entities.InfoUser", b =>
@@ -813,11 +831,19 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Report", b =>
                 {
+                    b.HasOne("ship_convenient.Entities.Account", "Account")
+                        .WithMany("Reports")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("ship_convenient.Entities.Package", "Package")
                         .WithMany("Reports")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Package");
                 });
@@ -892,9 +918,9 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Account", b =>
                 {
-                    b.Navigation("Deposits");
+                    b.Navigation("CreatorFeedbacks");
 
-                    b.Navigation("Feedbacks");
+                    b.Navigation("Deposits");
 
                     b.Navigation("InfoUser");
 
@@ -903,6 +929,10 @@ namespace ship_convenient.Migrations
                     b.Navigation("PackageDelivers");
 
                     b.Navigation("PackageSenders");
+
+                    b.Navigation("ReceiverFeedbacks");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("Transactions");
                 });

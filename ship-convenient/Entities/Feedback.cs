@@ -11,8 +11,10 @@ namespace ship_convenient.Entities
         public string FeedbackFor { get; set; } = string.Empty;
         public Guid PackageId { get; set; }
         public Package? Package { get; set; }
-        public Guid AccountId { get; set; }
-        public Account? Account { get; set; }
+        public Guid CreatorId { get; set; }
+        public Account? Creator { get; set; }
+        public Guid ReceiverId { get; set; }
+        public Account? Receiver { get; set; }
 
 
         public ResponseFeedbackModel ToResponseModel()
@@ -23,13 +25,13 @@ namespace ship_convenient.Entities
             model.Rating = this.Rating;
             model.FeedbackFor = this.FeedbackFor;
             model.PackageId = this.PackageId;
-            model.AccountId = this.AccountId;
+            model.Package = this.Package?.ToResponseModel();
+            model.CreatorId = this.CreatorId;
+            model.Creator = this.Creator?.ToResponseModel();
+            model.ReceiverId = this.ReceiverId;
+            model.Receiver = this.Receiver?.ToResponseModel();
             model.CreatedAt = this.CreatedAt;
             model.ModifiedAt = this.ModifiedAt;
-            if (Account != null)
-            {
-                model.Account = this.Account.ToResponseModel();
-            }
             return model;
         }
     }

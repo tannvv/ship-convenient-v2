@@ -12,8 +12,8 @@ using ship_convenient.Core.Context;
 namespace ship_convenient.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230317215627_intidb3")]
-    partial class intidb3
+    [Migration("20230320231555_initdb2")]
+    partial class initdb2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,7 +36,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<Guid>("InfoUserId")
                         .HasColumnType("uniqueidentifier");
@@ -75,7 +75,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<Guid>("ModifiedBy")
                         .HasColumnType("uniqueidentifier");
@@ -105,7 +105,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -137,12 +137,12 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("PaymentMethod")
                         .IsRequired()
@@ -201,9 +201,6 @@ namespace ship_convenient.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AccountId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -211,7 +208,10 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<Guid>("CreatorId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FeedbackFor")
                         .IsRequired()
@@ -220,7 +220,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uniqueidentifier");
@@ -228,11 +228,16 @@ namespace ship_convenient.Migrations
                     b.Property<double>("Rating")
                         .HasColumnType("float");
 
+                    b.Property<Guid>("ReceiverId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AccountId");
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("PackageId");
+
+                    b.HasIndex("ReceiverId");
 
                     b.ToTable("Feedback", (string)null);
                 });
@@ -300,7 +305,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<bool>("IsSend")
                         .HasColumnType("bit");
@@ -334,7 +339,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<Guid?>("DeliverId")
                         .HasColumnType("uniqueidentifier");
@@ -361,6 +366,9 @@ namespace ship_convenient.Migrations
                     b.Property<double>("Distance")
                         .HasColumnType("float");
 
+                    b.Property<DateTime>("ExpiredTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("Height")
                         .HasColumnType("float");
 
@@ -370,7 +378,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Note")
                         .IsRequired()
@@ -404,9 +412,6 @@ namespace ship_convenient.Migrations
                     b.Property<string>("ReceiverPhone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("SelectedBefore")
-                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uniqueidentifier");
@@ -475,6 +480,9 @@ namespace ship_convenient.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid>("AccountId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -482,12 +490,12 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<DateTime>("ModifiedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Note")
                         .IsRequired()
@@ -509,6 +517,8 @@ namespace ship_convenient.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
 
                     b.HasIndex("PackageId");
 
@@ -604,7 +614,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<Guid?>("DepositId")
                         .HasColumnType("uniqueidentifier");
@@ -648,7 +658,7 @@ namespace ship_convenient.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETDATE()");
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -731,10 +741,10 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Feedback", b =>
                 {
-                    b.HasOne("ship_convenient.Entities.Account", "Account")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("ship_convenient.Entities.Account", "Creator")
+                        .WithMany("CreatorFeedbacks")
+                        .HasForeignKey("CreatorId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("ship_convenient.Entities.Package", "Package")
@@ -743,9 +753,17 @@ namespace ship_convenient.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Account");
+                    b.HasOne("ship_convenient.Entities.Account", "Receiver")
+                        .WithMany("ReceiverFeedbacks")
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Creator");
 
                     b.Navigation("Package");
+
+                    b.Navigation("Receiver");
                 });
 
             modelBuilder.Entity("ship_convenient.Entities.InfoUser", b =>
@@ -815,11 +833,19 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Report", b =>
                 {
+                    b.HasOne("ship_convenient.Entities.Account", "Account")
+                        .WithMany("Reports")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("ship_convenient.Entities.Package", "Package")
                         .WithMany("Reports")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Account");
 
                     b.Navigation("Package");
                 });
@@ -894,9 +920,9 @@ namespace ship_convenient.Migrations
 
             modelBuilder.Entity("ship_convenient.Entities.Account", b =>
                 {
-                    b.Navigation("Deposits");
+                    b.Navigation("CreatorFeedbacks");
 
-                    b.Navigation("Feedbacks");
+                    b.Navigation("Deposits");
 
                     b.Navigation("InfoUser");
 
@@ -905,6 +931,10 @@ namespace ship_convenient.Migrations
                     b.Navigation("PackageDelivers");
 
                     b.Navigation("PackageSenders");
+
+                    b.Navigation("ReceiverFeedbacks");
+
+                    b.Navigation("Reports");
 
                     b.Navigation("Transactions");
                 });

@@ -8,7 +8,8 @@ namespace ship_convenient.Model.FeedbackModel
         public double Rating { get; set; }
         public string FeedbackFor { get; set; } = string.Empty;
         public Guid PackageId { get; set; }
-        public Guid AccountId { get; set; }
+        public Guid CreatorId { get; set; }
+        public Guid ReceiverId { get; set; }
 
         public Feedback ToEntity() {
             Feedback feedback = new Feedback();
@@ -16,7 +17,8 @@ namespace ship_convenient.Model.FeedbackModel
             feedback.Rating = Rating;
             feedback.FeedbackFor = FeedbackFor;
             feedback.PackageId = PackageId;
-            feedback.AccountId = AccountId;
+            feedback.CreatorId = CreatorId;
+            feedback.ReceiverId = ReceiverId;
             return feedback;
         }
     }

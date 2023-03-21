@@ -5,6 +5,7 @@ using ship_convenient.Constants.AccountConstant;
 using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Constants.DatimeConstant;
 using ship_convenient.Constants.PackageConstant;
+using ship_convenient.Constants.ReportConstant;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Core.IRepository;
 using ship_convenient.Core.Repository;
@@ -13,6 +14,7 @@ using ship_convenient.Entities;
 using ship_convenient.Helper;
 using ship_convenient.Model.MapboxModel;
 using ship_convenient.Model.PackageModel;
+using ship_convenient.Model.ReportModel;
 using ship_convenient.Services.AccountService;
 using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GenericService;
@@ -31,6 +33,7 @@ namespace ship_convenient.Services.PackageService
     {
         private readonly ITransactionPackageRepository _transactionPackageRepo;
         private readonly ITransactionRepository _transactionRepo;
+        private readonly IReportRepository _reportRepo;
         private readonly IMapboxService _mapboxService;
         private readonly IFirebaseCloudMsgService _fcmService;
         private readonly PackageUtils _packageUtils;
@@ -42,6 +45,7 @@ namespace ship_convenient.Services.PackageService
         {
             _transactionPackageRepo = unitOfWork.TransactionPackages;
             _transactionRepo = unitOfWork.Transactions;
+            _reportRepo = unitOfWork.Reports;
 
             _mapboxService = mapboxService;
             _fcmService = fcmService;
@@ -1843,6 +1847,77 @@ namespace ship_convenient.Services.PackageService
             response.Success = result > 0 ? true : false;
             response.Message = result > 0 ? "Yêu cầu thành công" : "Yêu cầu thất bại";
             #endregion
+
+            return response;
+        }
+
+        public async Task<ApiResponse> ReportProblem(CreateReportPackageModel model)
+        {
+            ApiResponse response = new ApiResponse();
+
+            #region Includable pakage
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object?>> includePackage =
+                (source) => source.Include(pk => pk.Products).Include(pk => pk.Deliver).Include(pk => pk.Sender);
+            #endregion
+
+            Package? package = await _packageRepo.GetByIdAsync(model.PackageId, include: includePackage, disableTracking: false);
+            Account? sender = package?.Sender;
+
+            #region Verify params
+            if (package == null)
+            {
+                response.ToFailedResponse("Không tìm thấy gói hàng");
+                return response;
+            }
+            if (package.Status != PackageStatus.DELIVERED_SUCCESS)
+            {
+                response.ToFailedResponse("Gói hàng chưa được chọn để có thể lấy thất bại");
+                return response;
+            }
+            #endregion
+
+            #region Create report
+            Expression<Func<Account, bool>> predicateAdminBalance = (acc) => acc.Role == RoleName.ADMIN_BALANCE;
+            Report report = new Report();
+            report.PackageId = package.Id;
+            report.AccountId = model.AccountId;
+            report.Status = ReportStatus.PENDING;
+            report.Reason = model.Reason;
+            report.TypeOfReport = "OTHER";
+            await _reportRepo.InsertAsync(report);
+            #endregion
+
+            #region Create history
+            TransactionPackage history = new TransactionPackage();
+            history.FromStatus = package.Status;
+            history.ToStatus = PackageStatus.REPORT_PENDING;
+            history.Description = $"Kiện hàng được báo cáo sự cố";
+            history.Reason = model.Reason;
+            history.ImageUrl = model.ImageUrl;
+            history.PackageId = package.Id;
+            package.Status = PackageStatus.REPORT_PENDING;
+            await _transactionPackageRepo.InsertAsync(history);
+            #endregion
+            #region Create notification to sender
+            Notification notification = new Notification();
+            notification.Title = "Sự cố";
+            notification.Content = $"Kiện hàng được báo cáo sự cố, vui lòng đến trung tâm để được giải quyết";
+            notification.TypeOfNotification = TypeOfNotification.REPORT_PENDING;
+            notification.AccountId = package.SenderId;
+            await _notificationRepo.InsertAsync(notification);
+            #endregion
+            int result = await _unitOfWork.CompleteAsync();
+            if (result > 0)
+            {
+                response.ToSuccessResponse("Lấy hàng thất bại");
+                if (sender != null && !string.IsNullOrEmpty(sender.RegistrationToken))
+                    await SendNotificationToAccount(_fcmService, notification);
+
+            }
+            else
+            {
+                response.ToFailedResponse("Lỗi không xác định");
+            }
 
             return response;
         }

@@ -1,6 +1,7 @@
 ﻿using ship_convenient.Core.CoreModel;
 using ship_convenient.Entities;
 using ship_convenient.Model.PackageModel;
+using ship_convenient.Model.ReportModel;
 using unitofwork_core.Model.PackageModel;
 
 namespace ship_convenient.Services.PackageService
@@ -21,6 +22,7 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponse> DeliveredSuccess(Guid packageId);
         Task<ApiResponse> ToSuccessPackage(Guid packageId);
         Task<ApiResponse> DeliveredFailed(DeliveredFailedModel packageId);
+        Task<ApiResponse> ReportProblem(CreateReportPackageModel model);
         Task<ApiResponse> RefundSuccess(Guid packageId);
         Task<ApiResponse> RefundFailed(Guid packageId);
         Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestCombo(Guid deliverId);

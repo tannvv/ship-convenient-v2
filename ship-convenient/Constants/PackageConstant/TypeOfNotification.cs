@@ -20,6 +20,7 @@
         public const string NOT_EXIST = "NOT_EXIST";
         public const string PICKUP_TIME = "PICKUP_TIME";
         public const string DELIVERY_TIME = "DELIVERY_TIME";
+        public const string REPORT_PENDING = "REPORT_PENDING";
         public const string EXPIRED = "EXPIRED";
     }
 }

@@ -9,7 +9,9 @@ namespace ship_convenient.Services.FeedbackService
         Task<ApiResponse<ResponseFeedbackModel>> Create(CreateFeedbackModel model);
         Task<ApiResponse<ResponseFeedbackModel>> Update(UpdateFeedbackModel model);
         Task<ApiResponse> Delete(Guid id);
-        Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid? packageId, Guid? accountId,string feedbackFor, int pageIndex, int pageSize);
+        Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid? packageId, Guid? creatorId,Guid? receiverId,
+            string feedbackFor, int pageIndex, int pageSize);
         Task<ApiResponse<RatingAccountModel>> GetRating(Guid accountId);
+        Task<ApiResponse<RatingAccountModel>> GetRatingV2(Guid accountId);
     }
 }

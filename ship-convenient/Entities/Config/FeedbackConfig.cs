@@ -12,7 +12,6 @@ namespace ship_convenient.Entities.Config
             builder.Property(f => f.ModifiedAt)
                 .HasDefaultValueSql("GETUTCDATE()").ValueGeneratedOnAddOrUpdate();
             builder.HasOne(f => f.Package).WithMany(p => p.Feedbacks).HasForeignKey(f => f.PackageId).OnDelete(DeleteBehavior.Cascade);
-            builder.HasOne(f => f.Account).WithMany(p => p.Feedbacks).HasForeignKey(f => f.AccountId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

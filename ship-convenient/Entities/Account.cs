@@ -15,24 +15,26 @@ namespace ship_convenient.Entities
         #region Relationship
         public Guid InfoUserId { get; set; }
         public InfoUser? InfoUser { get; set; }
-        // public Guid RoleId { get; set; }
-        // public Role? Role { get; set; }
         public List<Notification> Notifications { get; set; }
         public List<Package> PackageSenders { get; set; }
         public List<Package> PackageDelivers { get; set; }
+        public List<Feedback> CreatorFeedbacks { get; set; }
+        public List<Feedback> ReceiverFeedbacks { get; set; }
         public List<Transaction> Transactions { get; set; }
         public List<Deposit> Deposits { get; set; }
-        public List<Feedback> Feedbacks { get; set; }
+        public List<Report> Reports { get; set; }
         #endregion
 
         public Account()
         {
-            Feedbacks = new List<Feedback>();
             Notifications = new List<Notification>();
             PackageSenders = new List<Package>();
             PackageDelivers = new List<Package>();
             Transactions = new List<Transaction>();
             Deposits = new List<Deposit>();
+            CreatorFeedbacks = new List<Feedback>();
+            ReceiverFeedbacks = new List<Feedback>();
+            Reports = new List<Report>();
         }
 
         public ResponseAccountModel ToResponseModel()

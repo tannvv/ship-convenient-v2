@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ship_convenient.Core.CoreModel;
 using ship_convenient.Model.PackageModel;
+using ship_convenient.Model.ReportModel;
 using ship_convenient.Services.PackageService;
 using Swashbuckle.AspNetCore.Annotations;
 using unitofwork_core.Model.PackageModel;
@@ -291,40 +292,6 @@ namespace ship_convenient.Controllers
             }
         }
 
-        /*[HttpPut("sender-confirm-delivery-success")]
-        [SwaggerOperation(Summary = "Sender confirm delivery success")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> SenderConfirmDeliverySuccessPackage(Guid packageId)
-        {
-            try
-            {
-                ApiResponse response = await _packageService.SenderConfirmDeliverySuccess(packageId);
-                return SendResponse(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Shop confirm delivery success has exception : " + ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
-        
-        [HttpPut("sender-confirm-delivery-failed")]
-        [SwaggerOperation(Summary = "Sender confirm delivery failed")]
-        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
-        public async Task<IActionResult> SenderConfirmDeliveryFailed(Guid packageId)
-        {
-            try
-            {
-                ApiResponse response = await _packageService.SenderConfirmDeliveryFailed(packageId);
-                return SendResponse(response);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Shop confirm delivery success has exception : " + ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }*/
-
         [HttpPut("refund-success")]
         [SwaggerOperation(Summary = "Deliver refund package for sender success")]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
@@ -355,6 +322,23 @@ namespace ship_convenient.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("Deliver refund package for sender failed : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpPut("report-problem")]
+        [SwaggerOperation(Summary = "Report problem")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Report(CreateReportPackageModel model)
+        {
+            try
+            {
+                ApiResponse response = await _packageService.ReportProblem(model);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Report prolem exception : " + ex.Message);
                 return StatusCode(500, ex.Message);
             }
         }

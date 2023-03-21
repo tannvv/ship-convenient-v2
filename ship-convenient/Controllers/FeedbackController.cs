@@ -19,12 +19,12 @@ namespace ship_convenient.Controllers
 
         [HttpGet]
         [ProducesResponseType(typeof(ApiResponsePaginated<ResponseFeedbackModel>), StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetList(Guid? packageId, Guid? accountId,string feedbackFor, int pageIndex = 0, int pageSize = 20)
+        public async Task<IActionResult> GetList(Guid? packageId, Guid? creatorId,Guid? receiverId,string feedbackFor, int pageIndex = 0, int pageSize = 20)
         {
             try
             {
-                ApiResponsePaginated<ResponseFeedbackModel> response = await _feedbackService.GetList(packageId, accountId,
-                    feedbackFor, pageIndex, pageSize);
+                ApiResponsePaginated<ResponseFeedbackModel> response = await _feedbackService.GetList(
+                    packageId, creatorId, receiverId, feedbackFor, pageIndex, pageSize);
                 return SendResponse(response);
             }
             catch (Exception ex)
@@ -89,6 +89,22 @@ namespace ship_convenient.Controllers
             try
             {
                 ApiResponse<RatingAccountModel> response = await _feedbackService.GetRating(accountId);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("rating-v2/{accountId}")]
+        [ProducesResponseType(typeof(ApiResponse<RatingAccountModel>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetRatingV2(Guid accountId)
+        {
+            try
+            {
+                ApiResponse<RatingAccountModel> response = await _feedbackService.GetRatingV2(accountId);
                 return SendResponse(response);
             }
             catch (Exception ex)

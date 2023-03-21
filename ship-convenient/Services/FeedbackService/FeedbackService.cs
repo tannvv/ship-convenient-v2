@@ -16,13 +16,9 @@ namespace ship_convenient.Services.FeedbackService
     public class FeedbackService : GenericService<FeedbackService>, IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepo;
-        private readonly IAccountRepository _accountRepo;
-        private readonly IPackageRepository _packageRepo;
         public FeedbackService(ILogger<FeedbackService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
         {
             _feedbackRepo = unitOfWork.Feedbacks;
-            _accountRepo = unitOfWork.Accounts;
-            _packageRepo = unitOfWork.Packages;
         }
 
         public async Task<ApiResponse<ResponseFeedbackModel>> Create(CreateFeedbackModel model)
@@ -33,11 +29,6 @@ namespace ship_convenient.Services.FeedbackService
             if (!string.IsNullOrEmpty(errorRating))
             {
                 response.ToFailedResponse(errorRating);
-                return response;
-            }
-            if (!IsExistedAccount(model.AccountId))
-            {
-                response.ToFailedResponse("Không tìm thấy tài khoản");
                 return response;
             }
             if (!IsExistedPackage(model.PackageId))
@@ -82,7 +73,7 @@ namespace ship_convenient.Services.FeedbackService
             return response;
         }
 
-        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid? packageId, Guid? accountId,
+        public async Task<ApiResponsePaginated<ResponseFeedbackModel>> GetList(Guid? packageId, Guid? creatorId, Guid? receiverId,
             string feedbackFor, int pageIndex, int pageSize)
         {
             ApiResponsePaginated<ResponseFeedbackModel> response = new();
@@ -101,9 +92,14 @@ namespace ship_convenient.Services.FeedbackService
                 Expression<Func<Feedback, bool>> filterPackage = (feed) => feed.PackageId.Equals(packageId);
                 predicates.Add(filterPackage);
             }
-            if (accountId != null)
+            if (creatorId != null)
             {
-                Expression<Func<Feedback, bool>> filterAccount = (account) => account.AccountId.Equals(accountId);
+                Expression<Func<Feedback, bool>> filterAccount = (account) => account.CreatorId.Equals(creatorId);
+                predicates.Add(filterAccount);
+            }
+            if (receiverId != null)
+            {
+                Expression<Func<Feedback, bool>> filterAccount = (account) => account.ReceiverId.Equals(receiverId);
                 predicates.Add(filterAccount);
             }
             if (!string.IsNullOrEmpty(feedbackFor))
@@ -136,7 +132,7 @@ namespace ship_convenient.Services.FeedbackService
             }
             #region Includeable
             Func<IQueryable<Feedback>, IIncludableQueryable<Feedback, object?>> includeable = (source) => 
-            source.Include(feed => feed.Account)
+            source.Include(feed => feed.Creator).Include(feed => feed.Receiver)
                 .Include(feed => feed.Package);
             #endregion
             #region Predicates
@@ -160,6 +156,32 @@ namespace ship_convenient.Services.FeedbackService
             };
             response.ToSuccessResponse(model, "Lấy thông tin thành công");
             return response;
+        }
+
+        public async Task<ApiResponse<RatingAccountModel>> GetRatingV2(Guid accountId)
+        {
+            ApiResponse<RatingAccountModel> response = new();
+            Account? account = await _accountRepo.GetByIdAsync(accountId);
+            if (account == null)
+            {
+                response.ToFailedResponse("Không tìm thấy thông tin tài khoản");
+                return response;
+            }
+            RatingAccountModel model = new();
+            if (account.Role == RoleName.SENDER)
+            {
+                List<Feedback> feedbacks = await _feedbackRepo.GetAllAsync(predicate: (feed) => feed.ReceiverId.Equals(accountId));
+                model.TotalRatingSender = feedbacks.Count;
+                model.AverageRatingSender = feedbacks.Sum(feed => feed.Rating) / model.TotalRatingSender;
+            }
+            else {
+                List<Feedback> feedbacks = await _feedbackRepo.GetAllAsync(predicate: (feed) => feed.ReceiverId.Equals(accountId));
+                model.TotalRatingDeliver = feedbacks.Count;
+                model.AverageRatingDeliver = feedbacks.Sum(feed => feed.Rating) / model.TotalRatingDeliver;
+            }
+            response.ToSuccessResponse(model, "Lấy thông tin thành công");
+            return response;
+
         }
 
         public async Task<ApiResponse<ResponseFeedbackModel>> Update(UpdateFeedbackModel model)

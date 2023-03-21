@@ -13,6 +13,7 @@
         public const string DELIVERED_SUCCESS = "DELIVERED_SUCCESS";
         public const string DELIVERED_FAILED = "DELIVERED_FAILED";
         public const string SUCCESS = "SUCCESS";
+        public const string REPORT_PENDING = "REPORT_PENDING";
         public const string REFUND_TO_WAREHOUSE_SUCCESS = "REFUND_TO_WAREHOUSE_SUCCESS";
         public const string REFUND_TO_WAREHOUSE_FAILED = "REFUND_TO_WAREHOUSE_FAILED";
         public const string NOT_EXIST = "NOT_EXIST";
