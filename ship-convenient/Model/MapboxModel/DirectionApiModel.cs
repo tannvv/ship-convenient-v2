@@ -1,4 +1,6 @@
-﻿namespace ship_convenient.Model.MapboxModel
+﻿using GeoCoordinatePortable;
+
+namespace ship_convenient.Model.MapboxModel
 {
     public class DirectionApiModel
     {
@@ -15,6 +17,16 @@
                 result += item.Longitude + "," + item.Latitude + ";";
             }
             result = result.Remove(result.Length - 1);
+            return result;
+        }
+
+        static public DirectionApiModel FromListGeoCoordinate(List<GeoCoordinate> data) {
+            DirectionApiModel result = new DirectionApiModel();
+            result.From = new CoordinateApp(data[0].Longitude, data[0].Latitude);
+            for (int i = 1; i < data.Count; i++)
+            {
+                result.To.Add(new CoordinateApp(data[i].Longitude, data[i].Latitude));
+            }
             return result;
         }
     }

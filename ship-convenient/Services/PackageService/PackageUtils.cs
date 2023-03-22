@@ -1,12 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using GeoCoordinatePortable;
+using Microsoft.EntityFrameworkCore;
 using ship_convenient.Constants.ConfigConstant;
 using ship_convenient.Core.UnitOfWork;
 using ship_convenient.Entities;
 using ship_convenient.Helper;
 using ship_convenient.Model.FirebaseNotificationModel;
+using ship_convenient.Model.MapboxModel;
 using ship_convenient.Services.AccountService;
 using ship_convenient.Services.FirebaseCloudMsgService;
 using ship_convenient.Services.GenericService;
+using ship_convenient.Services.MapboxService;
 using unitofwork_core.Constant.ConfigConstant;
 using unitofwork_core.Constant.Package;
 using unitofwork_core.Model.PackageModel;
@@ -19,13 +22,14 @@ namespace ship_convenient.Services.PackageService
     {
         private readonly AccountUtils _accountUtils;
         protected readonly IFirebaseCloudMsgService _fcmService;
+        private readonly IMapboxService _mapboxService;
 
-        public PackageUtils(ILogger<PackageService> logger, IUnitOfWork unitOfWork, AccountUtils accountUtils
+        public PackageUtils(ILogger<PackageService> logger, IUnitOfWork unitOfWork, AccountUtils accountUtils, IMapboxService mapboxService
             , IFirebaseCloudMsgService fcmService) : base(logger, unitOfWork)
         {
             _accountUtils = accountUtils;
             _fcmService = fcmService;
-
+            _mapboxService = mapboxService;
         }
 
         public bool IsValidComboBalance(int accountBalance, ResponseComboPackageModel combo)
@@ -96,7 +100,36 @@ namespace ship_convenient.Services.PackageService
             }
         }
 
+        public async Task<List<RoutePoint>> GetRouteVirtual(List<GeoCoordinate> orderPoints, Guid routeId) {
+            List<ResponsePolyLineModel> polylines = await _mapboxService.GetPolyLine(DirectionApiModel.FromListGeoCoordinate(orderPoints));
+            List<RoutePoint> routePoints = new List<RoutePoint>();
+            List<CoordinateApp>? points= polylines[0].PolyPoints;
+            if (polylines[0].PolyPoints == null) new ArgumentNullException("polyline is null");
+            int count = points!.Count;
+            for (int i = 0; i < count; i++)
+            {
+                CoordinateApp point = points[i];
+                RoutePoint routePoint = new RoutePoint()
+                {
+                    RouteId = routeId,
+                    Index = i,
+                    Latitude = point.Latitude,
+                    Longitude = point.Longitude,
+                    DirectionType = "VIRTUAL",
+                    IsVitual = true
+                };
+                routePoints.Add(routePoint);
+            }
+            
 
+            return routePoints;
+        }
+
+        public async Task RemoveRouteVirtual(Guid routeId) {
+            
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate: routePoint => routePoint.RouteId == routeId && routePoint.IsVitual == true);
+            _routePointRepo.DeleteRange(routePoints);
+        }
       
     }
 }

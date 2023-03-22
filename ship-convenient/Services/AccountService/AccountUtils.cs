@@ -9,6 +9,7 @@ using ship_convenient.Services.GenericService;
 using System.Linq.Expressions;
 using unitofwork_core.Constant.Package;
 using Transaction = ship_convenient.Entities.Transaction;
+using RouteEntity = ship_convenient.Entities.Route;
 
 namespace ship_convenient.Services.AccountService
 {
@@ -138,6 +139,14 @@ namespace ship_convenient.Services.AccountService
                 result.Balance = account.Balance - totalBalanceNotAvaiable;
             }
             return result;
+        }
+
+        public async Task<RouteEntity> GetActiveRoute(Guid accountId) {
+            Account? account = await _accountRepo.GetByIdAsync(accountId, include: source => source.Include(ac => ac.InfoUser));
+            if (account == null) throw new ArgumentException("Tài khoản không tồn tại");
+            RouteEntity? route = await _routeRepo.FirstOrDefaultAsync(predicate: route => route.IsActive == true && route.InfoUserId == account.InfoUser.Id);
+            if (route == null) throw new ArgumentException("Không tìm thấy tuyến đường");
+            return route;
         }
 
 

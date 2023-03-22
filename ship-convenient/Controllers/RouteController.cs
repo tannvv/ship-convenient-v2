@@ -105,5 +105,24 @@ namespace ship_convenient.Controllers
             }
 
         }
+
+        [HttpGet("point-virtual/{accountId}")]
+        [ProducesResponseType(typeof(ApiResponse<List<ResponseRoutePointModel>>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetListRoutePointVirtual(Guid accountId)
+        {
+
+            try
+            {
+                ApiResponse<List<ResponseRoutePointModel>> response =
+                    await _routeService.GetPointListVirtual(accountId);
+                return SendResponse(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Get list route point : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+
+        }
     }
 }

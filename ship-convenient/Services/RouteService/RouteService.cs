@@ -8,19 +8,18 @@ using ship_convenient.Entities;
 using Microsoft.EntityFrameworkCore;
 using ship_convenient.Constants.AccountConstant;
 using ship_convenient.Constants.ConfigConstant;
+using ship_convenient.Services.AccountService;
 
 namespace ship_convenient.Services.RouteService
 {
     public class RouteService : GenericService<RouteService>, IRouteService
     {
-        private readonly IRouteRepository _routeRepo;
         private readonly IInfoUserRepository _infoUserRepo;
-        private readonly IRoutePointRepository _routePointRepo;
-        public RouteService(ILogger<RouteService> logger, IUnitOfWork unitOfWork) : base(logger, unitOfWork)
+        private readonly AccountUtils _accountUtils;
+        public RouteService(ILogger<RouteService> logger, IUnitOfWork unitOfWork, AccountUtils accountUtils) : base(logger, unitOfWork)
         {
-            _routeRepo = unitOfWork.Routes;
             _infoUserRepo = unitOfWork.InfoUsers;
-            _routePointRepo = unitOfWork.RoutePoints;
+            _accountUtils = accountUtils;
         }
 
         public async Task<ApiResponse<ResponseRouteModel>> Create(CreateRouteModel model)
@@ -82,7 +81,7 @@ namespace ship_convenient.Services.RouteService
         public async Task<ApiResponse<ResponseRoutePointListModel>> GetPointList(Guid routeId)
         {
             ApiResponse<ResponseRoutePointListModel> response = new();
-            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate: (routePoint) => routePoint.RouteId == routeId);
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate: (routePoint) => routePoint.RouteId == routeId && routePoint.IsVitual == false);
             List<ResponseRoutePointModel> forwardPoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.FORWARD)
                 .OrderBy(source => source.Index).Select(source => source.ToResponseModel()).ToList();
             List<ResponseRoutePointModel> backwardPoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.BACKWARD)
@@ -92,6 +91,16 @@ namespace ship_convenient.Services.RouteService
             data.ForwardPoints = forwardPoints;
             data.BackwardPoints = backwardPoints;
             response.ToSuccessResponse(data, "Lấy danh sách điểm thành công");
+            return response;
+        }
+
+        public async Task<ApiResponse<List<ResponseRoutePointModel>>> GetPointListVirtual(Guid accountId)
+        {
+            ApiResponse<List<ResponseRoutePointModel>> response = new();
+            Route? activeRoute = await _accountUtils.GetActiveRoute(accountId);
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate: (routePoint) => routePoint.RouteId == activeRoute.Id && routePoint.IsVitual == true);
+            List<ResponseRoutePointModel> virtualRoute = routePoints.Select(route => route.ToResponseModel()).ToList();
+            response.ToSuccessResponse(virtualRoute, "Lấy danh sách điểm thành công");
             return response;
         }
 
@@ -144,5 +153,7 @@ namespace ship_convenient.Services.RouteService
             response.ToFailedResponse("Yêu cầu không thành công");
             return response;
         }
+
+       
     }
 }

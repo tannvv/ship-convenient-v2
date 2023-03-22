@@ -8,6 +8,7 @@ namespace ship_convenient.Model.RouteModel
         public double Longitude { get; set; }
         public int Index { get; set; }
         public string DirectionType { get; set; } = string.Empty;
+        public bool IsVitual { get; set; } = false;
 
         public RoutePoint ToEntity() {
             RoutePoint entity = new();
@@ -15,6 +16,7 @@ namespace ship_convenient.Model.RouteModel
             entity.Longitude = this.Longitude;
             entity.Index = this.Index;
             entity.DirectionType = this.DirectionType;
+            entity.IsVitual = this.IsVitual;
             return entity;
         }
     }

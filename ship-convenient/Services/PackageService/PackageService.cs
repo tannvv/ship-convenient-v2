@@ -222,7 +222,9 @@ namespace ship_convenient.Services.PackageService
             notification.TypeOfNotification = TypeOfNotification.DELIVERED_FAILED;
             await _notificationRepo.InsertAsync(notification);
             #endregion
-
+            Route activeRoute = await _accountUtils.GetActiveRoute(deliver.Id);
+            await _packageUtils.RemoveRouteVirtual(activeRoute.Id);
+            
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
@@ -764,6 +766,9 @@ namespace ship_convenient.Services.PackageService
             notificationDeliver.AccountId = package.DeliverId!.Value;
             await _notificationRepo.InsertAsync(notificationDeliver);
             #endregion
+            Route activeRoute = await _accountUtils.GetActiveRoute(deliver.Id);
+            await _packageUtils.RemoveRouteVirtual(activeRoute.Id);
+
             int result = await _unitOfWork.CompleteAsync();
             if (result > 0)
             {
@@ -871,6 +876,14 @@ namespace ship_convenient.Services.PackageService
                 await _notificationRepo.InsertAsync(notification);
             }
             #endregion
+            #region Create virtual route
+            string directionSuggest = _configUserRepo.GetDirectionSuggest(deliver.InfoUser!.Id);
+            Route activeRoute = await _accountUtils.GetActiveRoute(deliverId);
+            List<GeoCoordinate> geoCoordinates = MapHelper.GetListPointOrder(directionSuggest, packages[0], activeRoute);
+            List<RoutePoint> virtualRoute = await _packageUtils.GetRouteVirtual(geoCoordinates, activeRoute.Id);
+            await _routePointRepo.InsertAsync(virtualRoute);
+            #endregion
+
             int result = await _unitOfWork.CompleteAsync();
             #region Send notification to senders
             if (result > 0)
@@ -1048,34 +1061,7 @@ namespace ship_convenient.Services.PackageService
             foreach (Guid senderId in senderIds)
             {
                 List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
-                /*List<CoordinateApp> coordStartSame = new();
-                foreach (ResponsePackageModel package in packagesWithSender)
-                {
-                    if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
-                    co.Longitude == package.StartLongitude) == null)
-                    {
-                        coordStartSame.Add(new CoordinateApp(package.StartLongitude, package.StartLatitude));
-                    }
-                }
-                for (int i = 0; i < coordStartSame.Count; i++)
-                {
-                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
-                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
-                        include: (source) => source.Include(acc => acc.InfoUser)
-                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
-                    combo.Packages = packagesWithSender.Where(p => p.StartLongitude == coordStartSame[i].Longitude && p.StartLatitude == coordStartSame[i].Latitude).ToList();
-                    int comboPrice = 0;
-                    foreach (ResponsePackageModel pac in combo.Packages)
-                    {
-                        foreach (ResponseProductModel pr in pac.Products)
-                        {
-                            comboPrice += pr.Price;
-                        }
-                    }
-                    combo.ComboPrice = comboPrice;
-                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
-                    combos.Add(combo);
-                }*/
+            
                 List<CoordinateApp> coordEndSame = new();
                 foreach (ResponsePackageModel package in packagesWithSender)
                 {
@@ -1182,8 +1168,11 @@ namespace ship_convenient.Services.PackageService
                 for (int i = 0; i < packageCount; i++)
                 {
                     bool isValidOrder = MapHelper.ValidDestinationBetweenDeliverAndPackage(routePoints, packages[i], spacingValid);
+                    bool isValidDirection = MapHelper.ValidSuggestDirectionPackage(directionSuggest, packages[i], route);
                     _logger.LogInformation($"Package valid destination: {packages[i].Id}");
-                    if (isValidOrder) packagesValid.Add(packages[i].ToResponseModel());
+                    if (isValidOrder && isValidDirection) {
+                        packagesValid.Add(packages[i].ToResponseModel());
+                    }
                 }
             }
             #endregion
@@ -1918,6 +1907,222 @@ namespace ship_convenient.Services.PackageService
             {
                 response.ToFailedResponse("Lỗi không xác định");
             }
+
+            return response;
+        }
+
+        public async Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestComboV3(Guid deliverId)
+        {
+            ApiResponse<List<ResponseComboPackageModel>> response = new();
+            #region Verify params
+            Account? deliver = await _accountRepo.GetByIdAsync(deliverId
+                , include: (source) => source.Include(acc => acc.InfoUser));
+            if (deliver == null)
+            {
+                response.ToFailedResponse("Người dùng không tồn tại");
+                return response;
+            }
+            if (deliver.InfoUser == null)
+            {
+                response.ToFailedResponse("Thông tin người dùng chưa được tạo");
+                return response;
+            }
+            Route? route = await _routeRepo.FirstOrDefaultAsync(
+                    predicate: (rou) => rou.InfoUserId == deliver!.InfoUser!.Id && rou.IsActive == true);
+            int spacingValid = _configUserRepo.GetPackageDistance(deliver.InfoUser.Id);
+            string directionSuggest = _configUserRepo.GetDirectionSuggest(deliver.InfoUser.Id);
+            #endregion
+            #region Get route points deliver
+            List<RoutePoint> routePoints = await _routePointRepo.GetAllAsync(predicate:
+                (routePoint) => route == null ? false : routePoint.RouteId == route.Id);
+            if (directionSuggest == DirectionTypeConstant.FORWARD)
+            {
+                routePoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.FORWARD)
+                        .OrderBy(source => source.Index).ToList();
+            }
+            else if (directionSuggest == DirectionTypeConstant.BACKWARD)
+            {
+                routePoints = routePoints.Where(routePoint => routePoint.DirectionType == DirectionTypeConstant.BACKWARD)
+                        .OrderBy(source => source.Index).ToList();
+            }
+            #endregion
+            #region Includale package
+            Func<IQueryable<Package>, IIncludableQueryable<Package, object>> include = (source) => source.Include(p => p.Products);
+            #endregion
+            #region Predicate package
+            Expression<Func<Package, bool>> predicate = (source) => source.Status == PackageStatus.APPROVED && source.SenderId != deliverId;
+            #endregion
+
+            #region Find packages valid spacing
+            List<ResponsePackageModel> packagesValid;
+            if (route == null)
+            {
+                packagesValid = _packageRepo.GetAllAsync(include: include, predicate: predicate).Result.Select(p => p.ToResponseModel()).ToList();
+            }
+            else
+            {
+                packagesValid = new();
+                List<Package> packages = (await _packageRepo.GetAllAsync(include: include, predicate: predicate)).ToList();
+                int packageCount = packages.Count;
+                for (int i = 0; i < packageCount; i++)
+                {
+                    bool isValidOrder = MapHelper.ValidDestinationBetweenDeliverAndPackage(routePoints, packages[i], spacingValid);
+                    bool isValidDirection = MapHelper.ValidSuggestDirectionPackage(directionSuggest, packages[i], route);
+                    _logger.LogInformation($"Package valid destination: {packages[i].Id}");
+                    if (isValidOrder && isValidDirection)
+                    {
+                        List<GeoCoordinate> listPoints = MapHelper.GetListPointOrder(directionSuggest, packages[i], route);
+                        DirectionApiModel requestModel = DirectionApiModel.FromListGeoCoordinate(listPoints);
+                        List<ResponsePolyLineModel> listPolyline = await _mapboxService.GetPolyLine(requestModel);
+                        if (listPolyline.Count > 0)
+                        {
+                            if (directionSuggest == DirectionTypeConstant.FORWARD)
+                            {
+                                bool isMaxSpacingError = listPolyline[0].Distance > spacingValid + route.DistanceForward;
+                                if (!isMaxSpacingError) packagesValid.Add(packages[i].ToResponseModel());
+                            }
+                            else if (directionSuggest == DirectionTypeConstant.BACKWARD)
+                            {
+                                bool isMaxSpacingError = listPolyline[0].Distance > spacingValid + route.DistanceBackward;
+                                if (!isMaxSpacingError) packagesValid.Add(packages[i].ToResponseModel());
+                            }
+                            else if (directionSuggest == DirectionTypeConstant.TWO_WAY)
+                            {
+                                {
+                                    bool isMaxSpacingError = listPolyline[0].Distance > spacingValid + route.DistanceForward + route.DistanceBackward;
+                                    if (!isMaxSpacingError) packagesValid.Add(packages[i].ToResponseModel());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            #endregion
+
+            #region Group with phone number and location
+            List<Guid> senderIds = new List<Guid>();
+            foreach (ResponsePackageModel p in packagesValid)
+            {
+                if (!senderIds.Contains(p.SenderId))
+                {
+                    senderIds.Add(p.SenderId);
+                    _logger.LogInformation($"Shop have combos suggest: {p.SenderId}");
+                }
+            }
+            List<ResponseComboPackageModel> combos = new List<ResponseComboPackageModel>();
+            foreach (Guid senderId in senderIds)
+            {
+                List<ResponsePackageModel> packagesWithSender = packagesValid.Where(p => p.SenderId == senderId).ToList();
+                List<CoordinateApp> coordStartSame = new();
+                List<CoordinateApp> coordEndSame = new();
+                foreach (ResponsePackageModel package in packagesWithSender)
+                {
+                    if (coordEndSame.FirstOrDefault(co => co.Latitude == package.DestinationLatitude &&
+                    co.Longitude == package.DestinationLongitude) == null)
+                    {
+                        coordEndSame.Add(new CoordinateApp(package.DestinationLongitude, package.DestinationLatitude));
+                    }
+                }
+
+                foreach (ResponsePackageModel package in packagesWithSender)
+                {
+                    if (coordStartSame.FirstOrDefault(co => co.Latitude == package.StartLatitude &&
+                    co.Longitude == package.StartLongitude) == null)
+                    {
+                        coordStartSame.Add(new CoordinateApp(package.StartLongitude, package.StartLatitude));
+                    }
+                }
+
+                for (int i = 0; i < coordEndSame.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = packagesWithSender.Where(p => p.DestinationLongitude == coordEndSame[i].Longitude
+                            && p.DestinationLatitude == coordEndSame[i].Latitude).ToList();
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                    if (combo.Packages.Count >= 2)
+                    {
+                        combos.Add(combo);
+                        for (int a = 0; a < combo.Packages.Count; a++)
+                        {
+                            packagesWithSender.Remove(combo.Packages[a]);
+                        }
+                    }
+                }
+
+                for (int i = 0; i < coordStartSame.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = packagesWithSender.Where(p => p.StartLongitude == coordStartSame[i].Longitude
+                            && p.StartLatitude == coordStartSame[i].Latitude).ToList();
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    _logger.LogInformation($"Combo[Shop: {combo.Sender?.Id},Price: {combo.ComboPrice},Package: {combo.Packages.Count}]");
+                    if (combo.Packages.Count >= 2)
+                    {
+                        combos.Add(combo);
+                        for (int a = 0; a < combo.Packages.Count; a++)
+                        {
+                            packagesWithSender.Remove(combo.Packages[a]);
+                        }
+                    }
+                }
+                for (int i = 0; i < packagesWithSender.Count; i++)
+                {
+                    ResponseComboPackageModel combo = new ResponseComboPackageModel();
+                    combo.Sender = (await _accountRepo.GetByIdAsync(senderId,
+                        include: (source) => source.Include(acc => acc.InfoUser)
+                            .ThenInclude(info => info != null ? info.Routes : null)))?.ToResponseModel();
+                    combo.Packages = new List<ResponsePackageModel> { packagesWithSender[i] };
+                    int comboPrice = 0;
+                    foreach (ResponsePackageModel pac in combo.Packages)
+                    {
+                        foreach (ResponseProductModel pr in pac.Products)
+                        {
+                            comboPrice += pr.Price;
+                        }
+                    }
+                    combo.ComboPrice = comboPrice;
+                    combos.Add(combo);
+                }
+
+            }
+            #region Valid combo with balance
+            int balanceAvailable = await _accountUtils.AvailableBalanceAsync(deliverId);
+            combos = combos
+                .Where(c => balanceAvailable - c.ComboPrice >= 0)
+                .OrderByDescending(combo => combo.Packages.Count).ToList();
+            #endregion
+
+            /*PaginatedList<ResponseComboPackageModel> responseList = 
+                await combos.ToPaginatedListAsync(pageIndex, pageSize);
+            response.SetData(responseList);
+            response.ToSuccessResponse("Lấy những đề xuất combo");*/
+            int maxSuggestCombo = _configRepo.GetMaxSuggestCombo();
+            List<ResponseComboPackageModel> result = combos.Take(maxSuggestCombo).ToList();
+            response.ToSuccessResponse(result, "Lấy đề xuất thành công");
+            #endregion
 
             return response;
         }

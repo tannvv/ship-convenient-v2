@@ -10,5 +10,6 @@ namespace ship_convenient.Services.RouteService
         Task<ApiResponse<ResponseRouteModel>> Create(CreateRouteModel model);
         Task<ApiResponse> Delete(Guid id);
         Task<ApiResponse<ResponseRoutePointListModel>> GetPointList(Guid routeId);
+        Task<ApiResponse<List<ResponseRoutePointModel>>> GetPointListVirtual(Guid accountId);
     }
 }

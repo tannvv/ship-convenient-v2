@@ -6,6 +6,9 @@ using ship_convenient.Model.AuthorizeModel;
 using ship_convenient.Services.AuthorizeService;
 using ship_convenient.Services.SendSmsService;
 using Swashbuckle.AspNetCore.Annotations;
+using Telesign;
+using Vonage;
+using Vonage.Request;
 
 namespace ship_convenient.Controllers
 {
@@ -88,6 +91,31 @@ namespace ship_convenient.Controllers
             {
                 ApiResponse logoutResponse = await _authorizeService.LogOut(model.AccountId);
                 return SendResponse(logoutResponse);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Logout exception : " + ex.Message);
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpGet("otp2")]
+        [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status200OK)]
+        public async Task<IActionResult> Logoutee()
+        {
+            try
+            {
+                var credentials = Credentials.FromApiKeyAndSecret("bbe37b49", "9pVLaDGyKKkE4VFD");
+
+                var VonageClient = new VonageClient(credentials);
+
+                var response = VonageClient.SmsClient.SendAnSms(new Vonage.Messaging.SendSmsRequest()
+                {
+                    To = "84869707038",
+                    From = "Vonage APIs 2",
+                    Text = "A text message sent using the Vonage SMS API"
+                });
+                return Ok(response);
             }
             catch (Exception ex)
             {

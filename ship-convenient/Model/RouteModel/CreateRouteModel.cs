@@ -10,6 +10,8 @@ namespace ship_convenient.Model.RouteModel
         public string ToName { get; set; } = string.Empty;
         public double ToLongitude { get; set; }
         public double ToLatitude { get; set; }
+        public double DistanceForward { get; set; }
+        public double DistanceBackward { get; set; }
         public Guid AccountId { get; set; }
         public List<CreateRoutePointModel> RoutePoints { get; set; } = new();
 
@@ -22,6 +24,8 @@ namespace ship_convenient.Model.RouteModel
             route.ToName = this.ToName;
             route.ToLatitude = this.ToLatitude;
             route.ToLongitude = this.ToLongitude;
+            route.DistanceForward = this.DistanceForward;
+            route.DistanceBackward = this.DistanceBackward;
             route.InfoUserId = infoUserId;
             route.RoutePoints = this.RoutePoints.Select(x => x.ToEntity()).ToList();
             return route;

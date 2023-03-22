@@ -27,6 +27,7 @@ namespace ship_convenient.Services.PackageService
         Task<ApiResponse> RefundFailed(Guid packageId);
         Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestCombo(Guid deliverId);
         Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestComboV2(Guid deliverId);
+        Task<ApiResponse<List<ResponseComboPackageModel>>> SuggestComboV3(Guid deliverId);
         Task<List<Package>> GetPackagesNearTimePickup();
         Task<List<Package>> GetPackagesNearTimeDelivery();
     }

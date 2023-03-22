@@ -9,6 +9,8 @@
         public string ToName { get; set; } = string.Empty;
         public double ToLongitude { get; set; }
         public double ToLatitude { get; set; }
+        public double DistanceForward { get; set; }
+        public double DistanceBackward { get; set; }
         public bool IsActive { get; set; }
         public Guid InfoUserId { get; set; }
     }

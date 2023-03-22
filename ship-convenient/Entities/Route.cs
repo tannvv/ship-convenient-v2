@@ -9,7 +9,8 @@ namespace ship_convenient.Entities
         public double FromLatitude { get; set; }
         public double FromLongitude { get; set; }
         public string ToName { get; set; } = string.Empty;
-        public double Distance { get; set; }
+        public double DistanceForward { get; set; }
+        public double DistanceBackward { get; set; }
         public double ToLatitude { get; set; }
         public double ToLongitude { get; set; }
 
@@ -34,6 +35,8 @@ namespace ship_convenient.Entities
             model.ToName = this.ToName;
             model.ToLongitude = this.ToLongitude;
             model.ToLatitude = this.ToLatitude;
+            model.DistanceForward = this.DistanceForward;
+            model.DistanceBackward = this.DistanceBackward;
             model.IsActive = this.IsActive;
             model.InfoUserId = this.InfoUserId;
             return model;
